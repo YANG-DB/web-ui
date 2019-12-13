@@ -14,7 +14,7 @@
   display: flex;
 }
 
-.query input {
+.query > div {
   flex-grow: 1;
   font-size: 36px;
   background: #000000;
