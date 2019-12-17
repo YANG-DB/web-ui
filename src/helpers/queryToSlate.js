@@ -46,10 +46,14 @@ const createNodeList = element => {
   return [createNode(getTokenType(element.type), element.type), ...filterGroup];
 };
 
-const createBranch = (relationship, entity) => {
+const createBranch = (relationship, entity, quantifier) => {
   return {
     type: slateConstants.BRANCH,
-    children: [...createNodeList(relationship), ...createNodeList(entity)]
+    children: [
+      ...createNodeList(relationship),
+      ...createNodeList(entity),
+      ...(quantifier ? [quantifier] : [])
+    ]
   };
 };
 
@@ -121,12 +125,6 @@ export default function(elements, ontology) {
             `Cannot parse query. Invalid branch at index: ${branchIndex}`
           );
         }
-
-        children.push(createBranch(relationship, entity));
-
-        elements[branchIndex] = null;
-        elements[branchIndex + 1] = null;
-
         if (
           possibleQuantifier &&
           possibleQuantifier.type === queryConstants.QUANT
@@ -135,9 +133,16 @@ export default function(elements, ontology) {
           const processedIndex = acc.findIndex(
             el => el.id === possibleQuantifier.id
           );
-          children.push(acc.splice(processedIndex, 1)[0]);
+          const processedQuantifier = acc.splice(processedIndex, 1)[0];
           elements[branchIndex + 2] = null;
+          children.push(
+            createBranch(relationship, entity, processedQuantifier)
+          );
+        } else {
+          children.push(createBranch(relationship, entity));
         }
+        elements[branchIndex] = null;
+        elements[branchIndex + 1] = null;
       });
       acc.push(createQuantifier(curr.id, curr.Type, children));
     }
