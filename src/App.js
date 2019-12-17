@@ -1,19 +1,11 @@
-import React, { useState } from "react";
-import { Editor, EditorState, CompositeDecorator } from "draft-js";
-
-import "draft-js/dist/Draft.css";
+import React from "react";
+import { TextInput } from "./components";
 import styles from "./App.module.css";
 
-function App() {
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+export default function App() {
   return (
     <div className={styles.app}>
-      <div className={styles.query}>
-        <Editor editorState={editorState} onChange={setEditorState} />
-        <button type="submit">Go</button>
-      </div>
+      <TextInput />
     </div>
   );
 }
-
-export default App;

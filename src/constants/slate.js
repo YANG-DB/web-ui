@@ -1,0 +1,6 @@
+export const ENTITY = "entity";
+export const RELATIONSHIP = "relationship";
+export const UNKNOWN = "unknown";
+export const BRANCH = "branch";
+export const GROUP = "group";
+export const QUANTIFIER = "quantifier";

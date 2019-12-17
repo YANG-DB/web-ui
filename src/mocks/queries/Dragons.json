@@ -1,0 +1,86 @@
+{
+  "ont": "Dragons",
+  "elements": [
+    {
+      "type": "Start",
+      "id": 0
+    },
+    {
+      "type": "Person",
+      "id": 1,
+      "alias": "p1",
+      "properties": {
+        "name": {
+          "constraint": "like",
+          "value": "*josh"
+        },
+        "age": {
+          "constraint": "between",
+          "value": [5, 50]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "Quant",
+      "Type": "&",
+      "next": [3, 5]
+    },
+    {
+      "type": "Know",
+      "alias": "k",
+      "dir": "out",
+      "id": 3,
+      "properties": {
+        "since": {
+          "constraint": "gt",
+          "value": "20/10/1999"
+        }
+      }
+    },
+    {
+      "type": "Person",
+      "id": 4,
+      "alias": "p2"
+    },
+    {
+      "type": "Own",
+      "dir": "out",
+      "id": 5,
+      "alias": "o"
+    },
+    {
+      "type": "Horse",
+      "id": 6,
+      "Alias": "h"
+    },
+    {
+      "id": 7,
+      "type": "Quant",
+      "Type": "&",
+      "next": [8, 10]
+    },
+    {
+      "type": "Know",
+      "alias": "k",
+      "dir": "out",
+      "id": 8
+    },
+    {
+      "type": "Person",
+      "id": 9,
+      "alias": "p2"
+    },
+    {
+      "type": "Own",
+      "dir": "out",
+      "id": 10,
+      "alias": "o"
+    },
+    {
+      "type": "Horse",
+      "id": 11,
+      "Alias": "h"
+    }
+  ]
+}

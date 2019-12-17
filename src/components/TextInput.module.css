@@ -1,0 +1,84 @@
+.query {
+  height: 180px;
+  display: flex;
+}
+
+.query > div {
+  flex-grow: 1;
+  font-size: 14px;
+  background: #000000;
+  color: antiquewhite;
+  border: none;
+  padding: 10px;
+  box-sizing: border-box;
+  font-family: "Roboto Mono", monospace;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.query button {
+  flex-basis: 100px;
+  background: #587496;
+  border: none;
+  color: #e7e7e7;
+  font-size: 24px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.token,
+.group {
+  padding: 5px;
+  border-radius: 3px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.group,
+.token {
+  display: inline-block;
+}
+
+.variable,
+.operator,
+.value {
+  padding: 0px 10px;
+}
+
+.variable {
+  background: #c0e5ff;
+  color: black;
+}
+
+.operator {
+  background: blue;
+}
+
+.value {
+  background: gray;
+}
+
+.group.filter {
+  background: green;
+}
+
+.group.quantifier {
+  background: yellow;
+  border: 3px solid green;
+  color: black;
+}
+
+.entity {
+  background: #b4e3ce;
+  color: black;
+}
+
+.relationship {
+  background: teal;
+}
+
+.unknown {
+  background: gray;
+  border: 1px solid red;
+}

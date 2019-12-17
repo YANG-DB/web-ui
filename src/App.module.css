@@ -6,25 +6,5 @@
   flex-direction: column-reverse;
   padding: 10px 50px;
   box-sizing: border-box;
-  background: #404040;
-}
-
-.query {
-  height: 50px;
-  display: flex;
-}
-
-.query > div {
-  flex-grow: 1;
-  font-size: 36px;
-  background: #000000;
-  color: antiquewhite;
-  border: none;
-  padding: 0px 10px;
-}
-
-.query button {
-  flex-basis: 100px;
-  background: #247069;
-  border: none;
+  background: #e0dede;
 }

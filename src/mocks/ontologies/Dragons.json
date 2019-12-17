@@ -1,0 +1,360 @@
+{
+  "requestId": "FR391282989268533248",
+  "elapsed": "00000001",
+  "renderElapsed": "00000014",
+  "totalElapsed": "00000015",
+  "data": [
+    {
+      "ont": "Dragons",
+      "entityTypes": [
+        {
+          "eType": "Person",
+          "name": "Person",
+          "properties": [
+            "firstName",
+            "lastName",
+            "gender",
+            "birthDate",
+            "deathDate",
+            "height",
+            "name",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Horse",
+          "name": "Horse",
+          "properties": [
+            "name",
+            "weight",
+            "maxSpeed",
+            "distance",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Dragon",
+          "name": "Dragon",
+          "properties": [
+            "name",
+            "birthDate",
+            "power",
+            "gender",
+            "color",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Kingdom",
+          "name": "Kingdom",
+          "properties": [
+            "name",
+            "king",
+            "queen",
+            "independenceDay",
+            "funds",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Guild",
+          "name": "Guild",
+          "properties": [
+            "name",
+            "description",
+            "iconId",
+            "url",
+            "establishDate",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        }
+      ],
+      "relationshipTypes": [
+        {
+          "rType": "Own",
+          "name": "Own",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Dragon"
+            },
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Horse"
+            }
+          ],
+          "properties": ["startDate", "endDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Know",
+          "name": "Know",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Person"
+            }
+          ],
+          "properties": ["startDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "MemberOf",
+          "name": "MemberOf",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Guild"
+            }
+          ],
+          "properties": ["startDate", "endDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Fire",
+          "name": "Fire",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Dragon",
+              "eTypeB": "Dragon"
+            }
+          ],
+          "properties": ["date", "temperature"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Freeze",
+          "name": "Freeze",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Dragon",
+              "eTypeB": "Dragon"
+            }
+          ],
+          "properties": ["date", "temperature"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "OriginatedIn",
+          "name": "OriginatedIn",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Dragon",
+              "eTypeB": "Kingdom"
+            },
+            {
+              "eTypeA": "Horse",
+              "eTypeB": "Kingdom"
+            },
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Kingdom"
+            }
+          ],
+          "properties": ["startDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "SubjectOf",
+          "name": "SubjectOf",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Kingdom"
+            }
+          ],
+          "properties": ["startDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "RegisteredIn",
+          "name": "RegisteredIn",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Guild",
+              "eTypeB": "Kingdom"
+            },
+            {
+              "eTypeA": "Horse",
+              "eTypeB": "Kingdom"
+            }
+          ],
+          "properties": ["startDate"],
+          "metadata": ["id", "type"]
+        }
+      ],
+      "properties": [
+        {
+          "pType": "id",
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "pType": "firstName",
+          "name": "firstName",
+          "type": "text"
+        },
+        {
+          "pType": "lastName",
+          "name": "lastName",
+          "type": "text"
+        },
+        {
+          "pType": "gender",
+          "name": "gender",
+          "type": "string"
+        },
+        {
+          "pType": "birthDate",
+          "name": "birthDate",
+          "type": "date"
+        },
+        {
+          "pType": "deathDate",
+          "name": "deathDate",
+          "type": "string"
+        },
+        {
+          "pType": "name",
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "pType": "height",
+          "name": "height",
+          "type": "int"
+        },
+        {
+          "pType": "weight",
+          "name": "weight",
+          "type": "int"
+        },
+        {
+          "pType": "maxSpeed",
+          "name": "maxSpeed",
+          "type": "int"
+        },
+        {
+          "pType": "distance",
+          "name": "distance",
+          "type": "int"
+        },
+        {
+          "pType": "establishDate",
+          "name": "establishDate",
+          "type": "date"
+        },
+        {
+          "pType": "description",
+          "name": "description",
+          "type": "text"
+        },
+        {
+          "pType": "iconId",
+          "name": "iconId",
+          "type": "string"
+        },
+        {
+          "pType": "url",
+          "name": "url",
+          "type": "string"
+        },
+        {
+          "pType": "king",
+          "name": "king",
+          "type": "text"
+        },
+        {
+          "pType": "queen",
+          "name": "queen",
+          "type": "text"
+        },
+        {
+          "pType": "independenceDay",
+          "name": "independenceDay",
+          "type": "string"
+        },
+        {
+          "pType": "funds",
+          "name": "funds",
+          "type": "float"
+        },
+        {
+          "pType": "color",
+          "name": "color",
+          "type": "string"
+        },
+        {
+          "pType": "date",
+          "name": "date",
+          "type": "date"
+        },
+        {
+          "pType": "startDate",
+          "name": "startDate",
+          "type": "date"
+        },
+        {
+          "pType": "endDate",
+          "name": "endDate",
+          "type": "date"
+        },
+        {
+          "pType": "temperature",
+          "name": "temperature",
+          "type": "int"
+        },
+        {
+          "pType": "timestamp",
+          "name": "timestamp",
+          "type": "date"
+        },
+        {
+          "pType": "power",
+          "name": "power",
+          "type": "int"
+        },
+        {
+          "pType": "id",
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "pType": "type",
+          "name": "type",
+          "type": "string"
+        },
+        {
+          "pType": "id",
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "pType": "type",
+          "name": "type",
+          "type": "string"
+        }
+      ],
+      "enumeratedTypes": [],
+      "compositeTypes": []
+    }
+  ]
+}
