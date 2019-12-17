@@ -4,3 +4,7 @@ export const UNKNOWN = "unknown";
 export const BRANCH = "branch";
 export const GROUP = "group";
 export const QUANTIFIER = "quantifier";
+export const FILTER = "filter";
+export const VARIABLE = "variable";
+export const OPERATOR = "operator";
+export const VALUE = "value";

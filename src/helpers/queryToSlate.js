@@ -1,9 +1,10 @@
 /**
  * Convert query format into the nested format expected by SlateJS
- *
  */
 import * as queryConstants from "../constants/query";
 import * as slateConstants from "../constants/slate";
+
+let getTokenType;
 
 const getTokenTypeGenerator = (entities, relationships) => type => {
   if (entities.indexOf(type) > -1) {
@@ -26,13 +27,29 @@ const createNode = (type, text) => {
   };
 };
 
-const createBranch = (relationship, entity, getTokenType) => {
+const createNodeList = element => {
+  // create array containing node possibly followed by filters
+  const filterGroup = [];
+  if (element.properties) {
+    filterGroup.push(
+      createFilterGroup(
+        Object.keys(element.properties).map(filterKey => {
+          return createFilter(
+            filterKey,
+            element.properties[filterKey].constraint,
+            JSON.stringify(element.properties[filterKey].value) // accounting for array values
+          );
+        })
+      )
+    );
+  }
+  return [createNode(getTokenType(element.type), element.type), ...filterGroup];
+};
+
+const createBranch = (relationship, entity) => {
   return {
     type: slateConstants.BRANCH,
-    children: [
-      createNode(getTokenType(relationship.type), relationship.type),
-      createNode(getTokenType(entity.type), entity.type)
-    ]
+    children: [...createNodeList(relationship), ...createNodeList(entity)]
   };
 };
 
@@ -51,11 +68,45 @@ const createQuantifier = (id, type, branches) => {
   };
 };
 
+const createFilter = (variable, operator, value) => {
+  return {
+    type: slateConstants.FILTER,
+    children: [
+      {
+        text: variable,
+        type: slateConstants.VARIABLE
+      },
+      {
+        text: operator,
+        type: slateConstants.OPERATOR
+      },
+      {
+        text: value,
+        type: slateConstants.VALUE
+      }
+    ]
+  };
+};
+
+const createFilterGroup = filters => {
+  return {
+    type: slateConstants.GROUP,
+    variant: slateConstants.FILTER,
+    children: [
+      createNode(slateConstants.GROUP, "..."),
+      {
+        type: slateConstants.GROUP,
+        children: filters
+      }
+    ]
+  };
+};
+
 export default function(elements, ontology) {
   const entities = ontology.entityTypes.map(el => el.eType);
   const relationships = ontology.relationshipTypes.map(el => el.rType);
 
-  const getTokenType = getTokenTypeGenerator(entities, relationships);
+  getTokenType = getTokenTypeGenerator(entities, relationships);
   const roots = elements.reduceRight((acc, curr) => {
     if (curr.type === queryConstants.QUANT) {
       const children = [];
@@ -71,7 +122,7 @@ export default function(elements, ontology) {
           );
         }
 
-        children.push(createBranch(relationship, entity, getTokenType));
+        children.push(createBranch(relationship, entity));
 
         elements[branchIndex] = null;
         elements[branchIndex + 1] = null;
@@ -97,13 +148,14 @@ export default function(elements, ontology) {
     {
       children: elements
         .filter(el => !!el && el.type !== queryConstants.START)
-        .map(el => {
-          if (el.type === queryConstants.QUANT) {
-            return roots.find(r => r.id === el.id);
+        .reduce((acc, curr) => {
+          if (curr.type === queryConstants.QUANT) {
+            acc.push(roots.find(r => r.id === curr.id));
           } else {
-            return createNode(getTokenType(el.type), el.type);
+            return acc.concat(createNodeList(curr));
           }
-        })
+          return acc;
+        }, [])
     }
   ];
 }

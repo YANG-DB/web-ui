@@ -59,13 +59,16 @@
   background: gray;
 }
 
-.group.filter {
+.filter {
   background: green;
 }
 
-.group.quantifier {
+.quantifier {
   background: yellow;
   border: 3px solid green;
+}
+
+.quantifier > span:first-child {
   color: black;
 }
 
