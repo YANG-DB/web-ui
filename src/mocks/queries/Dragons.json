@@ -29,7 +29,7 @@
     {
       "type": "Know",
       "alias": "k",
-      "dir": "out",
+      "dir": "in",
       "id": 3,
       "properties": {
         "since": {

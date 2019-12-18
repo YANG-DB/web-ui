@@ -1,10 +1,14 @@
 export const ENTITY = "entity";
 export const RELATIONSHIP = "relationship";
+export const RELATIONSHIP_OUT = "relationship_out";
+export const RELATIONSHIP_IN = "relationship_in";
 export const UNKNOWN = "unknown";
 export const BRANCH = "branch";
 export const GROUP = "group";
 export const QUANTIFIER = "quantifier";
 export const FILTER = "filter";
+export const FILTER_GROUP = "filter_group";
 export const VARIABLE = "variable";
 export const OPERATOR = "operator";
 export const VALUE = "value";
+export const GROUP_LABEL = "group_label";

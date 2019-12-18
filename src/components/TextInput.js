@@ -18,6 +18,8 @@ export default function TextInput() {
     switch (props.element.type) {
       case "entity":
       case "relationship":
+      case "relationship_out":
+      case "relationship_in":
       case "unknown":
         return <Token {...props} />;
       case "group":
@@ -71,5 +73,9 @@ function Group(props) {
 }
 
 function DefaultElement(props) {
-  return <div {...props.attributes}>{props.children}</div>;
+  return (
+    <div {...props.attributes} className={cn(styles[props.element.type])}>
+      {props.children}
+    </div>
+  );
 }

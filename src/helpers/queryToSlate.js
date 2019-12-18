@@ -6,11 +6,18 @@ import * as slateConstants from "../constants/slate";
 
 let getTokenType;
 
-const getTokenTypeGenerator = (entities, relationships) => type => {
+const getTokenTypeGenerator = (entities, relationships) => element => {
+  const type = element.type;
   if (entities.indexOf(type) > -1) {
     return slateConstants.ENTITY;
   } else if (relationships.indexOf(type) > -1) {
-    return slateConstants.RELATIONSHIP;
+    if (element.dir === queryConstants.OUT) {
+      return slateConstants.RELATIONSHIP_OUT;
+    } else if (element.dir === queryConstants.IN) {
+      return slateConstants.RELATIONSHIP_IN;
+    } else {
+      return slateConstants.RELATIONSHIP;
+    }
   } else {
     return slateConstants.UNKNOWN;
   }
@@ -43,7 +50,7 @@ const createNodeList = element => {
       )
     );
   }
-  return [createNode(getTokenType(element.type), element.type), ...filterGroup];
+  return [createNode(getTokenType(element), element.type), ...filterGroup];
 };
 
 const createBranch = (relationship, entity, quantifier) => {
@@ -95,7 +102,7 @@ const createFilter = (variable, operator, value) => {
 const createFilterGroup = filters => {
   return {
     type: slateConstants.GROUP,
-    variant: slateConstants.FILTER,
+    variant: slateConstants.FILTER_GROUP,
     children: [
       createNode(slateConstants.GROUP, "..."),
       {

@@ -29,8 +29,9 @@
 
 .token,
 .group {
-  padding: 5px;
-  border-radius: 3px;
+  margin: 5px 0px;
+  padding: 5px 10px;
+  /* border-radius: 3px; */
   text-align: left;
   vertical-align: middle;
 }
@@ -52,7 +53,7 @@
 }
 
 .operator {
-  background: blue;
+  background: #9c9cc6;
 }
 
 .value {
@@ -60,12 +61,17 @@
 }
 
 .filter {
-  background: green;
+  margin: 5px 0px;
+}
+
+.filter_group {
+  background: #363636;
 }
 
 .quantifier {
-  background: yellow;
-  border: 3px solid green;
+  background: #e1e6e9;
+  border: 3px solid #1d1d1d;
+  border-radius: 5px;
 }
 
 .quantifier > span:first-child {
@@ -77,8 +83,49 @@
   color: black;
 }
 
-.relationship {
+.relationship,
+.relationship_out,
+.relationship_in {
   background: teal;
+  position: relative;
+}
+
+.relationship_out {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.relationship_out:after {
+  position: absolute;
+  content: "";
+  width: 0px;
+  height: 0px;
+  border-top: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid teal;
+  right: 0;
+  top: 50%;
+  transform: translate(100%, -50%);
+}
+
+.relationship_in {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.relationship_in:after {
+  position: absolute;
+  content: "";
+  width: 0px;
+  height: 0px;
+  border-top: 8px solid transparent;
+  border-right: 8px solid teal;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid transparent;
+  left: 0;
+  top: 50%;
+  transform: translate(-100%, -50%);
 }
 
 .unknown {
