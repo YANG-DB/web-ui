@@ -70,7 +70,11 @@ const createQuantifier = (id, type, branches) => {
     type: slateConstants.GROUP,
     variant: slateConstants.QUANTIFIER,
     children: [
-      createNode(slateConstants.GROUP, type),
+      {
+        type: slateConstants.GROUP,
+        variant: slateConstants.QUANTIFIER_LABEL,
+        children: [{ text: "&" }]
+      },
       {
         type: slateConstants.GROUP,
         children: branches
@@ -84,15 +88,23 @@ const createFilter = (variable, operator, value) => {
     type: slateConstants.FILTER,
     children: [
       {
-        text: variable,
+        children: [
+          {
+            text: variable
+          }
+        ],
         type: slateConstants.VARIABLE
       },
       {
-        text: operator,
+        children: [
+          {
+            text: operator
+          }
+        ],
         type: slateConstants.OPERATOR
       },
       {
-        text: value,
+        children: [{ text: value }],
         type: slateConstants.VALUE
       }
     ]
@@ -156,18 +168,14 @@ export default function(elements, ontology) {
     return acc;
   }, []);
   // final step: merge with leftover nodes
-  return [
-    {
-      children: elements
-        .filter(el => !!el && el.type !== queryConstants.START)
-        .reduce((acc, curr) => {
-          if (curr.type === queryConstants.QUANT) {
-            acc.push(roots.find(r => r.id === curr.id));
-          } else {
-            return acc.concat(createNodeList(curr));
-          }
-          return acc;
-        }, [])
-    }
-  ];
+  return elements
+    .filter(el => !!el && el.type !== queryConstants.START)
+    .reduce((acc, curr) => {
+      if (curr.type === queryConstants.QUANT) {
+        acc.push(roots.find(r => r.id === curr.id));
+      } else {
+        return acc.concat(createNodeList(curr));
+      }
+      return acc;
+    }, []);
 }
