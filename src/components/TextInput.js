@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { createEditor, Editor, Node } from "slate";
+import { createEditor, Editor, Node, Text } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
 import cn from "classnames";
 
@@ -115,6 +115,17 @@ function tokenise(editor) {
     Editor.removeNodes(editor);
     Editor.insertNodes(editor, createQuantifier(text));
   } else {
+    if (
+      [
+        slateConstants.RELATIONSHIP_IN,
+        slateConstants.RELATIONSHIP_OUT
+      ].includes(type)
+    ) {
+      // remove > and < specifier for relationships
+      Editor.insertText(editor, text.replace(/(>|<)$/i, ""), {
+        at: editor.selection.anchor.path
+      });
+    }
     Editor.setNodes(editor, {
       type: slateConstants.TOKEN,
       variant: type
