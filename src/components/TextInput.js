@@ -51,7 +51,7 @@ function createQuantifier(type) {
     variant: slateConstants.QUANTIFIER,
     children: [
       {
-        type: slateConstants.GROUP,
+        type: slateConstants.TOKEN,
         variant: slateConstants.QUANTIFIER_LABEL,
         children: [
           {
@@ -61,6 +61,7 @@ function createQuantifier(type) {
       },
       {
         type: slateConstants.GROUP,
+        variant: slateConstants.QUANTIFIER_ENTRIES,
         children: [
           {
             type: slateConstants.BRANCH,
@@ -115,7 +116,8 @@ function tokenise(editor) {
     Editor.insertNodes(editor, createQuantifier(text));
   } else {
     Editor.setNodes(editor, {
-      type: type
+      type: slateConstants.TOKEN,
+      variant: type
     });
     startNewNode(editor);
   }
@@ -126,14 +128,12 @@ export default function TextInput() {
   const [value, setValue] = useState([textNode()]);
   const renderElement = useCallback(props => {
     switch (props.element.type) {
-      case slateConstants.ENTITY:
-      case slateConstants.RELATIONSHIP:
-      case slateConstants.RELATIONSHIP_OUT:
-      case slateConstants.RELATIONSHIP_IN:
-      case slateConstants.UNKNOWN:
+      case slateConstants.TOKEN:
         return <Token {...props} />;
       case slateConstants.GROUP:
         return <Group {...props} />;
+      case slateConstants.BRANCH:
+        return <DefaultElement {...props} />;
       default:
         return <DefaultElement {...props} />;
     }
@@ -186,7 +186,7 @@ function Token(props) {
   return (
     <div
       {...props.attributes}
-      className={cn(styles[props.element.type], styles.token)}
+      className={cn(styles[props.element.variant], styles.token)}
     >
       {props.children}
     </div>

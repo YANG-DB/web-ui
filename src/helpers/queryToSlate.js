@@ -25,7 +25,8 @@ const getTokenTypeGenerator = (entities, relationships) => element => {
 
 const createNode = (type, text) => {
   return {
-    type,
+    type: slateConstants.TOKEN,
+    variant: type,
     children: [
       {
         text
@@ -71,12 +72,13 @@ const createQuantifier = (id, type, branches) => {
     variant: slateConstants.QUANTIFIER,
     children: [
       {
-        type: slateConstants.GROUP,
+        type: slateConstants.TOKEN,
         variant: slateConstants.QUANTIFIER_LABEL,
         children: [{ text: "&" }]
       },
       {
         type: slateConstants.GROUP,
+        variant: slateConstants.QUANTIFIER_ENTRIES,
         children: branches
       }
     ]
@@ -85,7 +87,8 @@ const createQuantifier = (id, type, branches) => {
 
 const createFilter = (variable, operator, value) => {
   return {
-    type: slateConstants.FILTER,
+    type: slateConstants.BRANCH,
+    variant: slateConstants.FILTER,
     children: [
       {
         children: [
@@ -93,7 +96,8 @@ const createFilter = (variable, operator, value) => {
             text: variable
           }
         ],
-        type: slateConstants.VARIABLE
+        type: slateConstants.TOKEN,
+        variant: slateConstants.VARIABLE
       },
       {
         children: [
@@ -101,11 +105,13 @@ const createFilter = (variable, operator, value) => {
             text: operator
           }
         ],
-        type: slateConstants.OPERATOR
+        type: slateConstants.TOKEN,
+        variant: slateConstants.OPERATOR
       },
       {
         children: [{ text: value }],
-        type: slateConstants.VALUE
+        type: slateConstants.TOKEN,
+        variant: slateConstants.VALUE
       }
     ]
   };
@@ -116,9 +122,10 @@ const createFilterGroup = filters => {
     type: slateConstants.GROUP,
     variant: slateConstants.FILTER_GROUP,
     children: [
-      createNode(slateConstants.GROUP, "..."),
+      createNode(slateConstants.FILTER_LABEL, "..."),
       {
         type: slateConstants.GROUP,
+        variant: slateConstants.FILTER_ENTRIES,
         children: filters
       }
     ]
