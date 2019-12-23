@@ -73,34 +73,111 @@ function createQuantifier(type) {
   };
 }
 
-function traverse(editor, n) {
+function siblingBranch(editor) {
   const currentPath = editor.selection.anchor.path;
-  const targetPath = currentPath.slice(0, currentPath.length - n);
-  const result = Editor.node(editor, targetPath);
-  return {
-    node: result[0],
-    path: result[1]
-  };
+  const currentBranchIndex = currentPath[currentPath.length - 3];
+  if (currentBranchIndex) {
+    const siblingBranchPath = [
+      ...currentPath.slice(0, currentPath.length - 3),
+      currentBranchIndex - 1
+    ];
+    return siblingBranchPath;
+  } else {
+    return false;
+  }
 }
 
 function createBranch(editor) {
   const currentPath = editor.selection.anchor.path;
   const branchParent = currentPath.slice(0, currentPath.length - 2);
-  Editor.insertNodes(
-    editor,
-    {
-      type: slateConstants.BRANCH,
-      children: [textNode()]
-    },
-    {
-      at: branchParent
-    }
-  );
-  Editor.select(editor, [...branchParent, 0]);
+
+  // If a sibling branch already exists, do not create one, but select it.
+  if (siblingBranch(editor)) {
+    Editor.select(editor, [...siblingBranch(editor), 0, 0]);
+  } else {
+    Editor.insertNodes(
+      editor,
+      {
+        // TODO: variant
+        type: slateConstants.BRANCH,
+        children: [textNode()]
+      },
+      {
+        at: branchParent,
+        select: true
+      }
+    );
+  }
+}
+
+function createFilterGroup(editor) {
+  if (getPreviousNodeType(editor)) {
+    // then we add a filter to the previous node
+    Editor.removeNodes(editor);
+    Editor.insertNodes(editor, {
+      type: "group",
+      variant: "filter_group",
+      children: [
+        {
+          type: "token",
+          variant: "filter_label",
+          children: [
+            {
+              text: "..."
+            }
+          ]
+        },
+        {
+          type: "group",
+          variant: "filter_entries",
+          children: [
+            {
+              type: "branch",
+              variant: "filter",
+              children: [
+                {
+                  children: [
+                    {
+                      text: ""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
+  }
+}
+
+function isTerminalNode(editor) {
+  const currentNode = Node.parent(editor, editor.selection.anchor.path);
+  return currentNode.variant === slateConstants.VALUE;
 }
 
 function startNewNode(editor) {
-  Editor.insertNodes(editor, textNode());
+  if (isTerminalNode(editor)) {
+    createBranch(editor);
+    return;
+  }
+  Editor.insertNodes(editor, textNode(), { select: true });
+}
+
+function pop(editor) {
+  // 'pop' out of a nested branch and into the next node on the level above it
+  const path = editor.selection.anchor.path;
+  if (path.length >= 3) {
+    const at = [...path.slice(0, path.length - 3), path[path.length - 3] + 1];
+    if (Node.has(editor, at)) {
+      Editor.select(editor, at);
+    } else {
+      Editor.insertNodes(editor, textNode(), {
+        at,
+        select: true
+      });
+    }
+  }
 }
 
 function tokenise(editor) {
@@ -149,25 +226,38 @@ export default function TextInput() {
         return <DefaultElement {...props} />;
     }
   }, []);
-  const renderLeaf = useCallback(props => {
-    return <Leaf {...props} />;
-  }, []);
+
+  console.log(value);
 
   return (
     <div className={styles.query}>
       <Slate editor={editor} value={value} onChange={value => setValue(value)}>
         <Editable
           renderElement={renderElement}
-          renderLeaf={renderLeaf}
           onKeyDown={event => {
             switch (event.key) {
               case "Enter": {
                 event.preventDefault();
-                if (editor.selection.anchor.path.length > 2) {
-                  tokenise(editor);
-                  createBranch(editor);
+                const path = editor.selection.anchor.path;
+                if (path.length > 2) {
+                  const branchPath = path.slice(0, path.length - 2);
+                  const text = Node.text(Node.get(editor, branchPath));
+
+                  if (text) {
+                    tokenise(editor);
+                  } else {
+                    Editor.removeNodes(editor, {
+                      at: branchPath
+                    });
+                    pop(editor);
+                  }
                 }
                 return;
+              }
+              case ".": {
+                event.preventDefault();
+                createFilterGroup(editor);
+                break;
               }
               case " ": {
                 event.preventDefault();
@@ -182,14 +272,6 @@ export default function TextInput() {
       </Slate>
       <button type="submit">Go</button>
     </div>
-  );
-}
-
-function Leaf(props) {
-  return (
-    <span {...props.attributes} className={styles[props.leaf.type]}>
-      {props.children}
-    </span>
   );
 }
 

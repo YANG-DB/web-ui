@@ -28,4 +28,13 @@ export default function getTokenType(previousToken, text) {
     }
     return slateConstants.RELATIONSHIP;
   }
+  if (previousToken === slateConstants.FILTER_LABEL) {
+    return slateConstants.VARIABLE;
+  }
+  if (previousToken === slateConstants.VARIABLE) {
+    return slateConstants.OPERATOR;
+  }
+  if (previousToken === slateConstants.OPERATOR) {
+    return slateConstants.VALUE;
+  }
 }
