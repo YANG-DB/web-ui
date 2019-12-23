@@ -26,12 +26,22 @@ function getPreviousPath(currentPath) {
   return [];
 }
 
-function getPreviousNodeType(editor) {
-  const path = getPreviousPath(editor.selection.anchor.path);
+function getPreviousNodeInBranch() {
+  // TODO: should return null if first node of branch
+  return true;
+}
+
+function getPreviousNodeType(editor, currentPath) {
+  const path = getPreviousPath(currentPath);
   if (!path.length) {
     return undefined;
   }
   const node = Node.get(editor, path);
+  if (node.variant === slateConstants.FILTER_GROUP) {
+    // if it is a filter, get the one before it
+    return getPreviousNodeType(editor, path);
+  }
+
   return node.variant || node.type;
 }
 
@@ -111,7 +121,7 @@ function createBranch(editor) {
 }
 
 function createFilterGroup(editor) {
-  if (getPreviousNodeType(editor)) {
+  if (getPreviousNodeInBranch(editor)) {
     // then we add a filter to the previous node
     Editor.removeNodes(editor);
     Editor.insertNodes(editor, {
@@ -181,7 +191,7 @@ function pop(editor) {
 }
 
 function tokenise(editor) {
-  const previous = getPreviousNodeType(editor);
+  const previous = getPreviousNodeType(editor, editor.selection.anchor.path);
   const text = Editor.text(editor, editor.selection.anchor.path);
   const type = getTokenType(previous, text);
   if (!text.trim()) {
@@ -246,6 +256,7 @@ export default function TextInput() {
                   if (text) {
                     tokenise(editor);
                   } else {
+                    // if no text in branch, remove it, and start from outside the branch parent
                     Editor.removeNodes(editor, {
                       at: branchPath
                     });
