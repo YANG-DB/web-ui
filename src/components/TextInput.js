@@ -26,9 +26,17 @@ function getPreviousPath(currentPath) {
   return [];
 }
 
-function getPreviousNodeInBranch() {
+function getPreviousNodeInBranch(editor) {
   // TODO: should return null if first node of branch
-  return true;
+  const currentPath = editor.selection.anchor.path;
+  const previous = [
+    ...currentPath.slice(0, currentPath.length - 2),
+    currentPath[currentPath.length - 2] - 1
+  ];
+  if (Node.has(editor, previous)) {
+    return Node.get(editor, previous);
+  }
+  return false;
 }
 
 function getPreviousNodeType(editor, currentPath) {
@@ -75,6 +83,7 @@ function createQuantifier(type) {
         children: [
           {
             type: slateConstants.BRANCH,
+            variant: slateConstants.QUANTIFIER_ENTRY,
             children: [textNode()]
           }
         ]
@@ -100,6 +109,10 @@ function siblingBranch(editor) {
 function createBranch(editor) {
   const currentPath = editor.selection.anchor.path;
   const branchParent = currentPath.slice(0, currentPath.length - 2);
+  const branchGroup = Node.get(
+    editor,
+    currentPath.slice(0, currentPath.length - 2)
+  );
 
   // If a sibling branch already exists, do not create one, but select it.
   if (siblingBranch(editor)) {
@@ -108,7 +121,7 @@ function createBranch(editor) {
     Editor.insertNodes(
       editor,
       {
-        // TODO: variant
+        variant: branchGroup.variant, // new branch has same type as its sibling
         type: slateConstants.BRANCH,
         children: [textNode()]
       },
@@ -121,29 +134,30 @@ function createBranch(editor) {
 }
 
 function createFilterGroup(editor) {
-  if (getPreviousNodeInBranch(editor)) {
+  const previous = getPreviousNodeInBranch(editor);
+  if (previous && previous.variant !== slateConstants.FILTER_GROUP) {
     // then we add a filter to the previous node
     Editor.removeNodes(editor);
     Editor.insertNodes(editor, {
       type: "group",
-      variant: "filter_group",
+      variant: slateConstants.FILTER_GROUP,
       children: [
         {
-          type: "token",
-          variant: "filter_label",
+          type: slateConstants.TOKEN,
+          variant: slateConstants.FILTER_LABEL,
           children: [
             {
-              text: "..."
+              text: "ᗊ"
             }
           ]
         },
         {
-          type: "group",
-          variant: "filter_entries",
+          type: slateConstants.GROUP,
+          variant: slateConstants.FILTER_ENTRIES,
           children: [
             {
-              type: "branch",
-              variant: "filter",
+              type: slateConstants.BRANCH,
+              variant: slateConstants.FILTER,
               children: [
                 {
                   children: [
@@ -162,12 +176,15 @@ function createFilterGroup(editor) {
 }
 
 function isTerminalNode(editor) {
+  if (editor.selection.anchor.path.length <= 2) {
+    return false;
+  }
   const currentNode = Node.parent(editor, editor.selection.anchor.path);
   return currentNode.variant === slateConstants.VALUE;
 }
 
-function startNewNode(editor) {
-  if (isTerminalNode(editor)) {
+function startNewNode(editor, opts = {}) {
+  if (isTerminalNode(editor) || opts.branch) {
     createBranch(editor);
     return;
   }
@@ -195,12 +212,16 @@ function tokenise(editor) {
   const text = Editor.text(editor, editor.selection.anchor.path);
   const type = getTokenType(previous, text);
   if (!text.trim()) {
-    Editor.removeNodes(editor);
-    return;
+    return false;
   }
   if (type === slateConstants.QUANTIFIER) {
+    const path = editor.selection.anchor.path;
     Editor.removeNodes(editor);
-    Editor.insertNodes(editor, createQuantifier(text));
+    Editor.insertNodes(editor, createQuantifier(text), {
+      at: path.slice(0, path.length - 1),
+      select: true
+    });
+    return false;
   } else {
     if (
       [
@@ -217,7 +238,7 @@ function tokenise(editor) {
       type: slateConstants.TOKEN,
       variant: type
     });
-    startNewNode(editor);
+    return true;
   }
 }
 
@@ -237,6 +258,10 @@ export default function TextInput() {
     }
   }, []);
 
+  const renderLeaf = useCallback(props => {
+    return <Leaf {...props} />;
+  }, []);
+
   console.log(value);
 
   return (
@@ -244,17 +269,35 @@ export default function TextInput() {
       <Slate editor={editor} value={value} onChange={value => setValue(value)}>
         <Editable
           renderElement={renderElement}
+          renderLeaf={renderLeaf}
           onKeyDown={event => {
+            const path = editor.selection.anchor.path;
+            const node = Node.parent(editor, path);
+            if (
+              [
+                slateConstants.QUANTIFIER_LABEL,
+                slateConstants.FILTER_LABEL
+              ].includes(node.variant) &&
+              !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)
+            ) {
+              event.preventDefault();
+              return;
+            }
             switch (event.key) {
               case "Enter": {
                 event.preventDefault();
-                const path = editor.selection.anchor.path;
                 if (path.length > 2) {
                   const branchPath = path.slice(0, path.length - 2);
-                  const text = Node.text(Node.get(editor, branchPath));
-
-                  if (text) {
-                    tokenise(editor);
+                  const branchText = Node.text(Node.get(editor, branchPath));
+                  if (branchText) {
+                    // if the current branch is non-empty, hitting enter should start a new branch
+                    if (Node.text(node)) {
+                      // don't tokenise previous node if there is nothing in it
+                      tokenise(editor) &&
+                        startNewNode(editor, { branch: true });
+                    } else {
+                      startNewNode(editor, { branch: true });
+                    }
                   } else {
                     // if no text in branch, remove it, and start from outside the branch parent
                     Editor.removeNodes(editor, {
@@ -272,7 +315,7 @@ export default function TextInput() {
               }
               case " ": {
                 event.preventDefault();
-                tokenise(editor);
+                tokenise(editor) && startNewNode(editor);
                 break;
               }
               default:
@@ -316,5 +359,13 @@ function DefaultElement(props) {
     >
       {props.children}
     </div>
+  );
+}
+
+function Leaf(props) {
+  return (
+    <span {...props.attributes} className={styles[props.leaf.type]}>
+      {props.children}
+    </span>
   );
 }
