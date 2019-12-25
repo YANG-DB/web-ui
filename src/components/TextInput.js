@@ -277,11 +277,21 @@ export default function TextInput() {
               [
                 slateConstants.QUANTIFIER_LABEL,
                 slateConstants.FILTER_LABEL
-              ].includes(node.variant) &&
-              !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)
+              ].includes(node.variant)
             ) {
-              event.preventDefault();
-              return;
+              if (
+                !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)
+              ) {
+                event.preventDefault();
+                return;
+              } else if (event.key === "Backspace") {
+                // then delete the node
+                event.preventDefault();
+                console.log("removing nodes", path.slice(0, path.length - 2));
+                Editor.removeNodes(editor, {
+                  at: path.slice(0, path.length - 2)
+                });
+              }
             }
             switch (event.key) {
               case "Enter": {
