@@ -28,6 +28,11 @@
   border-bottom-right-radius: 5px;
 }
 
+.token.invalid {
+  border: 1px solid red;
+  box-sizing: border-box;
+}
+
 .token,
 .group {
   margin: 5px 0px;

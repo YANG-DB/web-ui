@@ -26,11 +26,11 @@ function getPreviousPath(currentPath) {
   return [];
 }
 
-function getPreviousNodeInBranch(editor) {
+function getPreviousNodeInBranch(editor, n = 1) {
   const currentPath = editor.selection.anchor.path;
   const previous = [
     ...currentPath.slice(0, currentPath.length - 2),
-    currentPath[currentPath.length - 2] - 1
+    currentPath[currentPath.length - 2] - n
   ];
   if (Node.has(editor, previous)) {
     return Node.get(editor, previous);
@@ -218,19 +218,108 @@ function getPossibilities(editor, ontology) {
     switch (curr) {
       case slateConstants.RELATIONSHIP: {
         // take into account prior entity
-        return acc.concat([]);
+        const entity = getPreviousNodeInBranch(editor);
+        return acc.concat(
+          ontology.relationshipTypes
+            .filter(
+              r =>
+                !r.directional &&
+                r.ePairs.some(({ eTypeA }) => eTypeA === Node.text(entity))
+            )
+            .map(r => r.rType)
+        );
       }
       case slateConstants.RELATIONSHIP_IN: {
         // take into account prior entity
-        return acc.concat([]);
+        const entity = getPreviousNodeInBranch(editor);
+        return acc.concat(
+          ontology.relationshipTypes
+            .filter(
+              r =>
+                r.directional &&
+                r.ePairs.some(({ eTypeB }) => eTypeB === Node.text(entity))
+            )
+            .map(r => r.rType)
+        );
       }
       case slateConstants.RELATIONSHIP_OUT: {
         // take into account prior entity
-        return acc.concat([]);
+        const entity = getPreviousNodeInBranch(editor);
+        return acc.concat(
+          ontology.relationshipTypes
+            .filter(
+              r =>
+                r.directional &&
+                r.ePairs.some(({ eTypeA }) => eTypeA === Node.text(entity))
+            )
+            .map(r => r.rType)
+        );
       }
       case slateConstants.ENTITY: {
         // take into account prior relationship, if any
-        return acc.concat([]);
+        const previousRelationship = getPreviousNodeInBranch(editor);
+        if (!previousRelationship) {
+          return acc.concat(ontology.entityTypes.map(e => e.eType));
+        }
+        const previousEntity = getPreviousNodeInBranch(editor, 2);
+        if (previousRelationship.variant === slateConstants.RELATIONSHIP) {
+          return ontology.relationshipTypes
+            .filter(
+              r =>
+                !r.directional &&
+                r.ePairs.some(
+                  ({ eTypeA, eTypeB }) =>
+                    eTypeA === Node.text(previousEntity) ||
+                    eTypeB === Node.text(previousEntity)
+                )
+            )
+            .reduce((acc, curr) => {
+              curr.ePairs.forEach(({ eTypeA, eTypeB }) => {
+                if (!acc.includes(eTypeA)) {
+                  acc.push(eTypeA);
+                }
+                if (!acc.includes(eTypeB)) {
+                  acc.push(eTypeB);
+                }
+              });
+              return acc;
+            }, []);
+        } else if (
+          previousRelationship.variant === slateConstants.RELATIONSHIP_IN
+        ) {
+          // relationships for which the previous entity is 'A'
+          return ontology.relationshipTypes
+            .filter(r => r.directional)
+            .reduce((acc, curr) => {
+              curr.ePairs.forEach(({ eTypeA, eTypeB }) => {
+                if (
+                  eTypeB === Node.text(previousEntity) &&
+                  !curr.includes(eTypeA)
+                ) {
+                  acc.push(eTypeA);
+                }
+              });
+              return acc;
+            }, []);
+        } else if (
+          previousRelationship.variant === slateConstants.RELATIONSHIP_OUT
+        ) {
+          // relationships for which the previous entity is 'B'
+          return ontology.relationshipTypes
+            .filter(r => r.directional)
+            .reduce((acc, curr) => {
+              curr.ePairs.forEach(({ eTypeA, eTypeB }) => {
+                if (
+                  eTypeA === Node.text(previousEntity) &&
+                  !curr.includes(eTypeB)
+                ) {
+                  acc.push(eTypeB);
+                }
+              });
+              return acc;
+            }, []);
+        }
+        return acc;
       }
       case slateConstants.VARIABLE: {
         // take into account prior entity to see what properties it has
@@ -254,6 +343,7 @@ function getPossibilities(editor, ontology) {
 
 function isValid(editor, ontology) {
   const possibilities = getPossibilities(editor, ontology);
+  console.log("possibilities?", possibilities);
   const text = Editor.text(editor, editor.selection.anchor.path);
   return possibilities.some(poss => text === poss);
 }
@@ -399,7 +489,11 @@ function Token(props) {
   return (
     <div
       {...props.attributes}
-      className={cn(styles[props.element.variant], styles.token)}
+      className={cn(
+        styles[props.element.variant],
+        styles.token,
+        !props.element.valid && styles.invalid
+      )}
     >
       {props.children}
     </div>
