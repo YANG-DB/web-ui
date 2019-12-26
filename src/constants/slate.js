@@ -21,3 +21,4 @@ export const OPERATOR = "operator";
 export const VALUE = "value";
 export const AND = "&";
 export const OR = "||";
+export const FILTER_KEY = ".";

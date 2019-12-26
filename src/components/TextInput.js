@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { createEditor, Editor, Node, Text } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
 import cn from "classnames";
@@ -27,7 +27,6 @@ function getPreviousPath(currentPath) {
 }
 
 function getPreviousNodeInBranch(editor) {
-  // TODO: should return null if first node of branch
   const currentPath = editor.selection.anchor.path;
   const previous = [
     ...currentPath.slice(0, currentPath.length - 2),
@@ -139,7 +138,7 @@ function createFilterGroup(editor) {
     // then we add a filter to the previous node
     Editor.removeNodes(editor);
     Editor.insertNodes(editor, {
-      type: "group",
+      type: slateConstants.GROUP,
       variant: slateConstants.FILTER_GROUP,
       children: [
         {
@@ -207,7 +206,10 @@ function pop(editor) {
   }
 }
 
-function tokenise(editor) {
+function tokenise(editor, ontology) {
+  const entities = ontology.entityTypes.map(el => el.eType);
+  const relationships = ontology.relationshipTypes.map(el => el.rType);
+
   const previous = getPreviousNodeType(editor, editor.selection.anchor.path);
   const text = Editor.text(editor, editor.selection.anchor.path);
   const type = getTokenType(previous, text);
@@ -245,6 +247,11 @@ function tokenise(editor) {
 export default function TextInput() {
   const editor = useMemo(() => withReact(createEditor()), []);
   const [value, setValue] = useState([textNode()]);
+  const [ontology, loadOntology] = useState(null);
+  useEffect(() => {
+    loadOntology(mockOntology.data[0]);
+  }, []);
+
   const renderElement = useCallback(props => {
     switch (props.element.type) {
       case slateConstants.TOKEN:
@@ -287,7 +294,6 @@ export default function TextInput() {
               } else if (event.key === "Backspace") {
                 // then delete the node
                 event.preventDefault();
-                console.log("removing nodes", path.slice(0, path.length - 2));
                 Editor.removeNodes(editor, {
                   at: path.slice(0, path.length - 2)
                 });
@@ -303,7 +309,7 @@ export default function TextInput() {
                     // if the current branch is non-empty, hitting enter should start a new branch
                     if (Node.text(node)) {
                       // don't tokenise previous node if there is nothing in it
-                      tokenise(editor) &&
+                      tokenise(editor, ontology) &&
                         startNewNode(editor, { branch: true });
                     } else {
                       startNewNode(editor, { branch: true });
@@ -318,14 +324,14 @@ export default function TextInput() {
                 }
                 return;
               }
-              case ".": {
-                event.preventDefault();
-                createFilterGroup(editor);
-                break;
-              }
               case " ": {
                 event.preventDefault();
-                tokenise(editor) && startNewNode(editor);
+                tokenise(editor, ontology) && startNewNode(editor);
+                break;
+              }
+              case slateConstants.FILTER_KEY: {
+                event.preventDefault();
+                createFilterGroup(editor);
                 break;
               }
               default:
