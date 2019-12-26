@@ -22,3 +22,4 @@ export const VALUE = "value";
 export const AND = "&";
 export const OR = "||";
 export const FILTER_KEY = ".";
+export const OPERATORS = ["<", ">", "=", "like"];

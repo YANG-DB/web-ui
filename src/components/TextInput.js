@@ -4,7 +4,7 @@ import { Slate, Editable, withReact } from "slate-react";
 import cn from "classnames";
 
 import queryToSlate from "../helpers/queryToSlate";
-import getTokenType from "../helpers/getTokenType";
+import getTokenType, { getPossibleTypes } from "../helpers/getTokenType";
 
 import * as slateConstants from "../constants/slate";
 
@@ -206,10 +206,59 @@ function pop(editor) {
   }
 }
 
-function tokenise(editor, ontology) {
-  const entities = ontology.entityTypes.map(el => el.eType);
-  const relationships = ontology.relationshipTypes.map(el => el.rType);
+function getPossibilities(editor, ontology) {
+  // return the possible tokens given the state of the editor and the available schema
+  const previousType = getPreviousNodeType(
+    editor,
+    editor.selection.anchor.path
+  );
+  // first get possible token types based on previous type, then expand it to the schema
+  const possibleTypes = getPossibleTypes(previousType);
+  return possibleTypes.reduce((acc, curr) => {
+    switch (curr) {
+      case slateConstants.RELATIONSHIP: {
+        // take into account prior entity
+        return acc.concat([]);
+      }
+      case slateConstants.RELATIONSHIP_IN: {
+        // take into account prior entity
+        return acc.concat([]);
+      }
+      case slateConstants.RELATIONSHIP_OUT: {
+        // take into account prior entity
+        return acc.concat([]);
+      }
+      case slateConstants.ENTITY: {
+        // take into account prior relationship, if any
+        return acc.concat([]);
+      }
+      case slateConstants.VARIABLE: {
+        // take into account prior entity to see what properties it has
+        return acc.concat([]);
+      }
+      case slateConstants.OPERATOR: {
+        return acc.concat(slateConstants.OPERATORS);
+      }
+      case slateConstants.QUANTIFIER: {
+        // take into account prior entity
+        return acc.concat([slateConstants.AND, slateConstants.OR]);
+      }
+      case slateConstants.VALUE: {
+        return acc;
+      }
+      default:
+        return acc;
+    }
+  }, []);
+}
 
+function isValid(editor, ontology) {
+  const possibilities = getPossibilities(editor, ontology);
+  const text = Editor.text(editor, editor.selection.anchor.path);
+  return possibilities.some(poss => text === poss);
+}
+
+function tokenise(editor, ontology) {
   const previous = getPreviousNodeType(editor, editor.selection.anchor.path);
   const text = Editor.text(editor, editor.selection.anchor.path);
   const type = getTokenType(previous, text);
@@ -238,7 +287,8 @@ function tokenise(editor, ontology) {
     }
     Editor.setNodes(editor, {
       type: slateConstants.TOKEN,
-      variant: type
+      variant: type,
+      valid: isValid(editor, ontology)
     });
     return true;
   }
