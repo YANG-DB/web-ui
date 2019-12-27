@@ -244,7 +244,7 @@ function getPossibilities(editor, ontology) {
                 r.directional &&
                 r.ePairs.some(({ eTypeB }) => eTypeB === Node.text(entity))
             )
-            .map(r => r.rType)
+            .map(r => `${r.rType}<`)
         );
       }
       case slateConstants.RELATIONSHIP_OUT: {
@@ -257,7 +257,7 @@ function getPossibilities(editor, ontology) {
                 r.directional &&
                 r.ePairs.some(({ eTypeA }) => eTypeA === Node.text(entity))
             )
-            .map(r => r.rType)
+            .map(r => `${r.rType}>`)
         );
       }
       case slateConstants.ENTITY: {
@@ -338,8 +338,41 @@ function getPossibilities(editor, ontology) {
         return acc;
       }
       case slateConstants.VARIABLE: {
-        // take into account prior entity to see what properties it has
-        return acc.concat([]);
+        // take into account prior node to see what properties it has
+        const previousNode = getPreviousNode(
+          editor,
+          editor.selection.anchor.path,
+          2
+        );
+        if (previousNode.variant === slateConstants.ENTITY) {
+          return acc.concat(
+            (
+              ontology.entityTypes.find(
+                e => e.eType === Node.text(previousNode)
+              ) || {}
+            ).properties || []
+          );
+        } else if (previousNode.variant === slateConstants.RELATIONSHIP) {
+          return (
+            acc.concat(
+              ontology.relationshipTypes
+                .filter(r => !r.directional)
+                .find(r => r.rType === Node.text(previousNode)) || {}
+            ).properties || []
+          );
+        } else if (
+          previousNode.variant === slateConstants.RELATIONSHIP_IN ||
+          previousNode.variant === slateConstants.RELATIONSHIP_OUT
+        ) {
+          return acc.concat(
+            (
+              ontology.relationshipTypes
+                .filter(r => r.directional)
+                .find(r => r.rType === Node.text(previousNode)) || {}
+            ).properties || []
+          );
+        }
+        return acc;
       }
       case slateConstants.OPERATOR: {
         return acc.concat(slateConstants.OPERATORS);
@@ -357,9 +390,21 @@ function getPossibilities(editor, ontology) {
   }, []);
 }
 
-function isValid(editor, ontology) {
+function typeCheck(text, type) {
+  // TODO: assert validity of string against date/string/numeric types
+  return true;
+}
+
+function isValid(editor, ontology, intendedType) {
+  if (intendedType === slateConstants.VALUE) {
+    const fieldNode = getPreviousNode(editor, editor.selection.anchor.path, 2);
+    const variableType = (
+      ontology.properties.find(p => p.pType === Node.text(fieldNode)) || {}
+    ).type;
+    const text = Editor.text(editor, editor.selection.anchor.path);
+    return typeCheck(text, variableType);
+  }
   const possibilities = getPossibilities(editor, ontology);
-  console.log("possibilities?", possibilities);
   const text = Editor.text(editor, editor.selection.anchor.path);
   return possibilities.some(poss => text === poss);
 }
@@ -380,6 +425,7 @@ function tokenise(editor, ontology) {
     });
     return false;
   } else {
+    const valid = isValid(editor, ontology, type);
     if (
       [
         slateConstants.RELATIONSHIP_IN,
@@ -394,7 +440,7 @@ function tokenise(editor, ontology) {
     Editor.setNodes(editor, {
       type: slateConstants.TOKEN,
       variant: type,
-      valid: isValid(editor, ontology)
+      valid
     });
     return true;
   }
@@ -508,7 +554,7 @@ function Token(props) {
       className={cn(
         styles[props.element.variant],
         styles.token,
-        !props.element.valid && styles.invalid
+        props.element.valid === false && styles.invalid
       )}
     >
       {props.children}
