@@ -450,6 +450,7 @@ export default function TextInput() {
   const editor = useMemo(() => withReact(createEditor()), []);
   const [value, setValue] = useState([textNode()]);
   const [ontology, loadOntology] = useState(null);
+  const [possibilities, setPossibilities] = useState([]);
   useEffect(() => {
     loadOntology(mockOntology.data[0]);
   }, []);
@@ -474,75 +475,92 @@ export default function TextInput() {
   console.log(value);
 
   return (
-    <div className={styles.query}>
-      <Slate editor={editor} value={value} onChange={value => setValue(value)}>
-        <Editable
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          onKeyDown={event => {
-            const path = editor.selection.anchor.path;
-            const node = Node.parent(editor, path);
-            if (
-              [
-                slateConstants.QUANTIFIER_LABEL,
-                slateConstants.FILTER_LABEL
-              ].includes(node.variant)
-            ) {
+    <div>
+      <div>
+        {possibilities.map(p => (
+          <div>{p}</div>
+        ))}
+      </div>
+      <div className={styles.query}>
+        <Slate
+          editor={editor}
+          value={value}
+          onChange={value => setValue(value)}
+        >
+          <Editable
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            onKeyDown={event => {
+              const path = editor.selection.anchor.path;
+              const node = Node.parent(editor, path);
               if (
                 !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)
               ) {
-                event.preventDefault();
-                return;
-              } else if (event.key === "Backspace") {
-                // then delete the node
-                event.preventDefault();
-                Editor.removeNodes(editor, {
-                  at: path.slice(0, path.length - 2)
-                });
+                setPossibilities(getPossibilities(editor, ontology));
               }
-            }
-            switch (event.key) {
-              case "Enter": {
-                event.preventDefault();
-                if (path.length > 2) {
-                  const branchPath = path.slice(0, path.length - 2);
-                  const branchText = Node.text(Node.get(editor, branchPath));
-                  if (branchText) {
-                    // if the current branch is non-empty, hitting enter should start a new branch
-                    if (Node.text(node)) {
-                      // don't tokenise previous node if there is nothing in it
-                      tokenise(editor, ontology) &&
-                        startNewNode(editor, { branch: true });
-                    } else {
-                      startNewNode(editor, { branch: true });
-                    }
-                  } else {
-                    // if no text in branch, remove it, and start from outside the branch parent
-                    Editor.removeNodes(editor, {
-                      at: branchPath
-                    });
-                    pop(editor);
-                  }
+              if (
+                [
+                  slateConstants.QUANTIFIER_LABEL,
+                  slateConstants.FILTER_LABEL
+                ].includes(node.variant)
+              ) {
+                if (
+                  !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)
+                ) {
+                  event.preventDefault();
+                  return;
+                } else if (event.key === "Backspace") {
+                  // then delete the node
+                  event.preventDefault();
+                  Editor.removeNodes(editor, {
+                    at: path.slice(0, path.length - 2)
+                  });
                 }
-                return;
               }
-              case " ": {
-                event.preventDefault();
-                tokenise(editor, ontology) && startNewNode(editor);
-                break;
+              switch (event.key) {
+                case "Enter": {
+                  event.preventDefault();
+                  if (path.length > 2) {
+                    const branchPath = path.slice(0, path.length - 2);
+                    const branchText = Node.text(Node.get(editor, branchPath));
+                    if (branchText) {
+                      // if the current branch is non-empty, hitting enter should start a new branch
+                      if (Node.text(node)) {
+                        // don't tokenise previous node if there is nothing in it
+                        tokenise(editor, ontology) &&
+                          startNewNode(editor, { branch: true });
+                      } else {
+                        startNewNode(editor, { branch: true });
+                      }
+                    } else {
+                      // if no text in branch, remove it, and start from outside the branch parent
+                      Editor.removeNodes(editor, {
+                        at: branchPath
+                      });
+                      pop(editor);
+                    }
+                  }
+                  return;
+                }
+                case " ": {
+                  event.preventDefault();
+                  tokenise(editor, ontology) && startNewNode(editor);
+                  setPossibilities(getPossibilities(editor, ontology));
+                  break;
+                }
+                case slateConstants.FILTER_KEY: {
+                  event.preventDefault();
+                  createFilterGroup(editor);
+                  break;
+                }
+                default:
+                  return;
               }
-              case slateConstants.FILTER_KEY: {
-                event.preventDefault();
-                createFilterGroup(editor);
-                break;
-              }
-              default:
-                return;
-            }
-          }}
-        />
-      </Slate>
-      <button type="submit">Go</button>
+            }}
+          />
+        </Slate>
+        <button type="submit">Go</button>
+      </div>
     </div>
   );
 }
