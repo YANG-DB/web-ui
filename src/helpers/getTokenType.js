@@ -10,7 +10,6 @@ export function getPossibleTypes(previousType) {
     case slateConstants.RELATIONSHIP_OUT:
       return [slateConstants.ENTITY];
     case slateConstants.ENTITY:
-    case slateConstants.QUANTIFIER_LABEL:
       return [
         slateConstants.QUANTIFIER,
         slateConstants.RELATIONSHIP,
