@@ -25,7 +25,7 @@ import styles from "./TextInput.module.css";
 const json = queryToSlate(mockQuery.elements, mockOntology.data[0]);
 
 function selectOrCreate(editor, node, n) {
-  // creates or selects the subsequent node, n levels above current position
+  // creates or selects a subsequent node, n levels above current position
   const currentPath = editor.selection.anchor.path;
   let path = [
     ...currentPath.slice(0, currentPath.length - n),
@@ -76,8 +76,8 @@ function isTerminalNode(editor) {
   return currentNode.variant === slateConstants.VALUE;
 }
 
-function startNewNode(editor, opts = {}) {
-  if (isTerminalNode(editor) || opts.branch) {
+function startNewNode(editor) {
+  if (isTerminalNode(editor)) {
     createBranch(editor);
     return;
   }
@@ -168,8 +168,6 @@ export default function TextInput() {
     }
   }, []);
 
-  console.log(value);
-
   return (
     <div>
       <div>
@@ -181,51 +179,41 @@ export default function TextInput() {
         <Slate
           editor={editor}
           value={value}
-          onChange={value => setValue(value)}
+          onChange={value => {
+            setValue(value);
+            setPossibilities(
+              getPossibleSchemaValues(editor, ontology).filter(p => {
+                return p.includes(
+                  Node.text(Node.get(editor, editor.selection.anchor.path))
+                );
+              })
+            );
+          }}
         >
           <Editable
             renderElement={renderElement}
             onKeyDown={event => {
               const path = editor.selection.anchor.path;
               const node = Node.parent(editor, path);
-              if (
-                !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)
-              ) {
-                setPossibilities(getPossibleSchemaValues(editor, ontology));
-              }
-              if (
-                [
-                  slateConstants.QUANTIFIER_LABEL,
-                  slateConstants.FILTER_LABEL
-                ].includes(node.variant)
-              ) {
-                if (
-                  !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)
-                ) {
-                  event.preventDefault();
-                  return;
-                } else if (event.key === "Backspace") {
-                  // then delete the node
-                  event.preventDefault();
-                  Editor.removeNodes(editor, {
-                    at: path.slice(0, path.length - 2)
-                  });
-                }
-              }
               switch (event.key) {
                 case "Enter": {
                   event.preventDefault();
-                  if (path.length >= GROUP_DEPTH) {
+                  if (
+                    path.length >= GROUP_DEPTH &&
+                    ![
+                      slateConstants.QUANTIFIER_LABEL,
+                      slateConstants.FILTER_LABEL
+                    ].includes(node.variant)
+                  ) {
                     const branchPath = path.slice(0, path.length - 2);
                     const branchText = Node.text(Node.get(editor, branchPath));
                     if (branchText) {
                       // if the current branch is non-empty, hitting enter should start a new branch
                       if (Node.text(node)) {
                         // don't tokenise previous node if there is nothing in it
-                        tokenise(editor, ontology) &&
-                          startNewNode(editor, { branch: true });
+                        tokenise(editor, ontology) && createBranch(editor);
                       } else {
-                        startNewNode(editor, { branch: true });
+                        createBranch(editor);
                       }
                     } else {
                       // if no text in branch, remove it, and start from outside the branch parent
@@ -240,7 +228,6 @@ export default function TextInput() {
                 case " ": {
                   event.preventDefault();
                   tokenise(editor, ontology) && startNewNode(editor);
-                  setPossibilities(getPossibleSchemaValues(editor, ontology));
                   break;
                 }
                 case slateConstants.FILTER_KEY: {
@@ -248,8 +235,33 @@ export default function TextInput() {
                   createFilterGroup(editor);
                   break;
                 }
-                default:
-                  return;
+                case "ArrowLeft":
+                case "ArrowRight":
+                  break;
+                case "Backspace": {
+                  if (
+                    [
+                      slateConstants.QUANTIFIER_LABEL,
+                      slateConstants.FILTER_LABEL
+                    ].includes(node.variant)
+                  ) {
+                    event.preventDefault();
+                    Editor.removeNodes(editor, {
+                      at: path.slice(0, path.length - 2)
+                    });
+                  }
+                  break;
+                }
+                default: {
+                  if (
+                    [
+                      slateConstants.QUANTIFIER_LABEL,
+                      slateConstants.FILTER_LABEL
+                    ].includes(node.variant)
+                  ) {
+                    event.preventDefault();
+                  }
+                }
               }
             }}
           />
