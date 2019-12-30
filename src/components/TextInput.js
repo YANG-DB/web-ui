@@ -1,11 +1,19 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { createEditor, Editor, Node, Text } from "slate";
+import { createEditor, Editor, Node } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
-import cn from "classnames";
 
+import { Token, Group, DefaultElement } from "../components";
 import queryToSlate from "../helpers/queryToSlate";
-import getTokenType, { getPossibleTypes } from "../helpers/getTokenType";
-import getPreviousPath from "../helpers/getPreviousPath";
+import getPossibleSchemaValues from "../helpers/getPossibleSchemaValues";
+import getTokenType from "../helpers/getTokenType";
+import getPreviousNode from "../helpers/getPreviousNode";
+import {
+  textNode,
+  quantifier,
+  filter,
+  GROUP_DEPTH,
+  BRANCH_DEPTH
+} from "../helpers/slate";
 
 import * as slateConstants from "../constants/slate";
 
@@ -16,166 +24,47 @@ import styles from "./TextInput.module.css";
 
 const json = queryToSlate(mockQuery.elements, mockOntology.data[0]);
 
-function getPreviousNodeInBranch(editor, n = 1) {
+function selectOrCreate(editor, node, n) {
+  // creates or selects the subsequent node, n levels above current position
   const currentPath = editor.selection.anchor.path;
-  const previous = [
-    ...currentPath.slice(0, currentPath.length - 2),
-    currentPath[currentPath.length - 2] - n
+  let path = [
+    ...currentPath.slice(0, currentPath.length - n),
+    currentPath[currentPath.length - n] + 1
   ];
-  if (Node.has(editor, previous)) {
-    return Node.get(editor, previous);
-  }
-  return false;
-}
-
-function getPreviousNode(editor, currentPath, n = 1) {
-  // used for inferring current token type. skips over irrelevant nodes
-  const previous = getPreviousPath(currentPath);
-  if (previous.length && Node.has(editor, previous)) {
-    const previousNode = Node.get(editor, previous);
-    if (
-      [
-        slateConstants.FILTER_ENTRIES,
-        slateConstants.FILTER_GROUP,
-        slateConstants.QUANTIFIER,
-        slateConstants.QUANTIFIER_LABEL,
-        slateConstants.QUANTIFIER_ENTRIES
-      ].includes(previousNode.variant)
-    ) {
-      return getPreviousNode(editor, previous, n);
-    } else if (--n) {
-      return getPreviousNode(editor, previous, n);
-    } else {
-      return previousNode;
+  if (Node.has(editor, path)) {
+    while (Node.has(editor, path)) {
+      Editor.select(editor, path);
+      path = [...path, 0];
     }
-  }
-  return false;
-}
-
-function getPreviousNodeType(editor, currentPath) {
-  const node = getPreviousNode(editor, currentPath);
-  return node.variant || node.type;
-}
-
-function textNode() {
-  return {
-    children: [
-      {
-        text: ""
-      }
-    ]
-  };
-}
-
-function createQuantifier(type) {
-  return {
-    type: slateConstants.GROUP,
-    variant: slateConstants.QUANTIFIER,
-    children: [
-      {
-        type: slateConstants.TOKEN,
-        variant: slateConstants.QUANTIFIER_LABEL,
-        children: [
-          {
-            text: type
-          }
-        ]
-      },
-      {
-        type: slateConstants.GROUP,
-        variant: slateConstants.QUANTIFIER_ENTRIES,
-        children: [
-          {
-            type: slateConstants.BRANCH,
-            variant: slateConstants.QUANTIFIER_ENTRY,
-            children: [textNode()]
-          }
-        ]
-      }
-    ]
-  };
-}
-
-function siblingBranch(editor) {
-  const currentPath = editor.selection.anchor.path;
-  const currentBranchIndex = currentPath[currentPath.length - 3];
-  if (currentBranchIndex) {
-    const siblingBranchPath = [
-      ...currentPath.slice(0, currentPath.length - 3),
-      currentBranchIndex - 1
-    ];
-    return siblingBranchPath;
   } else {
-    return false;
+    Editor.insertNodes(editor, node, { at: path, select: true });
   }
 }
 
 function createBranch(editor) {
+  // assumes we are operating from an existing branch
   const currentPath = editor.selection.anchor.path;
-  const branchParent = currentPath.slice(0, currentPath.length - 2);
-  const branchGroup = Node.get(
+  const currentBranch = Node.get(
     editor,
-    currentPath.slice(0, currentPath.length - 2)
+    currentPath.slice(0, currentPath.length - (BRANCH_DEPTH - 1))
   );
-
-  // If a sibling branch already exists, do not create one, but select it.
-  if (siblingBranch(editor)) {
-    Editor.select(editor, [...siblingBranch(editor), 0, 0]);
-  } else {
-    Editor.insertNodes(
-      editor,
-      {
-        variant: branchGroup.variant, // new branch has same type as its sibling
-        type: slateConstants.BRANCH,
-        children: [textNode()]
-      },
-      {
-        at: branchParent,
-        select: true
-      }
-    );
-  }
+  selectOrCreate(
+    editor,
+    {
+      variant: currentBranch.variant, // new branch has same type as its sibling
+      type: slateConstants.BRANCH,
+      children: [textNode()]
+    },
+    BRANCH_DEPTH
+  );
 }
 
 function createFilterGroup(editor) {
-  const previous = getPreviousNodeInBranch(editor);
+  const previous = getPreviousNode(editor, editor.selection.anchor.path, false);
   if (previous && previous.variant !== slateConstants.FILTER_GROUP) {
     // then we add a filter to the previous node
     Editor.removeNodes(editor);
-    Editor.insertNodes(editor, {
-      type: slateConstants.GROUP,
-      variant: slateConstants.FILTER_GROUP,
-      children: [
-        {
-          type: slateConstants.TOKEN,
-          variant: slateConstants.FILTER_LABEL,
-          children: [
-            {
-              text: "ᗊ"
-            }
-          ]
-        },
-        {
-          type: slateConstants.GROUP,
-          variant: slateConstants.FILTER_ENTRIES,
-          children: [
-            {
-              type: slateConstants.BRANCH,
-              variant: slateConstants.FILTER,
-              children: [
-                {
-                  children: [
-                    {
-                      text: ""
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    });
+    Editor.insertNodes(editor, filter());
   }
 }
 
@@ -195,201 +84,6 @@ function startNewNode(editor, opts = {}) {
   Editor.insertNodes(editor, textNode(), { select: true });
 }
 
-function pop(editor) {
-  // 'pop' out of a nested branch and into the next node on the level above it
-  const path = editor.selection.anchor.path;
-  if (path.length >= 3) {
-    const at = [...path.slice(0, path.length - 3), path[path.length - 3] + 1];
-    if (Node.has(editor, at)) {
-      Editor.select(editor, at);
-    } else {
-      Editor.insertNodes(editor, textNode(), {
-        at,
-        select: true
-      });
-    }
-  }
-}
-
-function getPossibilities(editor, ontology) {
-  // return the possible tokens given the state of the editor and the available schema
-  const previousType = getPreviousNodeType(
-    editor,
-    editor.selection.anchor.path
-  );
-  // first get possible token types based on previous type, then expand it to the schema
-  const possibleTypes = getPossibleTypes(previousType);
-  return possibleTypes.reduce((acc, curr) => {
-    switch (curr) {
-      case slateConstants.RELATIONSHIP: {
-        // take into account prior entity
-        const entity = getPreviousNode(editor, editor.selection.anchor.path);
-        return acc.concat(
-          ontology.relationshipTypes
-            .filter(
-              r =>
-                !r.directional &&
-                r.ePairs.some(({ eTypeA }) => eTypeA === Node.text(entity))
-            )
-            .map(r => r.rType)
-        );
-      }
-      case slateConstants.RELATIONSHIP_IN: {
-        // take into account prior entity
-        const entity = getPreviousNode(editor, editor.selection.anchor.path);
-        return acc.concat(
-          ontology.relationshipTypes
-            .filter(
-              r =>
-                r.directional &&
-                r.ePairs.some(({ eTypeB }) => eTypeB === Node.text(entity))
-            )
-            .map(r => `${r.rType}<`)
-        );
-      }
-      case slateConstants.RELATIONSHIP_OUT: {
-        // take into account prior entity
-        const entity = getPreviousNode(editor, editor.selection.anchor.path);
-        return acc.concat(
-          ontology.relationshipTypes
-            .filter(
-              r =>
-                r.directional &&
-                r.ePairs.some(({ eTypeA }) => eTypeA === Node.text(entity))
-            )
-            .map(r => `${r.rType}>`)
-        );
-      }
-      case slateConstants.ENTITY: {
-        // take into account prior relationship, if any
-        const previousRelationship = getPreviousNode(
-          editor,
-          editor.selection.anchor.path
-        );
-        if (!previousRelationship) {
-          return acc.concat(ontology.entityTypes.map(e => e.eType));
-        }
-        const previousEntity = getPreviousNode(
-          editor,
-          editor.selection.anchor.path,
-          2
-        );
-        if (previousRelationship.variant === slateConstants.RELATIONSHIP) {
-          return ontology.relationshipTypes
-            .filter(
-              r =>
-                !r.directional &&
-                r.ePairs.some(
-                  ({ eTypeA, eTypeB }) =>
-                    eTypeA === Node.text(previousEntity) ||
-                    eTypeB === Node.text(previousEntity)
-                )
-            )
-            .reduce((acc, curr) => {
-              curr.ePairs.forEach(({ eTypeA, eTypeB }) => {
-                if (!acc.includes(eTypeA)) {
-                  acc.push(eTypeA);
-                }
-                if (!acc.includes(eTypeB)) {
-                  acc.push(eTypeB);
-                }
-              });
-              return acc;
-            }, []);
-        } else if (
-          previousRelationship.variant === slateConstants.RELATIONSHIP_IN
-        ) {
-          // relationships for which the previous entity is 'A'
-          return ontology.relationshipTypes
-            .filter(
-              r => r.directional && r.rType === Node.text(previousRelationship)
-            )
-            .reduce((acc, curr) => {
-              curr.ePairs.forEach(({ eTypeA, eTypeB }) => {
-                if (
-                  eTypeB === Node.text(previousEntity) &&
-                  !acc.includes(eTypeA)
-                ) {
-                  acc.push(eTypeA);
-                }
-              });
-              return acc;
-            }, []);
-        } else if (
-          previousRelationship.variant === slateConstants.RELATIONSHIP_OUT
-        ) {
-          // relationships for which the previous entity is 'B'
-          return ontology.relationshipTypes
-            .filter(
-              r => r.directional && r.rType === Node.text(previousRelationship)
-            )
-            .reduce((acc, curr) => {
-              curr.ePairs.forEach(({ eTypeA, eTypeB }) => {
-                if (
-                  eTypeA === Node.text(previousEntity) &&
-                  !acc.includes(eTypeB)
-                ) {
-                  acc.push(eTypeB);
-                }
-              });
-              return acc;
-            }, []);
-        }
-        return acc;
-      }
-      case slateConstants.VARIABLE: {
-        // take into account prior node to see what properties it has
-        const previousNode = getPreviousNode(
-          editor,
-          editor.selection.anchor.path,
-          2
-        );
-        if (previousNode.variant === slateConstants.ENTITY) {
-          return acc.concat(
-            (
-              ontology.entityTypes.find(
-                e => e.eType === Node.text(previousNode)
-              ) || {}
-            ).properties || []
-          );
-        } else if (previousNode.variant === slateConstants.RELATIONSHIP) {
-          return (
-            acc.concat(
-              ontology.relationshipTypes
-                .filter(r => !r.directional)
-                .find(r => r.rType === Node.text(previousNode)) || {}
-            ).properties || []
-          );
-        } else if (
-          previousNode.variant === slateConstants.RELATIONSHIP_IN ||
-          previousNode.variant === slateConstants.RELATIONSHIP_OUT
-        ) {
-          return acc.concat(
-            (
-              ontology.relationshipTypes
-                .filter(r => r.directional)
-                .find(r => r.rType === Node.text(previousNode)) || {}
-            ).properties || []
-          );
-        }
-        return acc;
-      }
-      case slateConstants.OPERATOR: {
-        return acc.concat(slateConstants.OPERATORS);
-      }
-      case slateConstants.QUANTIFIER: {
-        // take into account prior entity
-        return acc.concat([slateConstants.AND, slateConstants.OR]);
-      }
-      case slateConstants.VALUE: {
-        return acc;
-      }
-      default:
-        return acc;
-    }
-  }, []);
-}
-
 function typeCheck(text, type) {
   // TODO: assert validity of string against date/string/numeric types
   return true;
@@ -397,20 +91,26 @@ function typeCheck(text, type) {
 
 function isValid(editor, ontology, intendedType) {
   if (intendedType === slateConstants.VALUE) {
-    const fieldNode = getPreviousNode(editor, editor.selection.anchor.path, 2);
+    const fieldNode = getPreviousNode(
+      editor,
+      editor.selection.anchor.path,
+      true,
+      2
+    );
     const variableType = (
       ontology.properties.find(p => p.pType === Node.text(fieldNode)) || {}
     ).type;
     const text = Editor.text(editor, editor.selection.anchor.path);
     return typeCheck(text, variableType);
   }
-  const possibilities = getPossibilities(editor, ontology);
+  const possibilities = getPossibleSchemaValues(editor, ontology);
   const text = Editor.text(editor, editor.selection.anchor.path);
   return possibilities.some(poss => text === poss);
 }
 
 function tokenise(editor, ontology) {
-  const previous = getPreviousNodeType(editor, editor.selection.anchor.path);
+  const previous = getPreviousNode(editor, editor.selection.anchor.path)
+    .variant;
   const text = Editor.text(editor, editor.selection.anchor.path);
   const type = getTokenType(previous, text);
   if (!text.trim()) {
@@ -419,7 +119,7 @@ function tokenise(editor, ontology) {
   if (type === slateConstants.QUANTIFIER) {
     const path = editor.selection.anchor.path;
     Editor.removeNodes(editor);
-    Editor.insertNodes(editor, createQuantifier(text), {
+    Editor.insertNodes(editor, quantifier(text), {
       at: path.slice(0, path.length - 1),
       select: true
     });
@@ -468,10 +168,6 @@ export default function TextInput() {
     }
   }, []);
 
-  const renderLeaf = useCallback(props => {
-    return <Leaf {...props} />;
-  }, []);
-
   console.log(value);
 
   return (
@@ -489,14 +185,13 @@ export default function TextInput() {
         >
           <Editable
             renderElement={renderElement}
-            renderLeaf={renderLeaf}
             onKeyDown={event => {
               const path = editor.selection.anchor.path;
               const node = Node.parent(editor, path);
               if (
                 !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)
               ) {
-                setPossibilities(getPossibilities(editor, ontology));
+                setPossibilities(getPossibleSchemaValues(editor, ontology));
               }
               if (
                 [
@@ -520,7 +215,7 @@ export default function TextInput() {
               switch (event.key) {
                 case "Enter": {
                   event.preventDefault();
-                  if (path.length > 2) {
+                  if (path.length >= GROUP_DEPTH) {
                     const branchPath = path.slice(0, path.length - 2);
                     const branchText = Node.text(Node.get(editor, branchPath));
                     if (branchText) {
@@ -537,7 +232,7 @@ export default function TextInput() {
                       Editor.removeNodes(editor, {
                         at: branchPath
                       });
-                      pop(editor);
+                      selectOrCreate(editor, textNode(), GROUP_DEPTH);
                     }
                   }
                   return;
@@ -545,7 +240,7 @@ export default function TextInput() {
                 case " ": {
                   event.preventDefault();
                   tokenise(editor, ontology) && startNewNode(editor);
-                  setPossibilities(getPossibilities(editor, ontology));
+                  setPossibilities(getPossibleSchemaValues(editor, ontology));
                   break;
                 }
                 case slateConstants.FILTER_KEY: {
@@ -562,50 +257,5 @@ export default function TextInput() {
         <button type="submit">Go</button>
       </div>
     </div>
-  );
-}
-
-function Token(props) {
-  return (
-    <div
-      {...props.attributes}
-      className={cn(
-        styles[props.element.variant],
-        styles.token,
-        props.element.valid === false && styles.invalid
-      )}
-    >
-      {props.children}
-    </div>
-  );
-}
-
-function Group(props) {
-  return (
-    <span
-      {...props.attributes}
-      className={cn(styles[props.element.variant], styles.group)}
-    >
-      {props.children}
-    </span>
-  );
-}
-
-function DefaultElement(props) {
-  return (
-    <div
-      {...props.attributes}
-      className={cn(styles[props.element.type], styles.default)}
-    >
-      {props.children}
-    </div>
-  );
-}
-
-function Leaf(props) {
-  return (
-    <span {...props.attributes} className={styles[props.leaf.type]}>
-      {props.children}
-    </span>
   );
 }

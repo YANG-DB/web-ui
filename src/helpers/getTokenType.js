@@ -1,31 +1,7 @@
+import getPossibleTypes from "./getPossibleTypes";
 import * as slateConstants from "../constants/slate";
 
-export function getPossibleTypes(previousType) {
-  if (!previousType) {
-    return [slateConstants.ENTITY];
-  }
-  switch (previousType) {
-    case slateConstants.RELATIONSHIP:
-    case slateConstants.RELATIONSHIP_IN:
-    case slateConstants.RELATIONSHIP_OUT:
-      return [slateConstants.ENTITY];
-    case slateConstants.ENTITY:
-      return [
-        slateConstants.QUANTIFIER,
-        slateConstants.RELATIONSHIP,
-        slateConstants.RELATIONSHIP_IN,
-        slateConstants.RELATIONSHIP_OUT
-      ];
-    case slateConstants.FILTER_LABEL:
-      return [slateConstants.VARIABLE];
-    case slateConstants.VARIABLE:
-      return [slateConstants.OPERATOR];
-    case slateConstants.OPERATOR:
-      return [slateConstants.VALUE];
-    default:
-      return [];
-  }
-}
+// Deterministically infer intended token type based on what is possible, and what has been typed
 
 const predicates = {
   // constraints that need to be met for each type
@@ -45,7 +21,6 @@ const predicates = {
 };
 
 export default function getTokenType(previousToken, text) {
-  // infer token type based on text entered by user, and query context
   const possibleTypes = getPossibleTypes(previousToken);
   if (possibleTypes.length === 0) {
     return slateConstants.UNKNOWN;
