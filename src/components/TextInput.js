@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef
+} from "react";
 import { createEditor, Editor, Node } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
 
@@ -7,6 +13,7 @@ import queryToSlate from "../helpers/queryToSlate";
 import getPossibleSchemaValues from "../helpers/getPossibleSchemaValues";
 import getTokenType from "../helpers/getTokenType";
 import getPreviousNode from "../helpers/getPreviousNode";
+import arraysEqual from "../helpers/arraysEqual";
 import {
   textNode,
   quantifier,
@@ -150,12 +157,24 @@ export default function TextInput() {
   const editor = useMemo(() => withReact(createEditor()), []);
   const [value, setValue] = useState([textNode()]);
   const [ontology, loadOntology] = useState(null);
+  const [focussed, setFocussed] = useState(null);
+  const [focussedDom, setFocussedDom] = useState(null);
   const [possibilities, setPossibilities] = useState([]);
+
   useEffect(() => {
     loadOntology(mockOntology.data[0]);
   }, []);
 
   const renderElement = useCallback(props => {
+    const texts = Node.texts(props.element);
+    let result = texts.next();
+    while (!result.done) {
+      const el = result.value[0];
+      if (el.focussed) {
+        setFocussedDom(props.attributes.ref.current.getBoundingClientRect());
+      }
+      result = texts.next();
+    }
     switch (props.element.type) {
       case slateConstants.TOKEN:
         return <Token {...props} />;
@@ -168,26 +187,53 @@ export default function TextInput() {
     }
   }, []);
 
+  const lastFocussed = useRef(null);
+
+  useEffect(() => {
+    if (!arraysEqual(lastFocussed.current, focussed)) {
+      lastFocussed.current &&
+        Node.has(editor, lastFocussed.current) &&
+        Editor.setNodes(
+          editor,
+          { focussed: false },
+          { at: lastFocussed.current }
+        );
+      focussed && Editor.setNodes(editor, { focussed: true }, { at: focussed });
+    }
+    lastFocussed.current = focussed;
+  }, [value, focussed, editor]);
+
   return (
     <div>
-      <div>
-        {possibilities.map(p => (
-          <div>{p}</div>
-        ))}
-      </div>
+      {focussedDom && (
+        <div
+          tabIndex={-1}
+          className={styles.autocomplete}
+          style={{ top: `${focussedDom.top}px`, left: `${focussedDom.left}px` }}
+        >
+          {possibilities.map(p => (
+            <div className={styles.suggestion} tabIndex={-1}>
+              {p}
+            </div>
+          ))}
+        </div>
+      )}
       <div className={styles.query}>
         <Slate
           editor={editor}
           value={value}
           onChange={value => {
             setValue(value);
-            setPossibilities(
-              getPossibleSchemaValues(editor, ontology).filter(p => {
-                return p.includes(
-                  Node.text(Node.get(editor, editor.selection.anchor.path))
-                );
-              })
-            );
+            if (editor.selection) {
+              setFocussed(editor.selection.focus.path);
+              setPossibilities(
+                getPossibleSchemaValues(editor, ontology).filter(p => {
+                  return p.includes(
+                    Node.text(Node.get(editor, editor.selection.anchor.path))
+                  );
+                })
+              );
+            }
           }}
         >
           <Editable

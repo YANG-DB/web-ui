@@ -47,6 +47,30 @@
   display: inline-block;
 }
 
+.autocomplete {
+  z-index: 1000;
+  position: absolute;
+  top: 0;
+  transform: translateY(calc(-100% - 10px));
+  max-width: 400px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid white;
+  transition: left 0.5s ease;
+}
+
+.suggestion {
+  padding: 10px 40px;
+}
+
+.suggestion:nth-child(even) {
+  background: #bebebe;
+}
+
+.suggestion:last-child {
+  padding-bottom: 10px;
+}
+
 .branch {
   display: flex;
   align-items: center;
