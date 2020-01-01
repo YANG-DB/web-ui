@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useRef
 } from "react";
-import { createEditor, Editor, Node } from "slate";
+import { createEditor, Editor, Node, Path } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
 
 import { Token, Group, DefaultElement } from "../components";
@@ -29,7 +29,7 @@ import mockOntology from "../mocks/ontologies/Dragons";
 
 import styles from "./TextInput.module.css";
 
-const json = queryToSlate(mockQuery.elements, mockOntology.data[0]);
+import json from "../mocks/queries/Slate";
 
 function selectOrCreate(editor, node, n) {
   // creates or selects a subsequent node, n levels above current position
@@ -165,40 +165,62 @@ export default function TextInput() {
     loadOntology(mockOntology.data[0]);
   }, []);
 
-  const renderElement = useCallback(props => {
-    const texts = Node.texts(props.element);
-    let result = texts.next();
-    while (!result.done) {
-      const el = result.value[0];
-      if (el.focussed) {
-        setFocussedDom(props.attributes.ref.current.getBoundingClientRect());
+  const renderElement = useCallback(
+    props => {
+      const texts = Node.texts(props.element);
+      let result = texts.next();
+      while (!result.done) {
+        const el = result.value[0];
+        if (el.focussed && props.attributes.ref.current) {
+          setFocussedDom(props.attributes.ref.current.getBoundingClientRect());
+        }
+        result = texts.next();
       }
-      result = texts.next();
-    }
-    switch (props.element.type) {
-      case slateConstants.TOKEN:
-        return <Token {...props} />;
-      case slateConstants.GROUP:
-        return <Group {...props} />;
-      case slateConstants.BRANCH:
-        return <DefaultElement {...props} />;
-      default:
-        return <DefaultElement {...props} />;
-    }
-  }, []);
+      switch (props.element.type) {
+        case slateConstants.TOKEN:
+          return <Token {...props} />;
+        case slateConstants.GROUP:
+          return <Group {...props} />;
+        case slateConstants.BRANCH:
+          return <DefaultElement {...props} focussedPath={focussed} />;
+        default:
+          return <DefaultElement {...props} />;
+      }
+    },
+    [focussed]
+  );
 
   const lastFocussed = useRef(null);
 
   useEffect(() => {
     if (!arraysEqual(lastFocussed.current, focussed)) {
-      lastFocussed.current &&
+      if (lastFocussed.current) {
         Node.has(editor, lastFocussed.current) &&
-        Editor.setNodes(
-          editor,
-          { focussed: false },
-          { at: lastFocussed.current }
-        );
-      focussed && Editor.setNodes(editor, { focussed: true }, { at: focussed });
+          Editor.setNodes(
+            editor,
+            { focussed: false },
+            { at: lastFocussed.current }
+          );
+      }
+      const descendants = Node.descendants(editor);
+      let result = descendants.next();
+      while (!result.done) {
+        const [node, path] = result.value;
+        if ([slateConstants.QUANTIFIER_ENTRY].includes(node.variant)) {
+          // branches should have path stored on them in order to determine whether it should be expanded/collapsed
+          Editor.setNodes(
+            editor,
+            {
+              path
+            },
+            { at: path }
+          );
+        }
+        result = descendants.next();
+      }
+      if (focussed) {
+        Editor.setNodes(editor, { focussed: true }, { at: focussed });
+      }
     }
     lastFocussed.current = focussed;
   }, [value, focussed, editor]);

@@ -1,5 +1,5 @@
 .query {
-  height: 400px;
+  height: 100px;
   display: flex;
 }
 
@@ -33,9 +33,12 @@
   box-sizing: border-box;
 }
 
+.token {
+  margin: 5px 0px;
+}
+
 .token,
 .group {
-  margin: 5px 0px;
   padding: 5px 10px;
   /* border-radius: 3px; */
   text-align: left;
@@ -45,6 +48,19 @@
 .group,
 .token {
   display: inline-block;
+}
+
+.default.hidden {
+  border-bottom: 1px dashed white;
+  opacity: 1;
+  overflow: hidden;
+  height: 0px;
+  margin-bottom: 3px;
+}
+
+.default.visible {
+  background: black;
+  opacity: 1;
 }
 
 .autocomplete {
