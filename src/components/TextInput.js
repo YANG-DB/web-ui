@@ -67,7 +67,13 @@ function createBranch(editor) {
 }
 
 function createFilterGroup(editor) {
-  const previous = getPreviousNode(editor, editor.selection.anchor.path, false);
+  const previous = getPreviousNode(
+    editor,
+    editor.selection.anchor.path,
+    false,
+    1,
+    []
+  );
   if (previous && previous.variant !== slateConstants.FILTER_GROUP) {
     // then we add a filter to the previous node
     Editor.removeNodes(editor);
@@ -206,7 +212,11 @@ export default function TextInput() {
       let result = descendants.next();
       while (!result.done) {
         const [node, path] = result.value;
-        if ([slateConstants.QUANTIFIER_ENTRY].includes(node.variant)) {
+        if (
+          [slateConstants.QUANTIFIER_ENTRY, slateConstants.FILTER].includes(
+            node.variant
+          )
+        ) {
           // branches should have path stored on them in order to determine whether it should be expanded/collapsed
           Editor.setNodes(
             editor,

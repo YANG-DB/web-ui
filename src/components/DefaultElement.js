@@ -6,8 +6,12 @@ import * as slateConstants from "../constants/slate";
 import styles from "./TextInput.module.css";
 
 export default function DefaultElement(props) {
+  const isCollapsible = [
+    slateConstants.QUANTIFIER_ENTRY,
+    slateConstants.FILTER
+  ].includes(props.element.variant);
   const isFocussed =
-    props.element.variant === slateConstants.QUANTIFIER_ENTRY &&
+    isCollapsible &&
     props.element.path &&
     arraysEqual(
       props.focussedPath.slice(0, props.element.path.length),
@@ -20,12 +24,7 @@ export default function DefaultElement(props) {
       className={cn(
         styles[props.element.type],
         styles.default,
-        props.element.variant === slateConstants.QUANTIFIER_ENTRY &&
-          !isFocussed &&
-          styles.hidden,
-        props.element.variant === slateConstants.QUANTIFIER_ENTRY &&
-          isFocussed &&
-          styles.visible
+        isCollapsible && !isFocussed && styles.hidden
       )}
     >
       {props.children}

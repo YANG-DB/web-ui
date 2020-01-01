@@ -40,7 +40,6 @@
 .token,
 .group {
   padding: 5px 10px;
-  /* border-radius: 3px; */
   text-align: left;
   vertical-align: middle;
 }
@@ -52,15 +51,9 @@
 
 .default.hidden {
   border-bottom: 1px dashed white;
-  opacity: 1;
   overflow: hidden;
   height: 0px;
   margin-bottom: 3px;
-}
-
-.default.visible {
-  background: black;
-  opacity: 1;
 }
 
 .autocomplete {
@@ -118,6 +111,8 @@
 
 .filter_group {
   background: #363636;
+  padding: 0px;
+  border-radius: 2px;
 }
 
 .quantifier {
