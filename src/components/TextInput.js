@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { createEditor, Editor, Node, Path } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
+import cn from "classnames";
 
 import { Token, Group, DefaultElement } from "../components";
 import queryToSlate from "../helpers/queryToSlate";
@@ -14,6 +15,7 @@ import getPossibleSchemaValues from "../helpers/getPossibleSchemaValues";
 import getTokenType from "../helpers/getTokenType";
 import getPreviousNode from "../helpers/getPreviousNode";
 import arraysEqual from "../helpers/arraysEqual";
+import useAutocomplete from "../hooks/useAutocomplete";
 import {
   textNode,
   quantifier,
@@ -161,11 +163,30 @@ function tokenise(editor, ontology) {
 
 export default function TextInput() {
   const editor = useMemo(() => withReact(createEditor()), []);
+  const editorRef = useRef(editor);
   const [value, setValue] = useState([textNode()]);
   const [ontology, loadOntology] = useState(null);
   const [focussed, setFocussed] = useState(null);
   const [focussedDom, setFocussedDom] = useState(null);
   const [possibilities, setPossibilities] = useState([]);
+
+  const onHighlightChange = useCallback(index => {}, []); // TODO
+
+  const onSelect = useCallback(
+    index => {
+      const path = Path.parent(editorRef.current.selection.anchor.path);
+      Editor.insertNodes(editorRef.current, textNode(possibilities[index]));
+      Editor.removeNodes(editorRef.current, { at: path });
+      tokenise(editorRef.current, ontology) && startNewNode(editorRef.current);
+    },
+    [possibilities, ontology]
+  );
+
+  const [{ highlightedIndex, isOpen }, textboxRef] = useAutocomplete(
+    possibilities,
+    onSelect,
+    onHighlightChange
+  );
 
   useEffect(() => {
     loadOntology(mockOntology.data[0]);
@@ -237,30 +258,38 @@ export default function TextInput() {
 
   return (
     <div>
-      {focussedDom && (
+      {focussedDom && isOpen && (
         <div
-          tabIndex={-1}
           className={styles.autocomplete}
           style={{ top: `${focussedDom.top}px`, left: `${focussedDom.left}px` }}
         >
-          {possibilities.map(p => (
-            <div className={styles.suggestion} tabIndex={-1}>
+          {possibilities.map((p, i) => (
+            <div
+              className={cn(
+                styles.suggestion,
+                i === highlightedIndex && styles.highlighted
+              )}
+            >
               {p}
             </div>
           ))}
         </div>
       )}
-      <div className={styles.query}>
+      <div className={styles.query} ref={textboxRef}>
         <Slate
           editor={editor}
           value={value}
           onChange={value => {
             setValue(value);
             if (editor.selection) {
+              if (Node.parent(editor, editor.selection.focus.path).type) {
+                setPossibilities([]);
+                return;
+              }
               setFocussed(editor.selection.focus.path);
               setPossibilities(
                 getPossibleSchemaValues(editor, ontology).filter(p => {
-                  return p.includes(
+                  return p.startsWith(
                     Node.text(Node.get(editor, editor.selection.anchor.path))
                   );
                 })
@@ -285,6 +314,10 @@ export default function TextInput() {
                   ) {
                     const branchPath = path.slice(0, path.length - 2);
                     const branchText = Node.text(Node.get(editor, branchPath));
+                    if (isOpen && highlightedIndex !== -1) {
+                      // in this case, enter should select the autocomplete item, not start a new branch
+                      return;
+                    }
                     if (branchText) {
                       // if the current branch is non-empty, hitting enter should start a new branch
                       if (Node.text(node)) {

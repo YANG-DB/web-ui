@@ -1,10 +1,11 @@
 import * as slateConstants from "../constants/slate";
 
-export function textNode() {
+export function textNode(text = "", opts = {}) {
   return {
+    ...opts,
     children: [
       {
-        text: ""
+        text
       }
     ]
   };

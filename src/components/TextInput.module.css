@@ -72,12 +72,8 @@
   padding: 10px 40px;
 }
 
-.suggestion:nth-child(even) {
-  background: #bebebe;
-}
-
-.suggestion:last-child {
-  padding-bottom: 10px;
+.suggestion.highlighted {
+  background: thistle;
 }
 
 .branch {
