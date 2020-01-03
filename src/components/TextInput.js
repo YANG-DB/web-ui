@@ -260,7 +260,10 @@ export default function TextInput() {
     <div>
       {focussedDom && isOpen && (
         <div
-          className={styles.autocomplete}
+          className={cn(
+            styles.autocomplete,
+            possibilities.length && styles.visible
+          )}
           style={{ top: `${focussedDom.top}px`, left: `${focussedDom.left}px` }}
         >
           {possibilities.map((p, i) => (
@@ -282,11 +285,11 @@ export default function TextInput() {
           onChange={value => {
             setValue(value);
             if (editor.selection) {
+              setFocussed(editor.selection.focus.path);
               if (Node.parent(editor, editor.selection.focus.path).type) {
                 setPossibilities([]);
                 return;
               }
-              setFocussed(editor.selection.focus.path);
               setPossibilities(
                 getPossibleSchemaValues(editor, ontology).filter(p => {
                   return p.startsWith(
