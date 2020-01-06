@@ -23,3 +23,5 @@ export const AND = "&";
 export const OR = "||";
 export const FILTER_KEY = ".";
 export const OPERATORS = ["<", ">", "=", "like"];
+export const FILTER_ICON = "ᗊ";
+export const NEW_BRANCH = "__NEW_BRANCH__";

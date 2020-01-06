@@ -33,6 +33,15 @@ function reducer(state, action) {
         highlightedIndex: newHighlightedIndex
       };
     }
+    case "SET_INDEX": {
+      if (action.index >= state.possibilities.length || action.index < -1) {
+        return state;
+      }
+      return {
+        ...state,
+        highlightedIndex: action.index
+      };
+    }
     case "OPEN":
       return {
         ...state,
@@ -58,10 +67,16 @@ const initialState = {
 export default function useAutocomplete(
   possibilities,
   onSelect,
-  onHighlightChange
+  onHighlightChange = () => {}
 ) {
   const textboxRef = useRef(null);
   const [state, dispatch] = useReducer(reducer, initialState);
+  const setHighlightedIndex = useCallback(index => {
+    dispatch({
+      type: "SET_INDEX",
+      index
+    });
+  }, []);
   const handleKeyDown = useCallback(
     function(e) {
       if (e.key === "Tab" || e.key === "Enter") {
@@ -98,7 +113,7 @@ export default function useAutocomplete(
     },
     [state, onSelect]
   );
-  function handleTextBlur() {
+  function handleTextBlur(e) {
     dispatch({ type: "CLOSE" });
   }
   function handleTextFocus() {
@@ -125,5 +140,5 @@ export default function useAutocomplete(
   useEffect(() => {
     onHighlightChange(state.highlightedIndex);
   }, [state.highlightedIndex, onHighlightChange]);
-  return [state, textboxRef];
+  return [state, textboxRef, setHighlightedIndex];
 }

@@ -10,28 +10,21 @@ import { Slate, Editable, withReact } from "slate-react";
 import cn from "classnames";
 
 import { Token, Group, DefaultElement } from "../components";
-import queryToSlate from "../helpers/queryToSlate";
-import getPossibleSchemaValues from "../helpers/getPossibleSchemaValues";
-import getTokenType from "../helpers/getTokenType";
-import getPreviousNode from "../helpers/getPreviousNode";
-import arraysEqual from "../helpers/arraysEqual";
-import useAutocomplete from "../hooks/useAutocomplete";
 import {
-  textNode,
-  quantifier,
-  filter,
-  GROUP_DEPTH,
-  BRANCH_DEPTH
-} from "../helpers/slate";
-
+  getPossibleSchemaValues,
+  getPreviousNode,
+  getTokenType,
+  elements
+} from "../helpers";
+import useAutocomplete from "../hooks/useAutocomplete";
 import * as slateConstants from "../constants/slate";
 
-import mockQuery from "../mocks/queries/Dragons";
 import mockOntology from "../mocks/ontologies/Dragons";
 
 import styles from "./TextInput.module.css";
+import useFocus from "../hooks/useFocus";
 
-import json from "../mocks/queries/Slate";
+const { textNode, quantifier, filter, GROUP_DEPTH, BRANCH_DEPTH } = elements;
 
 function selectOrCreate(editor, node, n) {
   // creates or selects a subsequent node, n levels above current position
@@ -47,6 +40,14 @@ function selectOrCreate(editor, node, n) {
     }
   } else {
     Editor.insertNodes(editor, node, { at: path, select: true });
+  }
+}
+
+function replaceCurrentNode(editor, text) {
+  if (editor.selection) {
+    const path = Path.parent(editor.selection.anchor.path);
+    Editor.insertNodes(editor, textNode(text));
+    Editor.removeNodes(editor, { at: path });
   }
 }
 
@@ -131,6 +132,15 @@ function tokenise(editor, ontology) {
   if (!text.trim()) {
     return false;
   }
+  if (type === slateConstants.FILTER_ICON) {
+    createFilterGroup(editor);
+    return true;
+  }
+  if (type === slateConstants.NEW_BRANCH) {
+    Editor.removeNodes(editor);
+    createBranch(editor);
+    return false;
+  }
   if (type === slateConstants.QUANTIFIER) {
     const path = editor.selection.anchor.path;
     Editor.removeNodes(editor);
@@ -161,32 +171,46 @@ function tokenise(editor, ontology) {
   }
 }
 
+function isInBranch(editor) {
+  const path = editor.selection.anchor.path;
+  const node = Node.parent(editor, path);
+  return (
+    path.length >= GROUP_DEPTH &&
+    ![slateConstants.QUANTIFIER_LABEL, slateConstants.FILTER_LABEL].includes(
+      node.variant
+    )
+  );
+}
+
+function isNewBranchPossible(editor) {
+  const path = editor.selection.anchor.path;
+  const branchPath = path.slice(0, path.length - 2);
+  const branchText = Node.text(Node.get(editor, branchPath));
+  return isInBranch(editor) && !!branchText;
+}
+
 export default function TextInput() {
   const editor = useMemo(() => withReact(createEditor()), []);
   const editorRef = useRef(editor);
   const [value, setValue] = useState([textNode()]);
   const [ontology, loadOntology] = useState(null);
-  const [focussed, setFocussed] = useState(null);
   const [focussedDom, setFocussedDom] = useState(null);
   const [possibilities, setPossibilities] = useState([]);
-
-  const onHighlightChange = useCallback(index => {}, []); // TODO
+  const [focussed, setFocussed] = useFocus(editor);
 
   const onSelect = useCallback(
     index => {
-      const path = Path.parent(editorRef.current.selection.anchor.path);
-      Editor.insertNodes(editorRef.current, textNode(possibilities[index]));
-      Editor.removeNodes(editorRef.current, { at: path });
+      replaceCurrentNode(editorRef.current, possibilities[index]);
       tokenise(editorRef.current, ontology) && startNewNode(editorRef.current);
     },
     [possibilities, ontology]
   );
 
-  const [{ highlightedIndex, isOpen }, textboxRef] = useAutocomplete(
-    possibilities,
-    onSelect,
-    onHighlightChange
-  );
+  const [
+    { highlightedIndex, isOpen },
+    textboxRef,
+    setHighlightedIndex
+  ] = useAutocomplete(possibilities, onSelect);
 
   useEffect(() => {
     loadOntology(mockOntology.data[0]);
@@ -217,45 +241,6 @@ export default function TextInput() {
     [focussed]
   );
 
-  const lastFocussed = useRef(null);
-
-  useEffect(() => {
-    if (!arraysEqual(lastFocussed.current, focussed)) {
-      if (lastFocussed.current) {
-        Node.has(editor, lastFocussed.current) &&
-          Editor.setNodes(
-            editor,
-            { focussed: false },
-            { at: lastFocussed.current }
-          );
-      }
-      const descendants = Node.descendants(editor);
-      let result = descendants.next();
-      while (!result.done) {
-        const [node, path] = result.value;
-        if (
-          [slateConstants.QUANTIFIER_ENTRY, slateConstants.FILTER].includes(
-            node.variant
-          )
-        ) {
-          // branches should have path stored on them in order to determine whether it should be expanded/collapsed
-          Editor.setNodes(
-            editor,
-            {
-              path
-            },
-            { at: path }
-          );
-        }
-        result = descendants.next();
-      }
-      if (focussed) {
-        Editor.setNodes(editor, { focussed: true }, { at: focussed });
-      }
-    }
-    lastFocussed.current = focussed;
-  }, [value, focussed, editor]);
-
   return (
     <div>
       {focussedDom && isOpen && (
@@ -268,6 +253,11 @@ export default function TextInput() {
         >
           {possibilities.map((p, i) => (
             <div
+              onMouseDown={e => {
+                e.preventDefault();
+                onSelect(i);
+              }}
+              key={i}
               className={cn(
                 styles.suggestion,
                 i === highlightedIndex && styles.highlighted
@@ -285,17 +275,23 @@ export default function TextInput() {
           onChange={value => {
             setValue(value);
             if (editor.selection) {
+              const path = editor.selection.anchor.path;
               setFocussed(editor.selection.focus.path);
               if (Node.parent(editor, editor.selection.focus.path).type) {
+                // if node has already been tokenised, don't show autocomplete possibilities
                 setPossibilities([]);
                 return;
               }
               setPossibilities(
-                getPossibleSchemaValues(editor, ontology).filter(p => {
-                  return p.startsWith(
-                    Node.text(Node.get(editor, editor.selection.anchor.path))
-                  );
-                })
+                getPossibleSchemaValues(editor, ontology)
+                  .filter(p => {
+                    return p.startsWith(Node.text(Node.get(editor, path)));
+                  })
+                  .concat(
+                    isNewBranchPossible(editor)
+                      ? [slateConstants.NEW_BRANCH]
+                      : []
+                  )
               );
             }
           }}
@@ -308,13 +304,7 @@ export default function TextInput() {
               switch (event.key) {
                 case "Enter": {
                   event.preventDefault();
-                  if (
-                    path.length >= GROUP_DEPTH &&
-                    ![
-                      slateConstants.QUANTIFIER_LABEL,
-                      slateConstants.FILTER_LABEL
-                    ].includes(node.variant)
-                  ) {
+                  if (isInBranch(editor)) {
                     const branchPath = path.slice(0, path.length - 2);
                     const branchText = Node.text(Node.get(editor, branchPath));
                     if (isOpen && highlightedIndex !== -1) {
@@ -380,7 +370,34 @@ export default function TextInput() {
             }}
           />
         </Slate>
-        <button type="submit">Go</button>
+        <button className={cn(styles.link, styles["link--arrowed"])} href="#">
+          <svg
+            class="arrow-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 32 32"
+          >
+            <g
+              fill="none"
+              stroke="#FFFFFF"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+              stroke-miterlimit="10"
+            >
+              <circle
+                className={styles["arrow-icon--circle"]}
+                cx="16"
+                cy="16"
+                r="15.12"
+              ></circle>
+              <path
+                className={styles["arrow-icon--arrow"]}
+                d="M16.14 9.93L22.21 16l-6.07 6.07M8.23 16h13.98"
+              ></path>
+            </g>
+          </svg>
+        </button>
       </div>
     </div>
   );

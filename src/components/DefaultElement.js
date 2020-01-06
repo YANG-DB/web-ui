@@ -24,7 +24,10 @@ export default function DefaultElement(props) {
       className={cn(
         styles[props.element.type],
         styles.default,
-        isCollapsible && !isFocussed && styles.hidden
+        isCollapsible &&
+          !isFocussed &&
+          !process.env.REACT_APP_DEV_MODE &&
+          styles.hidden
       )}
     >
       {props.children}

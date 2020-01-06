@@ -21,6 +21,9 @@ const predicates = {
 };
 
 export default function getTokenType(previousToken, text) {
+  if ([slateConstants.FILTER_ICON, slateConstants.NEW_BRANCH].includes(text)) {
+    return text;
+  }
   const possibleTypes = getPossibleTypes(previousToken);
   if (possibleTypes.length === 0) {
     return slateConstants.UNKNOWN;

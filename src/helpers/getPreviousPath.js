@@ -1,4 +1,4 @@
-import { BRANCH_DEPTH } from "./slate";
+import { BRANCH_DEPTH } from "./elements";
 
 // expect(getPreviousPath([1, 1, 1, 0])).toEqual([1, 1, 0]);
 // expect(getPreviousPath([1, 1, 0, 0])).toEqual([1, 0]);

@@ -10,7 +10,6 @@ export default function getPreviousNode(
   exclude = [
     slateConstants.FILTER_ENTRIES,
     slateConstants.FILTER_GROUP,
-    slateConstants.QUANTIFIER,
     slateConstants.QUANTIFIER_LABEL,
     slateConstants.QUANTIFIER_ENTRIES,
     slateConstants.QUANTIFIER_ENTRY,

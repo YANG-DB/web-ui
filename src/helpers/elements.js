@@ -50,7 +50,7 @@ export function filter() {
         variant: slateConstants.FILTER_LABEL,
         children: [
           {
-            text: "ᗊ"
+            text: slateConstants.FILTER_ICON
           }
         ]
       },

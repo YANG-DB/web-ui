@@ -1,21 +1,22 @@
 .query {
-  height: 100px;
+  height: 300px;
   display: flex;
+  font-family: "Roboto Mono", monospace;
 }
 
 .query > div {
   flex-grow: 1;
   font-size: 14px;
-  background: #000000;
+  background: #161d25;
   color: antiquewhite;
   border: none;
   padding: 10px;
   box-sizing: border-box;
-  font-family: "Roboto Mono", monospace;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   white-space: nowrap !important;
+  overflow: auto;
 }
 
 .query button {
@@ -26,6 +27,46 @@
   font-size: 24px;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
+  height: 60px;
+  cursor: pointer;
+  font-family: "Roboto Condensed", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.link {
+  color: white;
+  cursor: pointer;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.link--arrowed {
+  display: inline-block;
+  height: 2rem;
+  line-height: 2rem;
+}
+.link--arrowed .arrow-icon {
+  position: relative;
+  top: -1px;
+  transition: transform 0.3s ease;
+  vertical-align: middle;
+}
+.link--arrowed .arrow-icon--circle {
+  transition: stroke-dashoffset 0.3s ease;
+  stroke-dasharray: 95;
+  stroke-dashoffset: 95;
+}
+.link--arrowed:hover .arrow-icon {
+  transform: translate3d(5px, 0, 0);
+}
+.link--arrowed:hover .arrow-icon--circle {
+  stroke-dashoffset: 0;
+}
+
+.query button:hover {
+  opacity: 0.8;
 }
 
 .token.invalid {
@@ -50,7 +91,7 @@
 }
 
 .default.hidden {
-  border-bottom: 1px dashed white;
+  border-bottom: 1px dashed black;
   overflow: hidden;
   height: 0px;
   margin-bottom: 3px;
@@ -64,9 +105,9 @@
   max-width: 400px;
   background: white;
   border-radius: 4px;
-  border: 1px solid white;
   transition: left 0.5s ease;
   visibility: hidden;
+  font-family: "Roboto Mono", monospace;
 }
 
 .autocomplete.visible {
@@ -74,10 +115,14 @@
 }
 
 .suggestion {
-  padding: 10px 40px;
+  cursor: pointer;
+  padding: 5px 48px;
+  border-top: 1px solid #cccccc;
+  color: #444343;
 }
 
-.suggestion.highlighted {
+.suggestion.highlighted,
+.suggestion:hover {
   background: thistle;
 }
 
@@ -111,19 +156,18 @@
 }
 
 .filter_group {
-  background: #363636;
+  background: #f3f3f3;
+  color: black;
   padding: 0px;
   border-radius: 2px;
+  box-shadow: 0px 3px 6px -2px #24242494;
 }
 
 .quantifier {
   border-radius: 5px;
-}
-
-.quantifier > span:nth-child(2) {
-  border-left: 1px solid white;
-  border-bottom: 1px solid white;
-  border-top: 1px solid white;
+  background: #f1f1f1;
+  color: black;
+  box-shadow: 0px 3px 6px -2px #24242494;
 }
 
 .entity {
@@ -136,6 +180,7 @@
 .relationship_in {
   background: teal;
   position: relative;
+  color: white;
 }
 
 .relationship_out {
