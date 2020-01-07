@@ -123,15 +123,6 @@ function tokenise(editor, ontology) {
   if (!text.trim()) {
     return false;
   }
-  if (type === slateConstants.FILTER_ICON) {
-    createFilterGroup(editor);
-    return true;
-  }
-  if (type === slateConstants.NEW_BRANCH) {
-    Editor.removeNodes(editor);
-    createBranch(editor);
-    return false;
-  }
   if (type === slateConstants.QUANTIFIER) {
     const path = editor.selection.anchor.path;
     Editor.removeNodes(editor);
@@ -181,8 +172,21 @@ function isNewBranchPossible(editor) {
 }
 
 export function onAutocompleteSelect(editor, ontology, text) {
-  replaceCurrentNode(editor, text);
-  tokenise(editor, ontology) && startNewNode(editor);
+  switch (text) {
+    case slateConstants.FILTER_ICON: {
+      createFilterGroup(editor);
+      return;
+    }
+    case slateConstants.NEW_BRANCH: {
+      Editor.removeNodes(editor);
+      createBranch(editor);
+      return;
+    }
+    default: {
+      replaceCurrentNode(editor, text);
+      tokenise(editor, ontology) && startNewNode(editor);
+    }
+  }
 }
 
 function TextInput({
@@ -219,7 +223,7 @@ function TextInput({
     <div className={styles.query} ref={textboxRef}>
       <Slate
         editor={editor}
-        value={value} // every time value changes, slate and editable render. why two renders on each key type?
+        value={value}
         onChange={value => {
           setValue(value);
           if (editor.selection) {
@@ -230,7 +234,7 @@ function TextInput({
               return;
             }
             setAutocompleteOptions(
-              getPossibleSchemaValues(editor, ontology)
+              getPossibleSchemaValues(editor, ontology) // an action can be suggested, but cannot be tokenised
                 .filter(p => {
                   return p.startsWith(Node.text(Node.get(editor, path)));
                 })

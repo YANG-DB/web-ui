@@ -1,13 +1,13 @@
 import { Node } from "slate";
 import * as slateConstants from "../constants/slate";
 import getPreviousNode from "./getPreviousNode";
-import getPossibleTypes from "./getPossibleTypes";
+import getPossibleTokenTypes from "./getPossibleTokenTypes";
 
 export default function getPossibleSchemaValues(editor, ontology) {
   // return the possible tokens given the state of the editor and the available schema
   const previousNode = getPreviousNode(editor, editor.selection.anchor.path);
   // first get possible token types based on previous type, then expand it to the schema
-  return getPossibleTypes(previousNode.variant).reduce((acc, curr) => {
+  return getPossibleTokenTypes(previousNode.variant).reduce((acc, curr) => {
     switch (curr) {
       case slateConstants.RELATIONSHIP: {
         // take into account prior entity
