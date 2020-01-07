@@ -164,13 +164,6 @@ function isInBranch(editor) {
   );
 }
 
-function isNewBranchPossible(editor) {
-  const path = editor.selection.anchor.path;
-  const branchPath = path.slice(0, path.length - 2);
-  const branchText = Node.text(Node.get(editor, branchPath));
-  return isInBranch(editor) && !!branchText;
-}
-
 export function onAutocompleteSelect(editor, ontology, text) {
   switch (text) {
     case slateConstants.FILTER_ICON: {
@@ -238,9 +231,6 @@ function TextInput({
                 .filter(p => {
                   return p.startsWith(Node.text(Node.get(editor, path)));
                 })
-                .concat(
-                  isNewBranchPossible(editor) ? [slateConstants.NEW_BRANCH] : []
-                )
             );
           }
         }}

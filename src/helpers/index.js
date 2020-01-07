@@ -1,5 +1,6 @@
 import arraysEqual from "./arraysEqual.js";
 import getPossibleSchemaValues from "./getPossibleSchemaValues.js";
+import getPossibleActions from "./getPossibleActions.js";
 import getPossibleTokenTypes from "./getPossibleTokenTypes.js";
 import getPreviousNode from "./getPreviousNode.js";
 import getPreviousPath from "./getPreviousPath.js";
@@ -10,6 +11,7 @@ import * as elements from "./elements.js";
 export {
   arraysEqual,
   getPossibleSchemaValues,
+  getPossibleActions,
   getPossibleTokenTypes,
   getPreviousNode,
   getPreviousPath,
