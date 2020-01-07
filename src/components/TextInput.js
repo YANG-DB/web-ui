@@ -1,12 +1,6 @@
-import React, {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef
-} from "react";
-import { createEditor, Editor, Node, Path } from "slate";
-import { Slate, Editable, withReact } from "slate-react";
+import React, { useState, useCallback } from "react";
+import { Editor, Node, Path } from "slate";
+import { Slate, Editable } from "slate-react";
 import cn from "classnames";
 
 import { Token, Group, DefaultElement } from "../components";
@@ -16,13 +10,10 @@ import {
   getTokenType,
   elements
 } from "../helpers";
-import useAutocomplete from "../hooks/useAutocomplete";
 import * as slateConstants from "../constants/slate";
 
-import mockOntology from "../mocks/ontologies/Dragons";
-
 import styles from "./TextInput.module.css";
-import useFocus from "../hooks/useFocus";
+import SubmitButton from "./SubmitButton";
 
 const { textNode, quantifier, filter, GROUP_DEPTH, BRANCH_DEPTH } = elements;
 
@@ -189,216 +180,144 @@ function isNewBranchPossible(editor) {
   return isInBranch(editor) && !!branchText;
 }
 
-export default function TextInput() {
-  const editor = useMemo(() => withReact(createEditor()), []);
-  const editorRef = useRef(editor);
+export function onAutocompleteSelect(editor, ontology, text) {
+  replaceCurrentNode(editor, text);
+  tokenise(editor, ontology) && startNewNode(editor);
+}
+
+function TextInput({
+  autocompleteActive,
+  textboxRef,
+  setAutocompleteOptions,
+  editor,
+  ontology
+}) {
   const [value, setValue] = useState([textNode()]);
-  const [ontology, loadOntology] = useState(null);
-  const [focussedDom, setFocussedDom] = useState(null);
-  const [possibilities, setPossibilities] = useState([]);
-  const [focussed, setFocussed] = useFocus(editor);
-
-  const onSelect = useCallback(
-    index => {
-      replaceCurrentNode(editorRef.current, possibilities[index]);
-      tokenise(editorRef.current, ontology) && startNewNode(editorRef.current);
-    },
-    [possibilities, ontology]
-  );
-
-  const [
-    { highlightedIndex, isOpen },
-    textboxRef,
-    setHighlightedIndex
-  ] = useAutocomplete(possibilities, onSelect);
-
-  useEffect(() => {
-    loadOntology(mockOntology.data[0]);
-  }, []);
 
   const renderElement = useCallback(
     props => {
-      const texts = Node.texts(props.element);
-      let result = texts.next();
-      while (!result.done) {
-        const el = result.value[0];
-        if (el.focussed && props.attributes.ref.current) {
-          setFocussedDom(props.attributes.ref.current.getBoundingClientRect());
-        }
-        result = texts.next();
-      }
       switch (props.element.type) {
         case slateConstants.TOKEN:
           return <Token {...props} />;
         case slateConstants.GROUP:
           return <Group {...props} />;
         case slateConstants.BRANCH:
-          return <DefaultElement {...props} focussedPath={focussed} />;
+          return (
+            <DefaultElement
+              {...props}
+              focussedPath={editor.selection && editor.selection.focus.path}
+            />
+          );
         default:
           return <DefaultElement {...props} />;
       }
     },
-    [focussed]
+    [editor]
   );
 
   return (
-    <div>
-      {focussedDom && isOpen && (
-        <div
-          className={cn(
-            styles.autocomplete,
-            possibilities.length && styles.visible
-          )}
-          style={{ top: `${focussedDom.top}px`, left: `${focussedDom.left}px` }}
-        >
-          {possibilities.map((p, i) => (
-            <div
-              onMouseDown={e => {
-                e.preventDefault();
-                onSelect(i);
-              }}
-              key={i}
-              className={cn(
-                styles.suggestion,
-                i === highlightedIndex && styles.highlighted
-              )}
-            >
-              {p}
-            </div>
-          ))}
-        </div>
-      )}
-      <div className={styles.query} ref={textboxRef}>
-        <Slate
-          editor={editor}
-          value={value}
-          onChange={value => {
-            setValue(value);
-            if (editor.selection) {
-              const path = editor.selection.anchor.path;
-              setFocussed(editor.selection.focus.path);
-              if (Node.parent(editor, editor.selection.focus.path).type) {
-                // if node has already been tokenised, don't show autocomplete possibilities
-                setPossibilities([]);
+    <div className={styles.query} ref={textboxRef}>
+      <Slate
+        editor={editor}
+        value={value} // every time value changes, slate and editable render. why two renders on each key type?
+        onChange={value => {
+          setValue(value);
+          if (editor.selection) {
+            const path = editor.selection.anchor.path;
+            if (Node.parent(editor, editor.selection.focus.path).type) {
+              // if node has already been tokenised, don't show autocomplete possibilities
+              setAutocompleteOptions([]);
+              return;
+            }
+            setAutocompleteOptions(
+              getPossibleSchemaValues(editor, ontology)
+                .filter(p => {
+                  return p.startsWith(Node.text(Node.get(editor, path)));
+                })
+                .concat(
+                  isNewBranchPossible(editor) ? [slateConstants.NEW_BRANCH] : []
+                )
+            );
+          }
+        }}
+      >
+        <Editable
+          renderElement={renderElement}
+          onKeyDown={event => {
+            const path = editor.selection.anchor.path;
+            const node = Node.parent(editor, path);
+            switch (event.key) {
+              case "Enter": {
+                event.preventDefault();
+                if (isInBranch(editor)) {
+                  const branchPath = path.slice(0, path.length - 2);
+                  const branchText = Node.text(Node.get(editor, branchPath));
+                  if (autocompleteActive) {
+                    // in this case, enter should select the autocomplete item, not start a new branch
+                    return;
+                  }
+                  if (branchText) {
+                    // if the current branch is non-empty, hitting enter should start a new branch
+                    if (Node.text(node)) {
+                      // don't tokenise previous node if there is nothing in it
+                      tokenise(editor, ontology) && createBranch(editor);
+                    } else {
+                      createBranch(editor);
+                    }
+                  } else {
+                    // if no text in branch, remove it, and start from outside the branch parent
+                    Editor.removeNodes(editor, {
+                      at: branchPath
+                    });
+                    selectOrCreate(editor, textNode(), GROUP_DEPTH);
+                  }
+                }
                 return;
               }
-              setPossibilities(
-                getPossibleSchemaValues(editor, ontology)
-                  .filter(p => {
-                    return p.startsWith(Node.text(Node.get(editor, path)));
-                  })
-                  .concat(
-                    isNewBranchPossible(editor)
-                      ? [slateConstants.NEW_BRANCH]
-                      : []
-                  )
-              );
-            }
-          }}
-        >
-          <Editable
-            renderElement={renderElement}
-            onKeyDown={event => {
-              const path = editor.selection.anchor.path;
-              const node = Node.parent(editor, path);
-              switch (event.key) {
-                case "Enter": {
+              case " ": {
+                event.preventDefault();
+                tokenise(editor, ontology) && startNewNode(editor);
+                break;
+              }
+              case slateConstants.FILTER_KEY: {
+                event.preventDefault();
+                createFilterGroup(editor);
+                break;
+              }
+              case "ArrowLeft":
+              case "ArrowRight":
+                break;
+              case "Backspace": {
+                if (
+                  [
+                    slateConstants.QUANTIFIER_LABEL,
+                    slateConstants.FILTER_LABEL
+                  ].includes(node.variant)
+                ) {
                   event.preventDefault();
-                  if (isInBranch(editor)) {
-                    const branchPath = path.slice(0, path.length - 2);
-                    const branchText = Node.text(Node.get(editor, branchPath));
-                    if (isOpen && highlightedIndex !== -1) {
-                      // in this case, enter should select the autocomplete item, not start a new branch
-                      return;
-                    }
-                    if (branchText) {
-                      // if the current branch is non-empty, hitting enter should start a new branch
-                      if (Node.text(node)) {
-                        // don't tokenise previous node if there is nothing in it
-                        tokenise(editor, ontology) && createBranch(editor);
-                      } else {
-                        createBranch(editor);
-                      }
-                    } else {
-                      // if no text in branch, remove it, and start from outside the branch parent
-                      Editor.removeNodes(editor, {
-                        at: branchPath
-                      });
-                      selectOrCreate(editor, textNode(), GROUP_DEPTH);
-                    }
-                  }
-                  return;
+                  Editor.removeNodes(editor, {
+                    at: path.slice(0, path.length - 2)
+                  });
                 }
-                case " ": {
+                break;
+              }
+              default: {
+                if (
+                  [
+                    slateConstants.QUANTIFIER_LABEL,
+                    slateConstants.FILTER_LABEL
+                  ].includes(node.variant)
+                ) {
                   event.preventDefault();
-                  tokenise(editor, ontology) && startNewNode(editor);
-                  break;
-                }
-                case slateConstants.FILTER_KEY: {
-                  event.preventDefault();
-                  createFilterGroup(editor);
-                  break;
-                }
-                case "ArrowLeft":
-                case "ArrowRight":
-                  break;
-                case "Backspace": {
-                  if (
-                    [
-                      slateConstants.QUANTIFIER_LABEL,
-                      slateConstants.FILTER_LABEL
-                    ].includes(node.variant)
-                  ) {
-                    event.preventDefault();
-                    Editor.removeNodes(editor, {
-                      at: path.slice(0, path.length - 2)
-                    });
-                  }
-                  break;
-                }
-                default: {
-                  if (
-                    [
-                      slateConstants.QUANTIFIER_LABEL,
-                      slateConstants.FILTER_LABEL
-                    ].includes(node.variant)
-                  ) {
-                    event.preventDefault();
-                  }
                 }
               }
-            }}
-          />
-        </Slate>
-        <button className={cn(styles.link, styles["link--arrowed"])} href="#">
-          <svg
-            class="arrow-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
-            viewBox="0 0 32 32"
-          >
-            <g
-              fill="none"
-              stroke="#FFFFFF"
-              stroke-width="1.5"
-              stroke-linejoin="round"
-              stroke-miterlimit="10"
-            >
-              <circle
-                className={styles["arrow-icon--circle"]}
-                cx="16"
-                cy="16"
-                r="15.12"
-              ></circle>
-              <path
-                className={styles["arrow-icon--arrow"]}
-                d="M16.14 9.93L22.21 16l-6.07 6.07M8.23 16h13.98"
-              ></path>
-            </g>
-          </svg>
-        </button>
-      </div>
+            }
+          }}
+        />
+      </Slate>
+      <SubmitButton />
     </div>
   );
 }
+
+export default React.memo(TextInput);

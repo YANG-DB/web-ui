@@ -1,11 +1,11 @@
 import React from "react";
-import { TextInput } from "./components";
+import { TextArea } from "./components";
 import styles from "./App.module.css";
 
 export default function App() {
   return (
     <div className={styles.app}>
-      <TextInput />
+      <TextArea />
     </div>
   );
 }

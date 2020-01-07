@@ -64,19 +64,10 @@ const initialState = {
   possibilities: []
 };
 
-export default function useAutocomplete(
-  possibilities,
-  onSelect,
-  onHighlightChange = () => {}
-) {
+export default function useAutocomplete(possibilities, onSelect) {
   const textboxRef = useRef(null);
   const [state, dispatch] = useReducer(reducer, initialState);
-  const setHighlightedIndex = useCallback(index => {
-    dispatch({
-      type: "SET_INDEX",
-      index
-    });
-  }, []);
+
   const handleKeyDown = useCallback(
     function(e) {
       if (e.key === "Tab" || e.key === "Enter") {
@@ -137,8 +128,5 @@ export default function useAutocomplete(
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleKeyDown]);
-  useEffect(() => {
-    onHighlightChange(state.highlightedIndex);
-  }, [state.highlightedIndex, onHighlightChange]);
-  return [state, textboxRef, setHighlightedIndex];
+  return { ...state, textboxRef };
 }

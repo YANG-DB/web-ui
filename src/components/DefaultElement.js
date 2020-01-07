@@ -13,6 +13,7 @@ export default function DefaultElement(props) {
   const isFocussed =
     isCollapsible &&
     props.element.path &&
+    props.focussedPath &&
     arraysEqual(
       props.focussedPath.slice(0, props.element.path.length),
       props.element.path
