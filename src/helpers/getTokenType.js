@@ -1,4 +1,4 @@
-import getPossibleTypes from "./getPossibleTypes";
+import getPossibleTokenTypes from "./getPossibleTokenTypes";
 import * as slateConstants from "../constants/slate";
 
 // Deterministically infer intended token type based on what is possible, and what has been typed
@@ -21,7 +21,7 @@ const predicates = {
 };
 
 export default function getTokenType(previousToken, text) {
-  const possibleTypes = getPossibleTypes(previousToken);
+  const possibleTypes = getPossibleTokenTypes(previousToken);
   if (possibleTypes.length === 0) {
     return slateConstants.UNKNOWN;
   }
