@@ -104,24 +104,9 @@ export default function useAutocomplete(possibilities, onSelect) {
     },
     [state, onSelect]
   );
-  function handleTextBlur(e) {
-    dispatch({ type: "CLOSE" });
-  }
-  function handleTextFocus() {
-    dispatch({ type: "OPEN" });
-  }
   useEffect(() => {
     dispatch({ type: "LOAD_POSSIBILITIES", possibilities });
   }, [possibilities]);
-  useEffect(() => {
-    const textareaRef = textboxRef.current.firstElementChild;
-    textareaRef.addEventListener("blur", handleTextBlur);
-    textareaRef.addEventListener("focus", handleTextFocus);
-    return () => {
-      textareaRef.removeEventListener("blur", handleTextBlur);
-      textareaRef.removeEventListener("focus", handleTextFocus);
-    };
-  }, []);
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => {

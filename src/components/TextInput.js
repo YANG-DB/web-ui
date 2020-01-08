@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { Editor, Node, Path } from "slate";
 import { Slate, Editable } from "slate-react";
 import cn from "classnames";
@@ -8,9 +8,11 @@ import {
   getPossibleSchemaValues,
   getPreviousNode,
   getTokenType,
-  elements
+  elements,
+  arraysEqual
 } from "../helpers";
 import * as slateConstants from "../constants/slate";
+import useFocus from "../hooks/useFocus";
 
 import styles from "./TextInput.module.css";
 import SubmitButton from "./SubmitButton";
@@ -184,12 +186,14 @@ export function onAutocompleteSelect(editor, ontology, text) {
 
 function TextInput({
   autocompleteActive,
-  textboxRef,
   setAutocompleteOptions,
   editor,
-  ontology
+  ontology,
+  onCursorPositionChange
 }) {
   const [value, setValue] = useState([textNode()]);
+  const [focusPath, setFocusPath] = useState(null);
+  const lastAutocompleteOptions = useRef(null);
 
   const renderElement = useCallback(
     props => {
@@ -212,26 +216,36 @@ function TextInput({
     [editor]
   );
 
+  useFocus(editor, focusPath, onCursorPositionChange);
+
   return (
-    <div className={styles.query} ref={textboxRef}>
+    <div className={styles.query}>
       <Slate
         editor={editor}
         value={value}
         onChange={value => {
           setValue(value);
-          if (editor.selection) {
-            const path = editor.selection.anchor.path;
-            if (Node.parent(editor, editor.selection.focus.path).type) {
-              // if node has already been tokenised, don't show autocomplete possibilities
-              setAutocompleteOptions([]);
-              return;
-            }
-            setAutocompleteOptions(
-              getPossibleSchemaValues(editor, ontology) // an action can be suggested, but cannot be tokenised
-                .filter(p => {
-                  return p.startsWith(Node.text(Node.get(editor, path)));
-                })
-            );
+          setFocusPath(editor.selection && editor.selection.focus.path);
+          let autocompleteOptions = [];
+          if (
+            editor.selection &&
+            !Node.parent(editor, editor.selection.focus.path).type
+          ) {
+            // if node has already been tokenised, don't show autocomplete possibilities
+            autocompleteOptions = getPossibleSchemaValues(
+              editor,
+              ontology
+            ).filter(p => {
+              return p.startsWith(
+                Node.text(Node.get(editor, editor.selection.anchor.path))
+              );
+            });
+          }
+          if (
+            !arraysEqual(lastAutocompleteOptions.current, autocompleteOptions)
+          ) {
+            setAutocompleteOptions(autocompleteOptions);
+            lastAutocompleteOptions.current = autocompleteOptions;
           }
         }}
       >

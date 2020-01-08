@@ -3,9 +3,8 @@ import { Editor, Node } from "slate";
 import { ReactEditor } from "slate-react";
 import * as slateConstants from "../constants/slate";
 
-export default function(editor, onFocusChange) {
+export default function(editor, focusPath, onFocusChange) {
   const lastFocussed = useRef(null);
-  const focusPath = editor.selection && editor.selection.focus.path;
 
   useEffect(() => {
     // here we ensure that the currently focussed node has the 'focussed' property set on it

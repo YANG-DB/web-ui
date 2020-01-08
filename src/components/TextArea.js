@@ -7,7 +7,6 @@ import Autocomplete from "./Autocomplete";
 import mockOntology from "../mocks/ontologies/Dragons";
 
 import useAutocomplete from "../hooks/useAutocomplete";
-import useFocus from "../hooks/useFocus";
 
 export default function TextArea() {
   const editor = useMemo(() => withReact(createEditor()), []);
@@ -34,8 +33,6 @@ export default function TextArea() {
     onSelect
   );
 
-  useFocus(editor, onCursorPositionChange);
-
   useEffect(() => {
     loadOntology(mockOntology.data[0]);
   }, []);
@@ -55,6 +52,7 @@ export default function TextArea() {
         autocompleteActive={isOpen && highlightedIndex !== -1}
         textboxRef={textboxRef}
         setAutocompleteOptions={setAutocompleteOptions}
+        onCursorPositionChange={onCursorPositionChange}
       />
     </div>
   );
