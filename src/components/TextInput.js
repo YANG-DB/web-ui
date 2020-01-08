@@ -9,7 +9,8 @@ import {
   getPreviousNode,
   getTokenType,
   elements,
-  arraysEqual
+  arraysEqual,
+  isInBranch
 } from "../helpers";
 import * as slateConstants from "../constants/slate";
 import useFocus from "../hooks/useFocus";
@@ -153,17 +154,6 @@ function tokenise(editor, ontology) {
     });
     return true;
   }
-}
-
-function isInBranch(editor) {
-  const path = editor.selection.anchor.path;
-  const node = Node.parent(editor, path);
-  return (
-    path.length >= GROUP_DEPTH &&
-    ![slateConstants.QUANTIFIER_LABEL, slateConstants.FILTER_LABEL].includes(
-      node.variant
-    )
-  );
 }
 
 export function onAutocompleteSelect(editor, ontology, text) {

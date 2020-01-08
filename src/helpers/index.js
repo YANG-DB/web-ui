@@ -1,12 +1,13 @@
-import arraysEqual from "./arraysEqual.js";
-import getPossibleSchemaValues from "./getPossibleSchemaValues.js";
-import getPossibleActions from "./getPossibleActions.js";
-import getPossibleTokenTypes from "./getPossibleTokenTypes.js";
-import getPreviousNode from "./getPreviousNode.js";
-import getPreviousPath from "./getPreviousPath.js";
-import getTokenType from "./getTokenType.js";
-import queryToSlate from "./queryToSlate.js";
-import * as elements from "./elements.js";
+import arraysEqual from "./arraysEqual";
+import getPossibleSchemaValues from "./getPossibleSchemaValues";
+import getPossibleActions from "./getPossibleActions";
+import getPossibleTokenTypes from "./getPossibleTokenTypes";
+import getPreviousNode from "./getPreviousNode";
+import getPreviousPath from "./getPreviousPath";
+import getTokenType from "./getTokenType";
+import queryToSlate from "./queryToSlate";
+import isInBranch from "./isInBranch";
+import * as elements from "./elements";
 
 export {
   arraysEqual,
@@ -17,5 +18,6 @@ export {
   getPreviousPath,
   getTokenType,
   queryToSlate,
+  isInBranch,
   elements
 };

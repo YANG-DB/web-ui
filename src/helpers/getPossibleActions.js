@@ -1,13 +1,24 @@
-import { Node } from "slate";
-import { getPreviousNode } from "../helpers";
-import { GROUP_DEPTH } from "../helpers/elements";
+import { getPreviousNode, isInBranch } from "../helpers";
 import * as slateConstants from "../constants/slate";
 
 function isNewBranchPossible(editor) {
-  const path = editor.selection.anchor.path;
-  const branchPath = path.slice(0, path.length - 2);
-  const branchText = Node.text(Node.get(editor, branchPath));
-  return path.length >= GROUP_DEPTH && !!branchText;
+  const branch = isInBranch(editor);
+  if (!branch) {
+    return false;
+  }
+  if (branch.variant === slateConstants.QUANTIFIER_ENTRY) {
+    // affirm that previous is an entity
+    const previousNode = getPreviousNode(
+      editor,
+      editor.selection.anchor.path,
+      false
+    );
+    return previousNode.variant === slateConstants.ENTITY;
+  }
+  if (branch.variant === slateConstants.FILTER) {
+    // TODO: extend 'isTerminalNode' to see if the filter is complete
+    return false;
+  }
 }
 
 function isFilterPossible(editor) {
