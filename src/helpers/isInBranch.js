@@ -1,14 +1,9 @@
 import { Node } from "slate";
 import * as slateConstants from "../constants/slate";
-import { BRANCH_DEPTH } from "../helpers/elements";
+import { getBranchPath } from "../helpers";
 
 export default function isInBranch(editor) {
-  const path = editor.selection.anchor.path;
-
-  const branchPath =
-    path.length >= BRANCH_DEPTH
-      ? path.slice(0, path.length - BRANCH_DEPTH + 1)
-      : [];
+  const branchPath = getBranchPath(editor);
 
   if (!branchPath.length) {
     return false;
@@ -16,5 +11,5 @@ export default function isInBranch(editor) {
 
   const node = Node.get(editor, branchPath);
 
-  return node.type === slateConstants.BRANCH ? node : null;
+  return node.type === slateConstants.BRANCH ? [node, branchPath] : null;
 }

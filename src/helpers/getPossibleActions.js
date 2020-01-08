@@ -1,27 +1,51 @@
+import { Node } from "slate";
 import { getPreviousNode, isInBranch } from "../helpers";
 import * as slateConstants from "../constants/slate";
 
-function isNewBranchPossible(editor) {
-  const branch = isInBranch(editor);
+export function isNewBranchPossible(editor) {
+  const [branch] = isInBranch(editor) || [];
+  if (Node.text(Node.get(editor, editor.selection.anchor.path))) {
+    // don't allow new branch when midway through typing a node
+    return false;
+  }
   if (!branch) {
     return false;
   }
   if (branch.variant === slateConstants.QUANTIFIER_ENTRY) {
-    // affirm that previous is an entity
     const previousNode = getPreviousNode(
       editor,
       editor.selection.anchor.path,
       false
     );
-    return previousNode.variant === slateConstants.ENTITY;
+    return (
+      previousNode.variant === slateConstants.ENTITY ||
+      previousNode.variant === slateConstants.QUANTIFIER
+    );
   }
   if (branch.variant === slateConstants.FILTER) {
     // TODO: extend 'isTerminalNode' to see if the filter is complete
+    return !!getPreviousNode(editor, editor.selection.anchor.path, false);
+  }
+}
+
+export function isEscapeGroupPossible(editor) {
+  if (Node.text(Node.get(editor, editor.selection.anchor.path))) {
+    // don't allow new branch when midway through typing a node
+    return false;
+  }
+  const [branch, branchPath] = isInBranch(editor) || [];
+  if (branch) {
+    return (
+      isNewBranchPossible(editor) ||
+      (!getPreviousNode(editor, editor.selection.anchor.path, false) &&
+        branchPath[branchPath.length - 1] !== 0)
+    );
+  } else {
     return false;
   }
 }
 
-function isFilterPossible(editor) {
+export function isFilterPossible(editor) {
   const previousNode = getPreviousNode(
     editor,
     editor.selection && editor.selection.anchor.path,
@@ -45,6 +69,9 @@ function isFilterPossible(editor) {
 
 export default function(editor) {
   const result = [];
+  if (isEscapeGroupPossible(editor)) {
+    result.push(slateConstants.ESCAPE_GROUP);
+  }
   if (isNewBranchPossible(editor)) {
     result.push(slateConstants.NEW_BRANCH);
   }

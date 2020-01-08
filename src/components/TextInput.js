@@ -10,13 +10,18 @@ import {
   getTokenType,
   elements,
   arraysEqual,
-  isInBranch
+  isInBranch,
+  getBranchPath
 } from "../helpers";
 import * as slateConstants from "../constants/slate";
 import useFocus from "../hooks/useFocus";
 
 import styles from "./TextInput.module.css";
 import SubmitButton from "./SubmitButton";
+import {
+  isNewBranchPossible,
+  isEscapeGroupPossible
+} from "../helpers/getPossibleActions";
 
 const { textNode, quantifier, filter, GROUP_DEPTH, BRANCH_DEPTH } = elements;
 
@@ -47,11 +52,7 @@ function replaceCurrentNode(editor, text) {
 
 function createBranch(editor) {
   // assumes we are operating from an existing branch
-  const currentPath = editor.selection.anchor.path;
-  const currentBranch = Node.get(
-    editor,
-    currentPath.slice(0, currentPath.length - (BRANCH_DEPTH - 1))
-  );
+  const currentBranch = Node.get(editor, getBranchPath(editor));
   selectOrCreate(
     editor,
     {
@@ -156,6 +157,21 @@ function tokenise(editor, ontology) {
   }
 }
 
+function escapeGroup(editor) {
+  const path = editor.selection.anchor.path;
+  if (!getPreviousNode(editor, path, false)) {
+    // then we are at start of empty branch
+    const branchPath = getBranchPath(editor);
+    Editor.removeNodes(editor, {
+      at: branchPath
+    });
+    selectOrCreate(editor, textNode(), GROUP_DEPTH);
+  } else {
+    // then we are at end of branch
+    selectOrCreate(editor, textNode(), GROUP_DEPTH);
+  }
+}
+
 export function onAutocompleteSelect(editor, ontology, text) {
   switch (text) {
     case slateConstants.FILTER_ICON: {
@@ -163,8 +179,11 @@ export function onAutocompleteSelect(editor, ontology, text) {
       return;
     }
     case slateConstants.NEW_BRANCH: {
-      Editor.removeNodes(editor);
       createBranch(editor);
+      return;
+    }
+    case slateConstants.ESCAPE_GROUP: {
+      escapeGroup(editor);
       return;
     }
     default: {
@@ -245,29 +264,24 @@ function TextInput({
             const path = editor.selection.anchor.path;
             const node = Node.parent(editor, path);
             switch (event.key) {
+              case "Escape": {
+                event.preventDefault();
+                if (isEscapeGroupPossible(editor)) {
+                  escapeGroup(editor);
+                }
+                return;
+              }
               case "Enter": {
                 event.preventDefault();
                 if (isInBranch(editor)) {
-                  const branchPath = path.slice(0, path.length - 2);
-                  const branchText = Node.text(Node.get(editor, branchPath));
                   if (autocompleteActive) {
                     // in this case, enter should select the autocomplete item, not start a new branch
                     return;
                   }
-                  if (branchText) {
-                    // if the current branch is non-empty, hitting enter should start a new branch
-                    if (Node.text(node)) {
-                      // don't tokenise previous node if there is nothing in it
-                      tokenise(editor, ontology) && createBranch(editor);
-                    } else {
-                      createBranch(editor);
-                    }
-                  } else {
-                    // if no text in branch, remove it, and start from outside the branch parent
-                    Editor.removeNodes(editor, {
-                      at: branchPath
-                    });
-                    selectOrCreate(editor, textNode(), GROUP_DEPTH);
+                  if (isNewBranchPossible(editor)) {
+                    createBranch(editor);
+                  } else if (isEscapeGroupPossible(editor)) {
+                    escapeGroup(editor);
                   }
                 }
                 return;
