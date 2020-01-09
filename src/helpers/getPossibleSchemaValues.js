@@ -4,7 +4,7 @@ import getPreviousNode from "./getPreviousNode";
 import getPossibleTokenTypes from "./getPossibleTokenTypes";
 import getPossibleActions from "./getPossibleActions";
 
-export default function getPossibleSchemaValues(editor, ontology) {
+export default function getPossibleSchemaValues(editor, ontology, structure) {
   // return the possible tokens given the state of the editor and the available schema
   const previousNode = getPreviousNode(editor, editor.selection.anchor.path);
   // first get possible token types based on previous type, then expand it to the schema
@@ -167,7 +167,19 @@ export default function getPossibleSchemaValues(editor, ontology) {
         }
         case slateConstants.OPERATOR: {
           // consider previous property, grab appropriate operators from structure file
-          return acc.concat(slateConstants.OPERATORS);
+          const previousNode = getPreviousNode(
+            editor,
+            editor.selection.anchor.path,
+            false
+          );
+          const variableType = (
+            ontology.properties.find(p => p.name === Node.text(previousNode)) ||
+            {}
+          ).type;
+          const possibleOperators = Object.keys(structure.operators).filter(
+            op => structure.operators[op].includes(variableType)
+          );
+          return acc.concat(possibleOperators);
         }
         case slateConstants.VALUE: {
           // consider previous property; may need to show a datepicker

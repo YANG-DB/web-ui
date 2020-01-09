@@ -25,7 +25,34 @@ export function isNewBranchPossible(editor) {
   if (branch.variant === slateConstants.FILTER) {
     // either two nodes prior is a binary operator
     // or one node prior is a unary operator
-    return !!getPreviousNode(editor, editor.selection.anchor.path, false);
+    const possibleUnaryOperator = getPreviousNode(
+      editor,
+      editor.selection.anchor.path,
+      false
+    );
+    const possibleBinaryOperator = getPreviousNode(
+      editor,
+      editor.selection.anchor.path,
+      false,
+      2
+    );
+    if (
+      possibleUnaryOperator &&
+      possibleUnaryOperator.variant === slateConstants.OPERATOR
+    ) {
+      if (["empty", "notEmpty"].includes(Node.text(possibleUnaryOperator))) {
+        return true;
+      }
+    }
+    if (
+      possibleBinaryOperator &&
+      possibleBinaryOperator.variant === slateConstants.OPERATOR
+    ) {
+      if (!["empty", "notEmpty"].includes(Node.text(possibleBinaryOperator))) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
