@@ -170,6 +170,21 @@ function escapeGroup(editor) {
   }
 }
 
+function isTerminalNode(editor, path) {
+  // used to determine whether deletion is possible
+  const possibleNextPath = path.map((idx, i) =>
+    i === path.length - 2 ? path[path.length - 2] + 1 : idx
+  );
+  const possibleNextBranch =
+    path.length >= 5
+      ? [...path.slice(0, path.length - 5), path[path.length - 5] + 1]
+      : false;
+  return (
+    !Node.has(editor, possibleNextPath) &&
+    !(possibleNextBranch && Node.has(editor, possibleNextBranch))
+  );
+}
+
 export function onAutocompleteSelect(editor, ontology, structure, text) {
   switch (text) {
     case slateConstants.FILTER_ICON: {
@@ -300,6 +315,11 @@ function TextInput({
               case "ArrowRight":
                 break;
               case "Backspace": {
+                if (!isTerminalNode(editor, editor.selection.focus.path)) {
+                  // prevent deletion of all but the last nodes in a branch
+                  event.preventDefault();
+                  return;
+                }
                 if (
                   [
                     slateConstants.QUANTIFIER_LABEL,
