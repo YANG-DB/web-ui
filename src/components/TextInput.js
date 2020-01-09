@@ -79,19 +79,7 @@ function createFilterGroup(editor) {
   }
 }
 
-function isTerminalNode(editor) {
-  if (editor.selection.anchor.path.length <= 2) {
-    return false;
-  }
-  const currentNode = Node.parent(editor, editor.selection.anchor.path);
-  return currentNode.variant === slateConstants.VALUE;
-}
-
 function startNewNode(editor) {
-  if (isTerminalNode(editor)) {
-    createBranch(editor);
-    return;
-  }
   Editor.insertNodes(editor, textNode(), { select: true });
 }
 
@@ -100,7 +88,7 @@ function typeCheck(text, type) {
   return true;
 }
 
-function isValid(editor, ontology, intendedType) {
+function isValid(editor, ontology, structure, intendedType) {
   if (intendedType === slateConstants.VALUE) {
     const fieldNode = getPreviousNode(
       editor,
@@ -114,12 +102,12 @@ function isValid(editor, ontology, intendedType) {
     const text = Editor.text(editor, editor.selection.anchor.path);
     return typeCheck(text, variableType);
   }
-  const possibilities = getPossibleSchemaValues(editor, ontology);
+  const possibilities = getPossibleSchemaValues(editor, ontology, structure);
   const text = Editor.text(editor, editor.selection.anchor.path);
   return possibilities.some(poss => text === poss);
 }
 
-function tokenise(editor, ontology) {
+function tokenise(editor, ontology, structure) {
   const previous = getPreviousNode(editor, editor.selection.anchor.path)
     .variant;
   const text = Editor.text(editor, editor.selection.anchor.path);
@@ -136,7 +124,7 @@ function tokenise(editor, ontology) {
     });
     return false;
   } else {
-    const valid = isValid(editor, ontology, type);
+    const valid = isValid(editor, ontology, structure, type);
     if (
       [
         slateConstants.RELATIONSHIP_IN,
@@ -172,7 +160,7 @@ function escapeGroup(editor) {
   }
 }
 
-export function onAutocompleteSelect(editor, ontology, text) {
+export function onAutocompleteSelect(editor, ontology, structure, text) {
   switch (text) {
     case slateConstants.FILTER_ICON: {
       createFilterGroup(editor);
@@ -188,7 +176,7 @@ export function onAutocompleteSelect(editor, ontology, text) {
     }
     default: {
       replaceCurrentNode(editor, text);
-      tokenise(editor, ontology) && startNewNode(editor);
+      tokenise(editor, ontology, structure) && startNewNode(editor);
     }
   }
 }
@@ -198,6 +186,7 @@ function TextInput({
   setAutocompleteOptions,
   editor,
   ontology,
+  structure,
   onCursorPositionChange
 }) {
   const [value, setValue] = useState([textNode()]);
@@ -243,7 +232,8 @@ function TextInput({
             // if node has already been tokenised, don't show autocomplete possibilities
             autocompleteOptions = getPossibleSchemaValues(
               editor,
-              ontology
+              ontology,
+              structure
             ).filter(p => {
               return p.startsWith(
                 Node.text(Node.get(editor, editor.selection.anchor.path))
@@ -288,7 +278,7 @@ function TextInput({
               }
               case " ": {
                 event.preventDefault();
-                tokenise(editor, ontology) && startNewNode(editor);
+                tokenise(editor, ontology, structure) && startNewNode(editor);
                 break;
               }
               case slateConstants.FILTER_KEY: {

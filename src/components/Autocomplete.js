@@ -9,6 +9,7 @@ export default function Autocomplete({
   highlightedIndex,
   cursorPosition
 }) {
+  // TODO: if any of the options features slateConstants.PICK_DATE, render a datepicker instead
   return cursorPosition && isOpen ? (
     <div
       className={cn(styles.autocomplete, options.length && styles.visible)}

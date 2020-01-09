@@ -166,14 +166,16 @@ export default function getPossibleSchemaValues(editor, ontology) {
           return acc;
         }
         case slateConstants.OPERATOR: {
+          // consider previous property, grab appropriate operators from structure file
           return acc.concat(slateConstants.OPERATORS);
+        }
+        case slateConstants.VALUE: {
+          // consider previous property; may need to show a datepicker
+          return acc;
         }
         case slateConstants.QUANTIFIER: {
           // take into account prior entity
           return acc.concat([slateConstants.AND, slateConstants.OR]);
-        }
-        case slateConstants.VALUE: {
-          return acc;
         }
         default:
           return acc;

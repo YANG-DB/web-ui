@@ -5,6 +5,7 @@ import TextInput, { onAutocompleteSelect } from "./TextInput";
 import Autocomplete from "./Autocomplete";
 
 import mockOntology from "../mocks/ontologies/Dragons";
+import mockStructure from "../mocks/structures/Default";
 
 import useAutocomplete from "../hooks/useAutocomplete";
 
@@ -12,13 +13,19 @@ export default function TextArea() {
   const editor = useMemo(() => withReact(createEditor()), []);
   const [cursorPosition, setCursorPosition] = useState(null);
   const [ontology, loadOntology] = useState(null);
+  const [structure, loadStructure] = useState(null);
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
 
   const onSelect = useCallback(
     index => {
-      onAutocompleteSelect(editor, ontology, autocompleteOptions[index]);
+      onAutocompleteSelect(
+        editor,
+        ontology,
+        structure,
+        autocompleteOptions[index]
+      );
     },
-    [ontology, editor, autocompleteOptions]
+    [ontology, structure, editor, autocompleteOptions]
   );
 
   const onCursorPositionChange = useCallback(
@@ -35,6 +42,7 @@ export default function TextArea() {
 
   useEffect(() => {
     loadOntology(mockOntology.data[0]);
+    loadStructure(mockStructure);
   }, []);
 
   return (
@@ -49,6 +57,7 @@ export default function TextArea() {
       <TextInput
         editor={editor}
         ontology={ontology}
+        structure={structure}
         autocompleteActive={isOpen && highlightedIndex !== -1}
         textboxRef={textboxRef}
         setAutocompleteOptions={setAutocompleteOptions}

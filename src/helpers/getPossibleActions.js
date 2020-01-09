@@ -23,7 +23,8 @@ export function isNewBranchPossible(editor) {
     );
   }
   if (branch.variant === slateConstants.FILTER) {
-    // TODO: extend 'isTerminalNode' to see if the filter is complete
+    // either two nodes prior is a binary operator
+    // or one node prior is a unary operator
     return !!getPreviousNode(editor, editor.selection.anchor.path, false);
   }
 }
