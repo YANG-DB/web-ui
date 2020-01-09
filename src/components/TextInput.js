@@ -14,6 +14,7 @@ import {
   getBranchPath
 } from "../helpers";
 import * as slateConstants from "../constants/slate";
+import * as queryConstants from "../constants/query";
 import useFocus from "../hooks/useFocus";
 
 import styles from "./TextInput.module.css";
@@ -90,17 +91,26 @@ function typeCheck(text, type) {
 
 function isValid(editor, ontology, structure, intendedType) {
   if (intendedType === slateConstants.VALUE) {
+    const operatorNode = getPreviousNode(
+      editor,
+      editor.selection.anchor.path,
+      true
+    );
+    const operator = Node.text(operatorNode);
+    if (queryConstants.UNARY_OPERATORS.includes(operator)) {
+      return false; // values should not follow unary operators
+    }
     const fieldNode = getPreviousNode(
       editor,
       editor.selection.anchor.path,
       true,
       2
     );
-    const variableType = (
+    const fieldType = (
       ontology.properties.find(p => p.pType === Node.text(fieldNode)) || {}
     ).type;
     const text = Editor.text(editor, editor.selection.anchor.path);
-    return typeCheck(text, variableType);
+    return typeCheck(text, fieldType);
   }
   const possibilities = getPossibleSchemaValues(editor, ontology, structure);
   const text = Editor.text(editor, editor.selection.anchor.path);

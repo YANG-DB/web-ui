@@ -1,6 +1,7 @@
 import { Node } from "slate";
 import { getPreviousNode, isInBranch } from "../helpers";
 import * as slateConstants from "../constants/slate";
+import * as queryConstants from "../constants/query";
 
 export function isNewBranchPossible(editor) {
   const [branch] = isInBranch(editor) || [];
@@ -40,7 +41,11 @@ export function isNewBranchPossible(editor) {
       possibleUnaryOperator &&
       possibleUnaryOperator.variant === slateConstants.OPERATOR
     ) {
-      if (["empty", "notEmpty"].includes(Node.text(possibleUnaryOperator))) {
+      if (
+        queryConstants.UNARY_OPERATORS.includes(
+          Node.text(possibleUnaryOperator)
+        )
+      ) {
         return true;
       }
     }
@@ -48,7 +53,11 @@ export function isNewBranchPossible(editor) {
       possibleBinaryOperator &&
       possibleBinaryOperator.variant === slateConstants.OPERATOR
     ) {
-      if (!["empty", "notEmpty"].includes(Node.text(possibleBinaryOperator))) {
+      if (
+        !queryConstants.UNARY_OPERATORS.includes(
+          Node.text(possibleBinaryOperator)
+        )
+      ) {
         return true;
       }
     }
