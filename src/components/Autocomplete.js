@@ -1,6 +1,26 @@
 import React from "react";
 import cn from "classnames";
+import * as slateConstants from "../constants/slate";
 import styles from "./TextInput.module.css";
+
+function getLabel(key) {
+  if (key.endsWith("<")) {
+    return [key.replace(/(<)$/i, ""), "⇦"];
+  }
+  if (key.endsWith(">")) {
+    return [key.replace(/(>)$/i, ""), "⇨"];
+  }
+  switch (key) {
+    case slateConstants.NEW_BRANCH:
+      return ["New Branch", "⮐"];
+    case slateConstants.ESCAPE_GROUP:
+      return ["Escape Group", "⮑"];
+    case slateConstants.FILTER_ICON:
+      return ["Add Filter", slateConstants.FILTER_ICON];
+    default:
+      return [key, null];
+  }
+}
 
 export default function Autocomplete({
   isOpen,
@@ -18,21 +38,26 @@ export default function Autocomplete({
         left: `${cursorPosition.left}px`
       }}
     >
-      {options.map((p, i) => (
-        <div
-          onMouseDown={e => {
-            e.preventDefault();
-            onSelect(i);
-          }}
-          key={i}
-          className={cn(
-            styles.suggestion,
-            i === highlightedIndex && styles.highlighted
-          )}
-        >
-          {p}
-        </div>
-      ))}
+      {options.map((p, i) => {
+        const [label, symbol] = getLabel(p);
+        return (
+          <div
+            onMouseDown={e => {
+              e.preventDefault();
+              onSelect(i);
+            }}
+            key={i}
+            className={cn(
+              styles.suggestion,
+              i === highlightedIndex && styles.highlighted
+            )}
+          >
+            <span>{symbol}</span>
+
+            <span>{label}</span>
+          </div>
+        );
+      })}
     </div>
   ) : null;
 }

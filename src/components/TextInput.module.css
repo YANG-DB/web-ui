@@ -116,9 +116,25 @@
 
 .suggestion {
   cursor: pointer;
-  padding: 5px 48px;
+  padding: 5px 10px;
   border-top: 1px solid #cccccc;
   color: #444343;
+  display: flex;
+}
+
+.suggestion span:first-child {
+  flex-basis: 20px;
+  min-width: 20px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  padding: 0px 10px;
+}
+
+.suggestion span:last-child {
+  padding-right: 20px;
+  padding-left: 10px;
+  flex-grow: 1;
+  text-align: center;
 }
 
 .suggestion.highlighted,
