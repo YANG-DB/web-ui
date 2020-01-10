@@ -190,10 +190,18 @@ export default function getPossibleSchemaValues(editor, ontology, structure) {
             false,
             2
           );
+          const operatorNode = getPreviousNode(
+            editor,
+            editor.selection.anchor.path,
+            false
+          );
           const variableType = (
             ontology.properties.find(p => p.name === Node.text(fieldNode)) || {}
           ).type;
-          if (variableType === queryConstants.DATE) {
+          if (
+            variableType === queryConstants.DATE &&
+            !queryConstants.UNARY_OPERATORS.includes(Node.text(operatorNode))
+          ) {
             return acc.concat([queryConstants.DATE]);
           }
           return acc;
