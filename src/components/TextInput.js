@@ -241,6 +241,8 @@ function TextInput({
 
   useFocus(editor, focusPath, onCursorPositionChange);
 
+  console.log(value);
+
   return (
     <div className={styles.query}>
       <Slate

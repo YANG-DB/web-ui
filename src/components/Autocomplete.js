@@ -1,6 +1,8 @@
 import React from "react";
 import cn from "classnames";
 import * as slateConstants from "../constants/slate";
+import * as queryConstants from "../constants/query";
+import { DatePicker } from "../components";
 import styles from "./TextInput.module.css";
 
 function getLabel(key) {
@@ -29,7 +31,19 @@ export default function Autocomplete({
   highlightedIndex,
   cursorPosition
 }) {
-  // TODO: if any of the options features slateConstants.PICK_DATE, render a datepicker instead
+  if (cursorPosition && isOpen && options.includes(queryConstants.DATE)) {
+    return (
+      <div
+        className={cn(styles.autocomplete, options.length && styles.visible)}
+        style={{
+          top: `${cursorPosition.top}px`,
+          left: `${cursorPosition.left}px`
+        }}
+      >
+        <DatePicker onSelect={onSelect} />
+      </div>
+    );
+  }
   return cursorPosition && isOpen ? (
     <div
       className={cn(styles.autocomplete, options.length && styles.visible)}
@@ -44,7 +58,7 @@ export default function Autocomplete({
           <div
             onMouseDown={e => {
               e.preventDefault();
-              onSelect(i);
+              onSelect(options[i]);
             }}
             key={i}
             className={cn(

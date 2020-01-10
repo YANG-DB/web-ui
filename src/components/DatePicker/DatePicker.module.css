@@ -1,0 +1,20 @@
+.weekHeaders table {
+  margin: 0px auto;
+}
+
+.list {
+  padding: 0;
+}
+
+.day {
+  cursor: pointer;
+}
+
+.day:hover {
+  background: gray;
+}
+
+.dayKeys,
+.day {
+  width: 30px;
+}

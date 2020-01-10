@@ -1,5 +1,6 @@
 import { Node } from "slate";
 import * as slateConstants from "../constants/slate";
+import * as queryConstants from "../constants/query";
 import getPreviousNode from "./getPreviousNode";
 import getPossibleTokenTypes from "./getPossibleTokenTypes";
 import getPossibleActions from "./getPossibleActions";
@@ -183,6 +184,18 @@ export default function getPossibleSchemaValues(editor, ontology, structure) {
         }
         case slateConstants.VALUE: {
           // consider previous property; may need to show a datepicker
+          const fieldNode = getPreviousNode(
+            editor,
+            editor.selection.anchor.path,
+            false,
+            2
+          );
+          const variableType = (
+            ontology.properties.find(p => p.name === Node.text(fieldNode)) || {}
+          ).type;
+          if (variableType === queryConstants.DATE) {
+            return acc.concat([queryConstants.DATE]);
+          }
           return acc;
         }
         case slateConstants.QUANTIFIER: {

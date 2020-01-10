@@ -17,15 +17,10 @@ export default function TextArea() {
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
 
   const onSelect = useCallback(
-    index => {
-      onAutocompleteSelect(
-        editor,
-        ontology,
-        structure,
-        autocompleteOptions[index]
-      );
+    text => {
+      onAutocompleteSelect(editor, ontology, structure, text);
     },
-    [ontology, structure, editor, autocompleteOptions]
+    [ontology, structure, editor]
   );
 
   const onCursorPositionChange = useCallback(
