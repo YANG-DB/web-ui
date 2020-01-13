@@ -11,10 +11,25 @@
 }
 
 .day:hover {
-  background: gray;
+  background: #d0d0d0;
 }
 
 .dayKeys,
 .day {
   width: 30px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.buttons button {
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.buttons button:hover {
+  opacity: 0.7;
 }

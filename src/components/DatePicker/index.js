@@ -67,10 +67,16 @@ export default function DatePicker({ onSelect }) {
           selectedDate={currentDate && moment(currentDate, MONTH_INPUT_FORMAT)}
         />
       </ul>
-      <button onClick={decrementMonth}>-- month</button>
-      <button onClick={incrementMonth}>++ month</button>
-      <button onClick={decrementYear}>-- year</button>
-      <button onClick={incrementYear}>++ year</button>
+      <div className={styles.buttons}>
+        <div>
+          <button onClick={decrementYear}>{"<<"}</button>
+          <button onClick={decrementMonth}>{"<"}</button>
+        </div>
+        <div>
+          <button onClick={incrementMonth}>{">"}</button>
+          <button onClick={incrementYear}>{">>"}</button>
+        </div>
+      </div>
     </div>
   );
 }
