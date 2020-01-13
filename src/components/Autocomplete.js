@@ -4,6 +4,7 @@ import * as slateConstants from "../constants/slate";
 import * as queryConstants from "../constants/query";
 import { DatePicker } from "../components";
 import styles from "./TextInput.module.css";
+import DatePickerRange from "./DatePicker/DatePickerRange";
 
 function getLabel(key) {
   if (key.endsWith("<")) {
@@ -41,6 +42,19 @@ export default function Autocomplete({
         }}
       >
         <DatePicker onSelect={onSelect} />
+      </div>
+    );
+  }
+  if (cursorPosition && isOpen && options.includes(queryConstants.DATE_RANGE)) {
+    return (
+      <div
+        className={cn(styles.autocomplete, options.length && styles.visible)}
+        style={{
+          top: `${cursorPosition.top}px`,
+          left: `${cursorPosition.left}px`
+        }}
+      >
+        <DatePickerRange onSelect={onSelect} />
       </div>
     );
   }

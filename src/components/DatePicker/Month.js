@@ -8,11 +8,7 @@ import styles from "./DatePicker.module.css";
 export const MONTH_FORMAT = "MMMM";
 export const YEAR_FORMAT = "YYYY";
 
-const isSelected = (day, date) => {
-  return (day && date && day.isSame(date, "d")) || false;
-};
-
-export default function Month({ month, onSelect, selectedDate }) {
+export default function Month({ month, selectedDate }) {
   const weeks = month && getWeeks(month, false);
   return month ? (
     <div>
@@ -26,14 +22,7 @@ export default function Month({ month, onSelect, selectedDate }) {
             <tr key={i}>
               {week.map((day, k) => {
                 if (moment.isMoment(day)) {
-                  return (
-                    <Day
-                      day={day}
-                      onSelect={onSelect}
-                      isSelected={isSelected(day, selectedDate)}
-                      key={k}
-                    />
-                  );
+                  return <Day day={day} key={k} />;
                 }
                 return <td key={k} />;
               })}

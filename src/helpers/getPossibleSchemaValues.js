@@ -202,7 +202,13 @@ export default function getPossibleSchemaValues(editor, ontology, structure) {
             variableType === queryConstants.DATE &&
             !queryConstants.UNARY_OPERATORS.includes(Node.text(operatorNode))
           ) {
-            return acc.concat([queryConstants.DATE]);
+            if (
+              queryConstants.RANGE_OPERATORS.includes(Node.text(operatorNode))
+            ) {
+              return acc.concat([queryConstants.DATE_RANGE]);
+            } else {
+              return acc.concat([queryConstants.DATE]);
+            }
           }
           return acc;
         }

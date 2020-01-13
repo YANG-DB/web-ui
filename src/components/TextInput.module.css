@@ -164,7 +164,8 @@
 }
 
 .value {
-  background: gray;
+  background: #4545ff;
+  color: white;
 }
 
 .block {

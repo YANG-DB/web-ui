@@ -22,6 +22,10 @@ function getWeekHeaders() {
   return weekHeaders;
 }
 
+export const DateContext = React.createContext(
+  null // default value
+);
+
 export default function DatePicker({ onSelect }) {
   const [currentMonth, setCurrentMonth] = useState(moment());
   const [currentDate, setCurrentDate] = useState(null); // we will store this as a string
@@ -53,30 +57,30 @@ export default function DatePicker({ onSelect }) {
 
   return (
     <div>
-      <div className={styles.weekHeaders}>
-        <table>
-          <tbody>
-            <tr>{getWeekHeaders()}</tr>
-          </tbody>
-        </table>
-      </div>
-      <ul className={styles.list}>
-        <Month
-          month={currentMonth}
-          onSelect={onDateSelect}
-          selectedDate={currentDate && moment(currentDate, MONTH_INPUT_FORMAT)}
-        />
-      </ul>
-      <div className={styles.buttons}>
-        <div>
-          <button onClick={decrementYear}>{"<<"}</button>
-          <button onClick={decrementMonth}>{"<"}</button>
+      <DateContext.Provider
+        value={{ selectedDate: currentDate, onSelect: onDateSelect }}
+      >
+        <div className={styles.weekHeaders}>
+          <table>
+            <tbody>
+              <tr>{getWeekHeaders()}</tr>
+            </tbody>
+          </table>
         </div>
-        <div>
-          <button onClick={incrementMonth}>{">"}</button>
-          <button onClick={incrementYear}>{">>"}</button>
+        <ul className={styles.list}>
+          <Month month={currentMonth} />
+        </ul>
+        <div className={styles.buttons}>
+          <div>
+            <button onClick={decrementYear}>{"<<"}</button>
+            <button onClick={decrementMonth}>{"<"}</button>
+          </div>
+          <div>
+            <button onClick={incrementMonth}>{">"}</button>
+            <button onClick={incrementYear}>{">>"}</button>
+          </div>
         </div>
-      </div>
+      </DateContext.Provider>
     </div>
   );
 }

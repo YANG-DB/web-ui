@@ -185,7 +185,13 @@ function isTerminalNode(editor, path) {
   );
 }
 
-export function onAutocompleteSelect(editor, ontology, structure, text) {
+export function onAutocompleteSelect(
+  editor,
+  ontology,
+  structure,
+  text,
+  shouldTokenise = true
+) {
   switch (text) {
     case slateConstants.FILTER_ICON: {
       createFilterGroup(editor);
@@ -201,7 +207,9 @@ export function onAutocompleteSelect(editor, ontology, structure, text) {
     }
     default: {
       replaceCurrentNode(editor, text);
-      tokenise(editor, ontology, structure) && startNewNode(editor);
+      shouldTokenise &&
+        tokenise(editor, ontology, structure) &&
+        startNewNode(editor);
     }
   }
 }

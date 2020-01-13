@@ -17,8 +17,8 @@ export default function TextArea() {
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
 
   const onSelect = useCallback(
-    text => {
-      onAutocompleteSelect(editor, ontology, structure, text);
+    (text, shouldTokenise) => {
+      onAutocompleteSelect(editor, ontology, structure, text, shouldTokenise);
     },
     [ontology, structure, editor]
   );
