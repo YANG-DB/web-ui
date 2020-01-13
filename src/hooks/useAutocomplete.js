@@ -74,7 +74,7 @@ export default function useAutocomplete(possibilities, onSelect) {
         if (state.isOpen) {
           if (state.highlightedIndex >= 0) {
             e.preventDefault();
-            onSelect(state.highlightedIndex);
+            onSelect(possibilities[state.highlightedIndex]);
           } else {
             dispatch({ type: "CLOSE" });
           }
