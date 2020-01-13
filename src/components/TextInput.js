@@ -322,16 +322,24 @@ function TextInput({
                   event.preventDefault();
                   return;
                 }
-                if (
-                  [
-                    slateConstants.QUANTIFIER_LABEL,
-                    slateConstants.FILTER_LABEL
-                  ].includes(node.variant)
-                ) {
-                  event.preventDefault();
-                  Editor.removeNodes(editor, {
-                    at: path.slice(0, path.length - 2)
-                  });
+                if (isInBranch(editor)) {
+                  // if its the last node in a group, we need to delete the whole group
+                  const branchIndex = path[path.length - BRANCH_DEPTH];
+                  const tokenIndex = path[path.length - (BRANCH_DEPTH - 1)];
+                  if (branchIndex === 0 && tokenIndex === 0) {
+                    const currentNodeText = Node.text(
+                      Node.get(editor, editor.selection.anchor.path)
+                    );
+                    if (
+                      !Node.has(editor, getBranchPath(editor, 1)) &&
+                      (!currentNodeText || currentNodeText.length === 1)
+                    ) {
+                      event.preventDefault();
+                      Editor.removeNodes(editor, {
+                        at: path.slice(0, path.length - (GROUP_DEPTH - 1))
+                      });
+                    }
+                  }
                 }
                 break;
               }
