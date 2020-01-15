@@ -2,35 +2,43 @@
   display: flex;
   flex-grow: 1;
   min-height: 200px;
+  background: var(--grey-two);
 }
 
 .aggregates {
-  flex-basis: 200px;
+  flex-basis: 25%;
   flex-shrink: 0;
   flex-grow: 0;
   display: flex;
   flex-direction: column;
 }
 
-.card {
-  box-shadow: 3px 4px 12px -6px #0000005c;
-  margin: 5px;
-  background: #d0d0d0;
-  border-radius: 8px;
+.wrapper {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  border-radius: 20px;
 }
 
 .summary {
-  composes: card;
   flex-grow: 1;
 }
 
 .trends {
-  composes: card;
   flex-grow: 1;
 }
 
 .tabs {
-  composes: card;
   flex-grow: 1;
   overflow: auto;
+}
+
+.placeholder {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }

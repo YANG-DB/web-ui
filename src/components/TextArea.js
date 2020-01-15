@@ -9,6 +9,8 @@ import mockStructure from "../mocks/structures/Default";
 
 import useAutocomplete from "../hooks/useAutocomplete";
 
+import globalStyles from "../App.module.css";
+
 export default function TextArea() {
   const editor = useMemo(() => withReact(createEditor()), []);
   const [cursorPosition, setCursorPosition] = useState(null);
@@ -41,7 +43,7 @@ export default function TextArea() {
   }, []);
 
   return (
-    <div>
+    <div className={globalStyles.section}>
       <Autocomplete
         options={autocompleteOptions}
         isOpen={isOpen}
