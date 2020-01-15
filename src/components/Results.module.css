@@ -42,3 +42,7 @@
   align-items: center;
   height: 100%;
 }
+
+.placeholder img {
+  max-height: 200px;
+}
