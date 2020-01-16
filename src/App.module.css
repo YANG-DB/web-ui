@@ -2,7 +2,10 @@
   --border-radius: 5px;
   --grey-one: #ededed;
   --grey-two: #f0f0f0;
+  --grey-three: #767070;
   --highlight: #6baeff;
+  --highlight-dark: #3a80d4;
+  --secondary: #038ea0;
 }
 
 .app {
@@ -50,7 +53,6 @@
 .card h2 {
   margin: 0;
   text-align: left;
-  text-transform: uppercase;
   letter-spacing: 4px;
   font-weight: 300;
 }
@@ -58,11 +60,14 @@
 .card h3 {
   display: inline-block;
   padding: 0px 35px;
-  border-right: 1px solid var(--highlight);
 }
 
 .card h3:last-child {
   border-right: none;
+}
+
+.card h2 {
+  text-transform: uppercase;
 }
 
 /* .card {

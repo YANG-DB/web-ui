@@ -1,7 +1,8 @@
 .query {
   height: 300px;
   display: flex;
-  font-family: "Roboto Mono", monospace;
+  font-family: "PT Mono", monospace;
+  /* font-weight: 200; */
   position: relative;
   border-radius: var(--border-radius);
   overflow: hidden;
@@ -31,7 +32,6 @@
   border-bottom-left-radius: 5px;
   height: 60px;
   cursor: pointer;
-  font-family: "Roboto Condensed", sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,7 +113,7 @@
   border-radius: 4px;
   transition: left 0.5s ease;
   visibility: hidden;
-  font-family: "Roboto Mono", monospace;
+  font-family: "PT Mono", monospace;
 }
 
 .autocomplete.visible {

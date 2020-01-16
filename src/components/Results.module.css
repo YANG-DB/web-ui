@@ -33,6 +33,12 @@
 .tabs {
   flex-grow: 1;
   overflow: auto;
+  padding: 0;
+}
+
+.headers {
+  padding: 20px;
+  border-bottom: 1px solid var(--grey-one);
 }
 
 .placeholder {
@@ -45,4 +51,60 @@
 
 .placeholder img {
   max-height: 200px;
+}
+
+.headers * {
+  box-sizing: border-box;
+  transition: all 0.35s ease;
+}
+
+.headers h3 {
+  overflow: hidden;
+  border-right: 1px solid var(--grey-one);
+}
+
+.headers h3.selected a:after {
+  color: var(--highlight-dark);
+}
+
+.headers a {
+  padding: 0.3em 0;
+  position: relative;
+  display: inline-block;
+  letter-spacing: 1px;
+  margin: 0;
+  text-decoration: none;
+  color: black;
+}
+
+.headers a:before,
+.headers a:after {
+  position: absolute;
+  transition: all 0.35s ease;
+}
+
+.headers a:before {
+  bottom: 100%;
+  display: block;
+  height: 3px;
+  width: 100%;
+  content: "";
+  background-color: var(--highlight);
+}
+.headers a:after {
+  padding: 0.3em 0;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  content: attr(data-hover);
+  color: black;
+  white-space: nowrap;
+}
+.headers h3:hover a,
+.headers .selected a {
+  transform: translateY(100%);
+}
+
+.summaryTable {
+  padding: 0px 0px 0px 20px;
 }

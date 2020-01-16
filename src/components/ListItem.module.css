@@ -1,0 +1,16 @@
+.item {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 200;
+  margin: 20px 0px;
+  color: var(--grey-three);
+  border-radius: 30px;
+  box-shadow: 2px 0px 15px -6px #00000021;
+  padding: 10px 20px;
+}
+
+.item div:last-child {
+  color: var(--secondary);
+}
