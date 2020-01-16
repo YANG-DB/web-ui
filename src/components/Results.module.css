@@ -24,10 +24,13 @@
 
 .summary {
   flex-grow: 1;
+  max-height: 50%;
+  overflow: auto;
 }
 
 .trends {
   flex-grow: 1;
+  max-height: 50%;
 }
 
 .tabs {
