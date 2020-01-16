@@ -40,7 +40,7 @@
 }
 
 .headers {
-  padding: 20px;
+  padding: 10px;
   border-bottom: 1px solid var(--grey-one);
 }
 
@@ -64,10 +64,11 @@
 .headers h3 {
   overflow: hidden;
   border-right: 1px solid var(--grey-one);
+  font-size: 16px;
 }
 
 .headers a {
-  padding: 0.3em 0;
+  padding: 1em 0;
   position: relative;
   display: inline-block;
   letter-spacing: 1px;
@@ -90,7 +91,7 @@
   background-color: var(--highlight);
 }
 .headers a:after {
-  padding: 0.3em 0;
+  padding: 1em 0;
   position: absolute;
   bottom: 100%;
   left: 0;
