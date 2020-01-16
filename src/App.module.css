@@ -56,6 +56,11 @@
   text-align: left;
   letter-spacing: 4px;
   font-weight: 300;
+  color: var(--grey-three);
+}
+
+.card h3 a {
+  color: var(--grey-three);
 }
 
 .card h3 {

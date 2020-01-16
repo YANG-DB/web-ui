@@ -66,10 +66,6 @@
   border-right: 1px solid var(--grey-one);
 }
 
-.headers h3.selected a:after {
-  color: var(--highlight-dark);
-}
-
 .headers a {
   padding: 0.3em 0;
   position: relative;
@@ -77,7 +73,6 @@
   letter-spacing: 1px;
   margin: 0;
   text-decoration: none;
-  color: black;
 }
 
 .headers a:before,
@@ -100,12 +95,15 @@
   bottom: 100%;
   left: 0;
   content: attr(data-hover);
-  color: black;
   white-space: nowrap;
 }
 .headers h3:hover a,
 .headers .selected a {
   transform: translateY(100%);
+}
+
+.headers .selected a {
+  color: black;
 }
 
 .summaryTable {
