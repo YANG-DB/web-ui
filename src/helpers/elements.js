@@ -40,10 +40,11 @@ export function quantifier(type) {
   };
 }
 
-export function filter() {
+export function filter(forType) {
   return {
     type: slateConstants.GROUP,
     variant: slateConstants.FILTER_GROUP,
+    forType,
     children: [
       {
         type: slateConstants.TOKEN,

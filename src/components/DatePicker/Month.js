@@ -13,7 +13,7 @@ export default function Month({ month, selectedDate }) {
   return month ? (
     <div>
       <div className={styles.header}>
-        <div>{month.format(MONTH_FORMAT)}</div>
+        <div className={styles.month}>{month.format(MONTH_FORMAT)}</div>
         <div className={styles.yearHeader}>{month.format(YEAR_FORMAT)}</div>
       </div>
       <table className={styles.content}>

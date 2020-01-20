@@ -77,7 +77,7 @@ function createFilterGroup(editor) {
   if (previous && previous.variant !== slateConstants.FILTER_GROUP) {
     // then we add a filter to the previous node
     Editor.removeNodes(editor);
-    Editor.insertNodes(editor, filter());
+    Editor.insertNodes(editor, filter(previous.variant));
   }
 }
 
@@ -147,10 +147,12 @@ function tokenise(editor, ontology, structure) {
         at: editor.selection.anchor.path
       });
     }
+    const isFirst = isFirstInBranch(editor, editor.selection.anchor.path);
     Editor.setNodes(editor, {
       type: slateConstants.TOKEN,
       variant: type,
-      valid
+      valid,
+      isFirst
     });
     return true;
   }
@@ -169,6 +171,10 @@ function escapeGroup(editor) {
     // then we are at end of branch
     selectOrCreate(editor, textNode(), GROUP_DEPTH);
   }
+}
+
+function isFirstInBranch(editor, path) {
+  return !getPreviousNode(editor, path, false, 1);
 }
 
 function isTerminalNode(editor, path) {
@@ -223,7 +229,7 @@ function TextInput({
   structure,
   onCursorPositionChange
 }) {
-  const [value, setValue] = useState(input);
+  const [value, setValue] = useState([textNode()]);
   const [focusPath, setFocusPath] = useState(null);
   const lastAutocompleteOptions = useRef(null);
 
@@ -353,12 +359,7 @@ function TextInput({
                 break;
               }
               default: {
-                if (
-                  [
-                    slateConstants.QUANTIFIER_LABEL,
-                    slateConstants.FILTER_LABEL
-                  ].includes(node.variant)
-                ) {
+                if (!isTerminalNode(editor, editor.selection.focus.path)) {
                   event.preventDefault();
                 }
               }

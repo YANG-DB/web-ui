@@ -1,8 +1,20 @@
+:root {
+  --border-radius: 5px;
+  --grey-one: #ededed;
+  --grey-two: #f0f0f0;
+  --grey-three: #767070;
+  --highlight: #6baeff;
+  --highlight-dark: #3a80d4;
+  --secondary: #038ea0;
+  --sans: "PT Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  --mono: "Inconsolata", monospace;
+}
+
 body {
   margin: 0;
-  font-family: "PT Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-    "Helvetica Neue", sans-serif;
+  font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -9,7 +9,8 @@ export default function Token(props) {
       className={cn(
         styles[props.element.variant],
         styles.token,
-        props.element.valid === false && styles.invalid
+        props.element.valid === false && styles.invalid,
+        props.element.isFirst && styles.isFirst
       )}
     >
       {props.children}
