@@ -1,11 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import cn from "classnames";
 import { ListItem } from "../components";
 import styles from "./Results.module.css";
 import globalStyles from "../App.module.css";
-import placeholder from "../assets/network.png";
+import Force from "./Force";
+
+const types = {
+  TABLE: "Table",
+  LIST: "List",
+  GRAPH: "Graph"
+};
+
+function showResults(type, results) {
+  switch (type) {
+    case types.TABLE:
+      return <div></div>;
+    case types.LIST:
+      return <div></div>;
+    case types.GRAPH:
+      return <Force></Force>;
+    default:
+      return <div></div>;
+  }
+}
 
 export default function Results() {
+  const [resultType, setResultType] = useState(types.GRAPH);
+  const results = {}; // TODO
   return (
     <div className={cn(styles.results, globalStyles.section)}>
       <div className={cn(styles.wrapper, globalStyles.rounded)}>
@@ -40,24 +61,22 @@ export default function Results() {
           )}
         >
           <div className={styles.headers}>
-            <h3>
-              <a href="" data-hover="Table">
-                Table
-              </a>
-            </h3>
-            <h3>
-              <a href="" data-hover="List">
-                List
-              </a>
-            </h3>
-            <h3 className={styles.selected}>
-              <a href="" data-hover="Graph">
-                Graph
-              </a>
-            </h3>
+            {Object.keys(types).map(t => {
+              console.log(resultType, types[t]);
+              return (
+                <h3 className={cn(resultType === types[t] && styles.selected)}>
+                  <button
+                    data-hover={types[t]}
+                    onClick={() => setResultType(types[t])}
+                  >
+                    {types[t]}
+                  </button>
+                </h3>
+              );
+            })}
           </div>
-          <div className={styles.placeholder}>
-            <img src={placeholder} alt="" />
+          <div className={styles.resultWrapper}>
+            {showResults(resultType, results)}
           </div>
         </div>
       </div>

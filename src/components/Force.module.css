@@ -1,0 +1,14 @@
+.svg {
+  width: 100%;
+  height: 100%;
+}
+.line {
+  stroke: var(--secondary);
+}
+
+.node {
+  r: 10;
+  fill: var(--highlight);
+  stroke: var(--secondary);
+  stroke-width: 2px;
+}

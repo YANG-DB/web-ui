@@ -120,6 +120,7 @@
   font-family: var(--sans);
   font-size: 14px;
   background: var(--grey-one);
+  overflow: hidden;
 }
 
 .autocomplete.visible {
