@@ -87,7 +87,7 @@ export default function Force({ results }) {
     simulation
       .force("link")
       .links(relationships)
-      .distance(d => 500);
+      .distance(d => Math.min(height, width) - 50);
 
     function ticked() {
       link
