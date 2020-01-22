@@ -91,20 +91,40 @@ export default function Force({ results }) {
       .links(relationships)
       .distance(d => Math.min(height, width) - 50);
 
+    function scale(source, target) {
+      const x = target.x - source.x;
+      const y = target.y - source.y;
+      const ln = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+      const r = 10;
+      const scaleFactor = r / ln;
+      return {
+        offset: {
+          x: scaleFactor * x,
+          y: scaleFactor * y
+        }
+      };
+    }
+
     function ticked() {
       link
+        .each(d => {
+          if (d.source.x && d.target.x) {
+            const { x, y } = scale(d.source, d.target).offset;
+            d.offsetX = x;
+            d.offsetY = y;
+          }
+        })
         .attr("x1", function(d) {
-          console.log("data point", d);
-          return d.source.x;
+          return d.source.x + d.offsetX;
         })
         .attr("y1", function(d) {
-          return d.source.y;
+          return d.source.y + d.offsetY;
         })
         .attr("x2", function(d) {
-          return d.target.x;
+          return d.target.x - d.offsetX;
         })
         .attr("y2", function(d) {
-          return d.target.y;
+          return d.target.y - d.offsetY;
         });
 
       node

@@ -4,6 +4,7 @@
 }
 .line {
   stroke: var(--secondary);
+  opacity: 0.3;
 }
 
 .node {
@@ -13,14 +14,15 @@
   stroke: var(--secondary);
   stroke-width: 2px;
   cursor: pointer;
+  opacity: 0.6;
 }
 
 .text {
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 1s ease;
-  transform: translate(20px, 5px);
-  fill: var(--secondary);
+  transition: opacity 1s ease, font-size 1s ease, transform 1s ease,
+    fill 1s ease;
+  transform: translate(12px, 5px);
+  fill: black;
+  font-size: 12px;
 }
 
 .nodeGroup {
@@ -29,9 +31,12 @@
 
 .nodeGroup:hover .node {
   r: 15;
+  opacity: 1;
 }
 
 .nodeGroup:hover .text {
-  visibility: visible;
   opacity: 1;
+  fill: var(--highlight);
+  transform: translate(20px, 5px);
+  font-size: 16px;
 }
