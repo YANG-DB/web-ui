@@ -15,8 +15,6 @@ export default function Force({ results }) {
       target: r.eID2
     }));
 
-    console.log("yo", width, height);
-
     const simulation = d3
       .forceSimulation()
       .force(
@@ -62,10 +60,11 @@ export default function Force({ results }) {
       .enter()
       .append("g")
       .attr("class", "nodes")
-      .selectAll(".circle")
+      .selectAll(`.${styles.nodeGroup}`)
       .data(entities)
       .enter()
-      .append("g");
+      .append("g")
+      .attr("class", styles.nodeGroup);
 
     var node = gNode
       .append("circle")
@@ -78,9 +77,12 @@ export default function Force({ results }) {
           .on("end", dragended)
       );
 
-    const labels = gNode.append("text").text(function(d) {
-      return d.id;
-    });
+    const labels = gNode
+      .append("text")
+      .text(function(d) {
+        return d.id;
+      })
+      .attr("class", styles.text);
 
     simulation.nodes(entities).on("tick", ticked);
 

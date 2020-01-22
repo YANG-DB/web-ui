@@ -8,7 +8,30 @@
 
 .node {
   r: 10;
+  transition: r 1s ease;
   fill: var(--highlight);
   stroke: var(--secondary);
   stroke-width: 2px;
+  cursor: pointer;
+}
+
+.text {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 1s ease;
+  transform: translate(20px, 5px);
+  fill: var(--secondary);
+}
+
+.nodeGroup {
+  opacity: 1;
+}
+
+.nodeGroup:hover .node {
+  r: 15;
+}
+
+.nodeGroup:hover .text {
+  visibility: visible;
+  opacity: 1;
 }
