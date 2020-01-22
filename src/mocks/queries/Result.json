@@ -213,7 +213,7 @@
                       "rID": "OwnP02_Mlle.BaptistineD01_Myriel",
                       "agg": false,
                       "rType": "Own",
-                      "directional": false,
+                      "directional": true,
                       "eID1": "P02_Mlle.Baptistine",
                       "eID2": "D01_Myriel",
                       "eTag1": "p",

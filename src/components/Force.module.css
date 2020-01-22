@@ -17,11 +17,21 @@
   opacity: 0.6;
 }
 
+.rLabel {
+  fill: #235087;
+  text-transform: uppercase;
+  text-anchor: middle;
+}
+
+.marker {
+  fill: var(--secondary);
+}
+
 .text {
   transition: opacity 1s ease, font-size 1s ease, transform 1s ease,
     fill 1s ease;
   transform: translate(12px, 5px);
-  fill: black;
+  fill: #235087;
   font-size: 12px;
 }
 

@@ -43,16 +43,40 @@ export default function Force({ results }) {
       d.fy = null;
     }
 
-    var link = svg
+    const defs = svg
+      .selectAll("defs")
+      .data([null])
+      .enter()
+      .append("svg:defs");
+
+    defs
+      .append("svg:marker")
+      .attr("id", "arrow-end")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 10) //so that it comes towards the center.
+      .attr("markerWidth", 10)
+      .attr("markerHeight", 10)
+      .attr("orient", "auto")
+      .append("svg:path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("class", styles.marker);
+
+    var gLink = svg
       .selectAll(".links")
       .data([null])
       .enter()
       .append("g")
       .attr("class", "links")
-      .selectAll("line")
+      .selectAll(".linkGroup")
       .data(relationships)
-      .join("line")
-      .attr("class", styles.line);
+      .enter()
+      .append("g")
+      .attr("class", "linkGroup");
+
+    const link = gLink
+      .append("path")
+      .attr("class", styles.line)
+      .attr("id", d => d.id);
 
     var gNode = svg
       .selectAll(".nodes")
@@ -84,6 +108,16 @@ export default function Force({ results }) {
       })
       .attr("class", styles.text);
 
+    const linkLabels = gLink
+      .append("text")
+      .append("textPath")
+      .attr("class", styles.rLabel)
+      .attr("startOffset", "50%")
+      .attr("href", d => `#${d.id}`)
+      .text(function(d) {
+        return d.rType;
+      });
+
     simulation.nodes(entities).on("tick", ticked);
 
     simulation
@@ -91,41 +125,42 @@ export default function Force({ results }) {
       .links(relationships)
       .distance(d => Math.min(height, width) - 50);
 
-    function scale(source, target) {
+    function scale(source, target, scaleFactor) {
+      let factor = scaleFactor;
       const x = target.x - source.x;
       const y = target.y - source.y;
       const ln = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-      const r = 10;
-      const scaleFactor = r / ln;
+      if (typeof factor === "undefined") {
+        const r = 10;
+        factor = r / ln;
+      }
       return {
         offset: {
-          x: scaleFactor * x,
-          y: scaleFactor * y
+          x: factor * x,
+          y: factor * y
         }
       };
     }
 
+    function lineFunction(source, target) {
+      let offsetX, offsetY;
+      const { x, y } = scale(source, target).offset;
+      offsetX = x;
+      offsetY = y;
+      return d3
+        .line()
+        .x(function(d, i) {
+          return i === 0 ? d.x + offsetX : d.x - offsetX;
+        })
+        .y(function(d, i) {
+          return i === 0 ? d.y + offsetY : d.y - offsetY;
+        })([source, target]);
+    }
+
     function ticked() {
       link
-        .each(d => {
-          if (d.source.x && d.target.x) {
-            const { x, y } = scale(d.source, d.target).offset;
-            d.offsetX = x;
-            d.offsetY = y;
-          }
-        })
-        .attr("x1", function(d) {
-          return d.source.x + d.offsetX;
-        })
-        .attr("y1", function(d) {
-          return d.source.y + d.offsetY;
-        })
-        .attr("x2", function(d) {
-          return d.target.x - d.offsetX;
-        })
-        .attr("y2", function(d) {
-          return d.target.y - d.offsetY;
-        });
+        .attr("d", d => lineFunction(d.source, d.target))
+        .attr("marker-end", d => d.directional && "url(#arrow-end)");
 
       node
         .attr("cx", function(d) {
@@ -141,6 +176,14 @@ export default function Force({ results }) {
         })
         .attr("y", function(d) {
           return d.y;
+        });
+
+      linkLabels
+        .attr("x", function(d) {
+          return d.source.x;
+        })
+        .attr("y", function(d) {
+          return d.source.y;
         });
     }
   }, []);
