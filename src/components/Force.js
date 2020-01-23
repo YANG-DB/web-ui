@@ -186,6 +186,14 @@ export default function Force({ results }) {
           return d.source.y;
         });
     }
+
+    var zoom_handler = d3.zoom().on("zoom", zoom_actions);
+
+    function zoom_actions() {
+      gLink.attr("transform", d3.event.transform);
+      gNode.attr("transform", d3.event.transform);
+    }
+    zoom_handler(svg);
   }, []);
   return <svg ref={ref} className={styles.svg}></svg>;
 }
