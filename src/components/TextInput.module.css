@@ -5,7 +5,8 @@
 }
 
 .query {
-  height: 300px;
+  min-height: 170px;
+  max-height: 300px;
   display: flex;
   font-family: var(--mono);
   letter-spacing: 1px;
