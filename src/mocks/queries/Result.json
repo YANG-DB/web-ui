@@ -48,7 +48,9 @@
                 {
                   "entities": [
                     {
-                      "eTag": ["d"],
+                      "eTag": [
+                        "d"
+                      ],
                       "eID": "D01_Myriel",
                       "eType": "Dragon",
                       "properties": [
@@ -80,7 +82,9 @@
                       ]
                     },
                     {
-                      "eTag": ["d"],
+                      "eTag": [
+                        "d"
+                      ],
                       "eID": "D02_Kolbert",
                       "eType": "Dragon",
                       "properties": [
@@ -112,7 +116,9 @@
                       ]
                     },
                     {
-                      "eTag": ["d"],
+                      "eTag": [
+                        "d"
+                      ],
                       "eID": "D03_Neptun",
                       "eType": "Dragon",
                       "properties": [
@@ -144,7 +150,9 @@
                       ]
                     },
                     {
-                      "eTag": ["p"],
+                      "eTag": [
+                        "p"
+                      ],
                       "eID": "P01_Napoleon",
                       "eType": "Person",
                       "properties": [
@@ -176,7 +184,9 @@
                       ]
                     },
                     {
-                      "eTag": ["p"],
+                      "eTag": [
+                        "p"
+                      ],
                       "eID": "P02_Mlle.Baptistine",
                       "eType": "Person",
                       "properties": [
@@ -220,22 +230,22 @@
                       "eTag2": "d"
                     },
                     {
+                      "rID": "OwnP02_Mlle.BaptistineD03_Neptun",
+                      "agg": false,
+                      "rType": "Own",
+                      "directional": true,
+                      "eID1": "P02_Mlle.Baptistine",
+                      "eID2": "D03_Neptun",
+                      "eTag1": "p",
+                      "eTag2": "d"
+                    },
+                    {
                       "rID": "OwnP02_Mlle.BaptistineD02_Kolbert",
                       "agg": false,
                       "rType": "Own",
                       "directional": false,
                       "eID1": "P02_Mlle.Baptistine",
                       "eID2": "D02_Kolbert",
-                      "eTag1": "p",
-                      "eTag2": "d"
-                    },
-                    {
-                      "rID": "OwnP01_NapoleonD03_Neptun",
-                      "agg": false,
-                      "rType": "Own",
-                      "directional": false,
-                      "eID1": "P01_Napoleon",
-                      "eID2": "D03_Neptun",
                       "eTag1": "p",
                       "eTag2": "d"
                     }

@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import * as d3 from "d3";
+import cn from "classnames";
 import useD3 from "../hooks/useD3";
+import resultsService from "../services/results";
 import mockResult from "../mocks/queries/Result.json";
 import styles from "./Force.module.css";
 
 export default function Force({ results }) {
   const ref = useD3(svg => {
     const { width, height } = svg.node().getBoundingClientRect();
-    const entities = results.entities.map(e => ({ ...e, id: e.eID }));
-    const relationships = results.relationships.map(r => ({
+    let entities = results.entities.map(e => ({ ...e, id: e.eID, canExpand: true, expanded: false }));
+    let relationships = results.relationships.map(r => ({
       ...r,
       id: r.rID,
       source: r.eID1,
@@ -16,15 +18,19 @@ export default function Force({ results }) {
     }));
 
     const simulation = d3
-      .forceSimulation()
+      .forceSimulation(entities)
       .force(
         "link",
-        d3.forceLink().id(function(d) {
+        d3.forceLink(relationships).id(function (d) {
           return d.id;
         })
       )
-      .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter(width / 2, height / 2));
+      .force('x', d3.forceX())
+      .force('y', d3.forceY())
+      .on("tick", ticked);
+
+    svg.attr('viewBox', [-width / 2, -height / 2, width, height])
+
 
     function dragstarted(d) {
       if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -53,7 +59,7 @@ export default function Force({ results }) {
       .append("svg:marker")
       .attr("id", "arrow-end")
       .attr("viewBox", "0 -5 10 10")
-      .attr("refX", 10) //so that it comes towards the center.
+      .attr("refX", 10)
       .attr("markerWidth", 10)
       .attr("markerHeight", 10)
       .attr("orient", "auto")
@@ -64,66 +70,25 @@ export default function Force({ results }) {
     var gLink = svg
       .selectAll(".links")
       .data([null])
-      .enter()
-      .append("g")
+      .join("g")
       .attr("class", "links")
-      .selectAll(".linkGroup")
-      .data(relationships)
-      .enter()
-      .append("g")
-      .attr("class", "linkGroup");
 
-    const link = gLink
-      .append("path")
-      .attr("class", styles.line)
-      .attr("id", d => d.id);
+    var link = gLink.selectAll(".linkGroup");
 
     var gNode = svg
       .selectAll(".nodes")
       .data([null])
-      .enter()
-      .append("g")
+      .join("g")
       .attr("class", "nodes")
-      .selectAll(`.${styles.nodeGroup}`)
-      .data(entities)
-      .enter()
-      .append("g")
-      .attr("class", styles.nodeGroup);
 
-    var node = gNode
-      .append("circle")
-      .attr("class", styles.node)
-      .call(
-        d3
-          .drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended)
-      );
+    var node = gNode.selectAll(`.${styles.nodeGroup}`);
 
-    const labels = gNode
-      .append("text")
-      .text(function(d) {
-        return d.id;
-      })
-      .attr("class", styles.text);
+    var circle = node.select('circle');
+    var labels = node.select('text');
+    var path = link.select('path');
+    var linkLabels = link.select('text');
 
-    const linkLabels = gLink
-      .append("text")
-      .append("textPath")
-      .attr("class", styles.rLabel)
-      .attr("startOffset", "50%")
-      .attr("href", d => `#${d.id}`)
-      .text(function(d) {
-        return d.rType;
-      });
-
-    simulation.nodes(entities).on("tick", ticked);
-
-    simulation
-      .force("link")
-      .links(relationships)
-      .distance(d => Math.min(height, width) - 50);
+    restart();
 
     function scale(source, target, scaleFactor) {
       let factor = scaleFactor;
@@ -149,42 +114,137 @@ export default function Force({ results }) {
       offsetY = y;
       return d3
         .line()
-        .x(function(d, i) {
+        .x(function (d, i) {
           return i === 0 ? d.x + offsetX : d.x - offsetX;
         })
-        .y(function(d, i) {
+        .y(function (d, i) {
           return i === 0 ? d.y + offsetY : d.y - offsetY;
         })([source, target]);
     }
 
     function ticked() {
-      link
+      path
         .attr("d", d => lineFunction(d.source, d.target))
         .attr("marker-end", d => d.directional && "url(#arrow-end)");
 
-      node
-        .attr("cx", function(d) {
+      linkLabels
+        .attr("x", function (d) {
+          return d.source.x;
+        })
+        .attr("y", function (d) {
+          return d.source.y;
+        });
+
+      circle
+        .attr("cx", function (d) {
           return d.x;
         })
-        .attr("cy", function(d) {
+        .attr("cy", function (d) {
           return d.y;
         });
 
       labels
-        .attr("x", function(d) {
+        .attr("x", function (d) {
           return d.x;
         })
-        .attr("y", function(d) {
+        .attr("y", function (d) {
           return d.y;
         });
+    }
 
-      linkLabels
-        .attr("x", function(d) {
-          return d.source.x;
+    function restart() {
+      // update nodes
+      node = node.data(entities, function (d) { return d.id; });
+      node.exit().remove();
+      var nodeEnter = node
+        .enter()
+        .append("g")
+        .attr("class", styles.nodeGroup);
+      node = nodeEnter.merge(node);
+
+      circle = nodeEnter.append("circle")
+        .on('click', d => {
+          if (d.canExpand) {
+            if (d.expanded) {
+              collapse(d);
+            } else {
+              expand(d)
+            }
+          }
         })
-        .attr("y", function(d) {
-          return d.source.y;
+        .call(
+          d3
+            .drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended)
+        ).merge(circle).attr("class", d => {
+          return cn(styles.node, !d.canExpand && styles.cannotExpand, d.expanded && styles.expanded)
         });
+
+      labels = nodeEnter.append("text")
+        .text(function (d) {
+          return d.id;
+        })
+        .attr("class", styles.text).merge(labels);
+
+      // update links
+      link = link.data(relationships, function (d) { return d.source.id + "-" + d.target.id; });
+      link.exit().remove();
+      var linkEnter = link.enter().append("g")
+        .attr("class", "linkGroup");
+
+      path = linkEnter.append("path")
+        .attr("class", styles.line)
+        .attr("id", d => d.id).merge(path);
+
+      linkLabels = linkEnter.append("text")
+        .append("textPath")
+        .attr("class", styles.rLabel)
+        .attr("startOffset", "50%")
+        .attr("href", d => `#${d.id}`)
+        .text(function (d) {
+          return d.rType;
+        }).merge(linkLabels);
+
+      link = linkEnter.merge(link);
+
+      // Update and restart the simulation.
+      simulation.nodes(entities);
+      simulation.force(
+        "link",
+        d3.forceLink(relationships).id(function (d) {
+          return d.id;
+        }).distance(200)
+      )
+        .force("collide", d3.forceCollide(50))
+      simulation.alpha(1).restart();
+    }
+
+    function collapse(node) {
+      entities = entities.filter(e => e.parent !== node.id);
+      relationships = relationships.filter(r => r.parent !== node.id);
+      node.expanded = false;
+      restart();
+    }
+
+    function expand(node) {
+      const { id } = node;
+      resultsService.update(id).then(results => {
+        let newResults = extract(results);
+        let newEntities = newResults.entities.filter(e => !entities.some(en => en.id === e.eID)).map(e => ({ ...e, id: e.eID, canExpand: false, parent: id }));
+        let newRelationships = newResults.relationships.filter(r => !relationships.some(rn => rn.id === r.rID)).map(r => ({
+          ...r,
+          id: r.rID,
+          source: r.eID1,
+          target: r.eID2,
+          parent: id
+        }));
+        relationships = relationships.concat(newRelationships);
+        entities = entities.concat(newEntities);
+        node.expanded = true;
+        restart();
+      });
     }
 
     var zoom_handler = d3.zoom().on("zoom", zoom_actions);
@@ -199,7 +259,10 @@ export default function Force({ results }) {
 }
 
 Force.defaultProps = {
-  results:
-    mockResult.data.cursorResourceInfos[0].pageResourceInfos[0].data
-      .assignments[0]
+  results: extract(mockResult)
 };
+
+function extract(results) {
+  return results.data.cursorResourceInfos[0].pageResourceInfos[0].data
+    .assignments[0]
+}

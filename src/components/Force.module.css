@@ -18,6 +18,14 @@
   opacity: 0.6;
 }
 
+.node.cannotExpand {
+  opacity: 0.2;
+}
+
+.node.expanded {
+  fill: blue;
+}
+
 .rLabel {
   fill: #235087;
   text-transform: uppercase;
