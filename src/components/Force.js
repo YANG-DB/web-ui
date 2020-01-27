@@ -217,7 +217,7 @@ export default function Force({ results }) {
           return d.id;
         }).distance(200)
       )
-        .force("collide", d3.forceCollide(50))
+        .force("collide", d3.forceCollide(75))
       simulation.alpha(1).restart();
     }
 
