@@ -5,6 +5,7 @@
   flex-direction: column;
   box-sizing: border-box;
   background: #e0dede;
+  overflow: hidden;
 }
 
 .section {

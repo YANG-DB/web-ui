@@ -4,12 +4,20 @@ import cn from "classnames";
 import useD3 from "../hooks/useD3";
 import resultsService from "../services/results";
 import mockResult from "../mocks/queries/Result.json";
+import eyeOn from "../assets/eye.svg";
+import eyeOff from "../assets/eye-off.svg";
 import styles from "./Force.module.css";
+
+const menuItems = ['toggleExpand', 'functionTwo', 'functionThree'];
+var pie = d3.pie().value(() => 1);
+var color = d3.scaleOrdinal()
+  .domain([0, 1, 2, 3, 4])
+  .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"])
 
 export default function Force({ results }) {
   const ref = useD3(svg => {
     const { width, height } = svg.node().getBoundingClientRect();
-    let entities = results.entities.map(e => ({ ...e, id: e.eID, canExpand: true, expanded: false }));
+    let entities = results.entities.map(e => ({ ...e, id: e.eID, fromQuery: true, expanded: false, menuOpen: false }));
     let relationships = results.relationships.map(r => ({
       ...r,
       id: r.rID,
@@ -83,6 +91,7 @@ export default function Force({ results }) {
 
     var node = gNode.selectAll(`.${styles.nodeGroup}`);
 
+    var menu = node.select(`.${styles.menu}`);
     var circle = node.select('circle');
     var labels = node.select('text');
     var path = link.select('path');
@@ -135,6 +144,8 @@ export default function Force({ results }) {
           return d.source.y;
         });
 
+      menu.attr('transform', d => `translate(${d.x} ${d.y})`)
+
       circle
         .attr("cx", function (d) {
           return d.x;
@@ -153,6 +164,55 @@ export default function Force({ results }) {
     }
 
     function restart() {
+      // create menu
+      const IMAGE_HEIGHT = 20;
+      const IMAGE_WIDTH = 20;
+      menu = menu.data(entities.filter(e => e.menuOpen), function (d) { return d.id; });
+      menu.exit().remove();
+      var menuEnter = menu.enter().append('svg:g').attr('class', styles.menu);
+      menu = menuEnter.merge(menu);
+      var menuItem = menu.selectAll('path').data(d => pie(menuItems).map(i => ({ node: d, ...i }))).enter().append('path')
+        .attr('d', d3.arc().innerRadius(0).outerRadius(20)
+        ).attr('fill', function (d, i) { return (color(i)) }).attr('class', styles.menuItem).on('click', d => {
+          switch (d.data) {
+            case 'toggleExpand': {
+              if (d.node.expanded) {
+                collapse(d.node);
+              } else {
+                expand(d.node);
+              }
+              break;
+            }
+            default:
+              return null;
+          }
+        });
+      var arc = d3.arc().innerRadius(20).outerRadius(50);
+      var menuIcon = menu.selectAll(`.${styles.menuIcon}`).data(d => pie(menuItems).map((i) => ({ node: d, ...i })));
+      menuIcon.exit().remove();
+      menuIcon = menuIcon.enter().append('svg:image')
+        .attr('width', "20")
+        .attr('x', d => 0)
+        .attr('y', d => 0)
+        .attr('class', styles.menuIcon)
+        .attr('width', IMAGE_WIDTH)
+        .attr('height', IMAGE_HEIGHT).call(selection => selection.transition().attr().attr('x', d => arc.centroid(d)[0] - IMAGE_WIDTH / 2)
+          .attr('y', d => arc.centroid(d)[1] - IMAGE_HEIGHT / 2)).merge(menuIcon);
+      menuItem.transition().attr('d', arc);
+      menuIcon.attr("xlink:href", d => {
+        switch (d.data) {
+          case 'toggleExpand': {
+            if (d.node.expanded) {
+              return eyeOff;
+            } else {
+              return eyeOn;
+            }
+          }
+          default:
+            return null;
+        }
+      })
+
       // update nodes
       node = node.data(entities, function (d) { return d.id; });
       node.exit().remove();
@@ -164,11 +224,11 @@ export default function Force({ results }) {
 
       circle = nodeEnter.append("circle")
         .on('click', d => {
-          if (d.canExpand) {
-            if (d.expanded) {
-              collapse(d);
+          if (d.fromQuery) {
+            if (!d.menuOpen) {
+              openMenu(d);
             } else {
-              expand(d)
+              closeMenu(d);
             }
           }
         })
@@ -179,7 +239,7 @@ export default function Force({ results }) {
             .on("drag", dragged)
             .on("end", dragended)
         ).merge(circle).attr("class", d => {
-          return cn(styles.node, !d.canExpand && styles.cannotExpand, d.expanded && styles.expanded)
+          return cn(styles.node, !d.fromQuery && styles.cannotExpand, d.expanded && styles.expanded)
         });
 
       labels = nodeEnter.append("text")
@@ -221,6 +281,20 @@ export default function Force({ results }) {
       simulation.alpha(1).restart();
     }
 
+    function openMenu(node) {
+      node.menuOpen = true;
+      node.fx = node.x;
+      node.fy = node.y;
+      restart();
+    }
+
+    function closeMenu(node) {
+      node.menuOpen = false;
+      node.fx = null;
+      node.fy = null;
+      restart();
+    }
+
     function collapse(node) {
       entities = entities.filter(e => e.parent !== node.id);
       relationships = relationships.filter(r => r.parent !== node.id);
@@ -232,7 +306,7 @@ export default function Force({ results }) {
       const { id } = node;
       resultsService.update(id).then(results => {
         let newResults = extract(results);
-        let newEntities = newResults.entities.filter(e => !entities.some(en => en.id === e.eID)).map(e => ({ ...e, id: e.eID, canExpand: false, parent: id }));
+        let newEntities = newResults.entities.filter(e => !entities.some(en => en.id === e.eID)).map(e => ({ ...e, id: e.eID, fromQuery: false, parent: id, menuOpen: false }));
         let newRelationships = newResults.relationships.filter(r => !relationships.some(rn => rn.id === r.rID)).map(r => ({
           ...r,
           id: r.rID,
