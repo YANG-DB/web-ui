@@ -9,6 +9,7 @@ export default function Token(props) {
       className={cn(
         styles[props.element.variant],
         styles.token,
+        props.element.forType && styles[props.element.forType],
         props.element.valid === false && styles.invalid,
         props.element.isFirst && styles.isFirst
       )}

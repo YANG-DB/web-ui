@@ -8,6 +8,7 @@ export default function getPreviousNode(
   traverseBranches = true,
   skip = 1,
   exclude = [
+    slateConstants.ALIAS,
     slateConstants.FILTER_ENTRIES,
     slateConstants.FILTER_GROUP,
     slateConstants.QUANTIFIER_LABEL,

@@ -175,12 +175,9 @@ export default function Force({ results }) {
       // create menu
       const IMAGE_HEIGHT = 20;
       const IMAGE_WIDTH = 20;
-      menu = menu.data(
-        entities.filter(e => e.menuOpen),
-        function(d) {
-          return d.id;
-        }
-      );
+      menu = menu.data(entities.filter(e => e.menuOpen), function(d) {
+        return d.id;
+      });
       menu.exit().remove();
       var menuEnter = menu
         .enter()

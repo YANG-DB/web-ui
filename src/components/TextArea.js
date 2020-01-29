@@ -17,6 +17,7 @@ export default function TextArea() {
   const [ontology, loadOntology] = useState(null);
   const [structure, loadStructure] = useState(null);
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
+  const [value, setValue] = useState([]);
 
   const onSelect = useCallback(
     (text, shouldTokenise) => {
@@ -44,6 +45,11 @@ export default function TextArea() {
 
   return (
     <div className={globalStyles.section}>
+      <div style={{ height: 200, background: 'grey', overflow: 'scroll' }}>
+        {
+          JSON.stringify(value)
+        }
+      </div>
       <Autocomplete
         options={autocompleteOptions}
         isOpen={isOpen}
@@ -52,6 +58,7 @@ export default function TextArea() {
         cursorPosition={cursorPosition}
       />
       <TextInput
+        onValue={setValue}
         editor={editor}
         ontology={ontology}
         structure={structure}

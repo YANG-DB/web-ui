@@ -207,6 +207,10 @@
   padding: 3px 25px;
 }
 
+.alias {
+  opacity: 0.8;
+}
+
 .quantifier {
   border-radius: 5px;
   box-shadow: 0px 3px 6px -2px #24242494;
@@ -232,6 +236,7 @@
   min-height: 40px;
 }
 
+.alias.entity,
 .token.entity {
   background: var(--entity-color);
   color: #cbe8ff;
@@ -250,6 +255,9 @@
   border: 1px solid var(--relationship-color);
 }
 
+.alias.relationship_in,
+.alias.relationship_out,
+.alias.relationship,
 .token.relationship,
 .token.relationship_out,
 .token.relationship_in {
@@ -265,7 +273,7 @@
   border-bottom-right-radius: 0;
 }
 
-.token.relationship_out:after {
+.token.relationship_out:not(.alias):after {
   position: absolute;
   content: "";
   width: 0px;
@@ -284,7 +292,7 @@
   border-bottom-left-radius: 0;
 }
 
-.token.relationship_in:after {
+.token.relationship_in:not(.alias):after {
   position: absolute;
   content: "";
   width: 0px;

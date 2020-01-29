@@ -10,6 +10,7 @@ export const FILTER_GROUP = "filter_group";
 export const FILTER_LABEL = "filter_label";
 export const FILTER_ENTRIES = "filter_entries";
 export const FILTER = "filter";
+export const ALIAS = "alias";
 
 export const ENTITY = "entity";
 export const RELATIONSHIP = "relationship";

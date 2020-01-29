@@ -91,6 +91,9 @@ function typeCheck(text, type) {
 }
 
 function isValid(editor, ontology, structure, intendedType) {
+  if (intendedType === slateConstants.ALIAS) {
+    return true; // TODO: should there be constraints on an alias?
+  }
   if (intendedType === slateConstants.VALUE) {
     const operatorNode = getPreviousNode(
       editor,
@@ -121,8 +124,28 @@ function isValid(editor, ontology, structure, intendedType) {
 function tokenise(editor, ontology, structure) {
   const previous = getPreviousNode(editor, editor.selection.anchor.path)
     .variant;
+  const immediatelyPrevious = getPreviousNode(
+    editor,
+    editor.selection.anchor.path,
+    false,
+    1,
+    []
+  ).variant;
   const text = Editor.text(editor, editor.selection.anchor.path);
-  const type = getTokenType(previous, text);
+  let type;
+  if (
+    [
+      slateConstants.ENTITY,
+      slateConstants.RELATIONSHIP,
+      slateConstants.RELATIONSHIP_IN,
+      slateConstants.RELATIONSHIP_OUT
+    ].includes(immediatelyPrevious) &&
+    text.startsWith(":")
+  ) {
+    type = slateConstants.ALIAS;
+  } else {
+    type = getTokenType(previous, text);
+  }
   if (!text.trim()) {
     return false;
   }
@@ -150,6 +173,7 @@ function tokenise(editor, ontology, structure) {
     const isFirst = isFirstInBranch(editor, editor.selection.anchor.path);
     Editor.setNodes(editor, {
       type: slateConstants.TOKEN,
+      forType: type === slateConstants.ALIAS ? immediatelyPrevious : null,
       variant: type,
       valid,
       isFirst
@@ -227,7 +251,8 @@ function TextInput({
   editor,
   ontology,
   structure,
-  onCursorPositionChange
+  onCursorPositionChange,
+  onValue
 }) {
   const [value, setValue] = useState([textNode()]);
   const [focusPath, setFocusPath] = useState(null);
@@ -265,6 +290,7 @@ function TextInput({
         value={value}
         onChange={value => {
           setValue(value);
+          onValue(value);
           setFocusPath(editor.selection && editor.selection.focus.path);
           let autocompleteOptions = [];
           if (
@@ -294,7 +320,6 @@ function TextInput({
           renderElement={renderElement}
           onKeyDown={event => {
             const path = editor.selection.anchor.path;
-            const node = Node.parent(editor, path);
             switch (event.key) {
               case "Escape": {
                 event.preventDefault();
