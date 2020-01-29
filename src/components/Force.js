@@ -8,16 +8,23 @@ import eyeOn from "../assets/eye.svg";
 import eyeOff from "../assets/eye-off.svg";
 import styles from "./Force.module.css";
 
-const menuItems = ['toggleExpand', 'functionTwo', 'functionThree'];
+const menuItems = ["toggleExpand", "functionTwo", "functionThree"];
 var pie = d3.pie().value(() => 1);
-var color = d3.scaleOrdinal()
+var color = d3
+  .scaleOrdinal()
   .domain([0, 1, 2, 3, 4])
-  .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"])
+  .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]);
 
 export default function Force({ results }) {
   const ref = useD3(svg => {
     const { width, height } = svg.node().getBoundingClientRect();
-    let entities = results.entities.map(e => ({ ...e, id: e.eID, fromQuery: true, expanded: false, menuOpen: false }));
+    let entities = results.entities.map(e => ({
+      ...e,
+      id: e.eID,
+      fromQuery: true,
+      expanded: false,
+      menuOpen: false
+    }));
     let relationships = results.relationships.map(r => ({
       ...r,
       id: r.rID,
@@ -29,16 +36,15 @@ export default function Force({ results }) {
       .forceSimulation(entities)
       .force(
         "link",
-        d3.forceLink(relationships).id(function (d) {
+        d3.forceLink(relationships).id(function(d) {
           return d.id;
         })
       )
-      .force('x', d3.forceX())
-      .force('y', d3.forceY())
+      .force("x", d3.forceX())
+      .force("y", d3.forceY())
       .on("tick", ticked);
 
-    svg.attr('viewBox', [-width / 2, -height / 2, width, height])
-
+    svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
 
     function dragstarted(d) {
       if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -81,7 +87,7 @@ export default function Force({ results }) {
       .selectAll(".links")
       .data([null])
       .join("g")
-      .attr("class", "links")
+      .attr("class", "links");
 
     var link = gLink.selectAll(".linkGroup");
 
@@ -89,15 +95,15 @@ export default function Force({ results }) {
       .selectAll(".nodes")
       .data([null])
       .join("g")
-      .attr("class", "nodes")
+      .attr("class", "nodes");
 
     var node = gNode.selectAll(`.${styles.nodeGroup}`);
 
     var menu = node.select(`.${styles.menu}`);
-    var circle = node.select('circle');
-    var labels = node.select('text');
-    var path = link.select('path');
-    var linkLabels = link.select('text');
+    var circle = node.select("circle");
+    var labels = node.select("text");
+    var path = link.select("path");
+    var linkLabels = link.select("text");
 
     restart();
 
@@ -125,10 +131,10 @@ export default function Force({ results }) {
       offsetY = y;
       return d3
         .line()
-        .x(function (d, i) {
+        .x(function(d, i) {
           return i === 0 ? d.x + offsetX : d.x - offsetX;
         })
-        .y(function (d, i) {
+        .y(function(d, i) {
           return i === 0 ? d.y + offsetY : d.y - offsetY;
         })([source, target]);
     }
@@ -139,28 +145,28 @@ export default function Force({ results }) {
         .attr("marker-end", d => d.directional && "url(#arrow-end)");
 
       linkLabels
-        .attr("x", function (d) {
+        .attr("x", function(d) {
           return d.source.x;
         })
-        .attr("y", function (d) {
+        .attr("y", function(d) {
           return d.source.y;
         });
 
-      menu.attr('transform', d => `translate(${d.x} ${d.y})`)
+      menu.attr("transform", d => `translate(${d.x} ${d.y})`);
 
       circle
-        .attr("cx", function (d) {
+        .attr("cx", function(d) {
           return d.x;
         })
-        .attr("cy", function (d) {
+        .attr("cy", function(d) {
           return d.y;
         });
 
       labels
-        .attr("x", function (d) {
+        .attr("x", function(d) {
           return d.x;
         })
-        .attr("y", function (d) {
+        .attr("y", function(d) {
           return d.y;
         });
     }
@@ -169,15 +175,37 @@ export default function Force({ results }) {
       // create menu
       const IMAGE_HEIGHT = 20;
       const IMAGE_WIDTH = 20;
-      menu = menu.data(entities.filter(e => e.menuOpen), function (d) { return d.id; });
+      menu = menu.data(
+        entities.filter(e => e.menuOpen),
+        function(d) {
+          return d.id;
+        }
+      );
       menu.exit().remove();
-      var menuEnter = menu.enter().append('svg:g').attr('class', styles.menu);
+      var menuEnter = menu
+        .enter()
+        .append("svg:g")
+        .attr("class", styles.menu);
       menu = menuEnter.merge(menu);
-      var menuItem = menu.selectAll('path').data(d => pie(menuItems).map(i => ({ node: d, ...i }))).enter().append('path')
-        .attr('d', d3.arc().innerRadius(0).outerRadius(20)
-        ).attr('fill', function (d, i) { return (color(i)) }).attr('class', styles.menuItem).on('click', d => {
+      var menuItem = menu
+        .selectAll("path")
+        .data(d => pie(menuItems).map(i => ({ node: d, ...i })))
+        .enter()
+        .append("path")
+        .attr(
+          "d",
+          d3
+            .arc()
+            .innerRadius(0)
+            .outerRadius(20)
+        )
+        .attr("fill", function(d, i) {
+          return color(i);
+        })
+        .attr("class", styles.menuItem)
+        .on("click", d => {
           switch (d.data) {
-            case 'toggleExpand': {
+            case "toggleExpand": {
               if (d.node.expanded) {
                 collapse(d.node);
               } else {
@@ -189,21 +217,35 @@ export default function Force({ results }) {
               return null;
           }
         });
-      var arc = d3.arc().innerRadius(20).outerRadius(50);
-      var menuIcon = menu.selectAll(`.${styles.menuIcon}`).data(d => pie(menuItems).map((i) => ({ node: d, ...i })));
+      var arc = d3
+        .arc()
+        .innerRadius(20)
+        .outerRadius(50);
+      var menuIcon = menu
+        .selectAll(`.${styles.menuIcon}`)
+        .data(d => pie(menuItems).map(i => ({ node: d, ...i })));
       menuIcon.exit().remove();
-      menuIcon = menuIcon.enter().append('svg:image')
-        .attr('width', "20")
-        .attr('x', d => 0)
-        .attr('y', d => 0)
-        .attr('class', styles.menuIcon)
-        .attr('width', IMAGE_WIDTH)
-        .attr('height', IMAGE_HEIGHT).call(selection => selection.transition().attr().attr('x', d => arc.centroid(d)[0] - IMAGE_WIDTH / 2)
-          .attr('y', d => arc.centroid(d)[1] - IMAGE_HEIGHT / 2)).merge(menuIcon);
-      menuItem.transition().attr('d', arc);
+      menuIcon = menuIcon
+        .enter()
+        .append("svg:image")
+        .attr("width", "20")
+        .attr("x", d => 0)
+        .attr("y", d => 0)
+        .attr("class", styles.menuIcon)
+        .attr("width", IMAGE_WIDTH)
+        .attr("height", IMAGE_HEIGHT)
+        .call(selection =>
+          selection
+            .transition()
+            .attr()
+            .attr("x", d => arc.centroid(d)[0] - IMAGE_WIDTH / 2)
+            .attr("y", d => arc.centroid(d)[1] - IMAGE_HEIGHT / 2)
+        )
+        .merge(menuIcon);
+      menuItem.transition().attr("d", arc);
       menuIcon.attr("xlink:href", d => {
         switch (d.data) {
-          case 'toggleExpand': {
+          case "toggleExpand": {
             if (d.node.expanded) {
               return eyeOff;
             } else {
@@ -213,10 +255,12 @@ export default function Force({ results }) {
           default:
             return null;
         }
-      })
+      });
 
       // update nodes
-      node = node.data(entities, function (d) { return d.id; });
+      node = node.data(entities, function(d) {
+        return d.id;
+      });
       node.exit().remove();
       var nodeEnter = node
         .enter()
@@ -224,8 +268,9 @@ export default function Force({ results }) {
         .attr("class", styles.nodeGroup);
       node = nodeEnter.merge(node);
 
-      circle = nodeEnter.append("circle")
-        .on('click', d => {
+      circle = nodeEnter
+        .append("circle")
+        .on("click", d => {
           if (d.fromQuery) {
             if (!d.menuOpen) {
               openMenu(d);
@@ -240,46 +285,66 @@ export default function Force({ results }) {
             .on("start", dragstarted)
             .on("drag", dragged)
             .on("end", dragended)
-        ).merge(circle).attr("class", d => {
-          return cn(styles.node, !d.fromQuery && styles.cannotExpand, d.expanded && styles.expanded)
+        )
+        .merge(circle)
+        .attr("class", d => {
+          return cn(
+            styles.node,
+            !d.fromQuery && styles.cannotExpand,
+            d.expanded && styles.expanded
+          );
         });
 
-      labels = nodeEnter.append("text")
-        .text(function (d) {
+      labels = nodeEnter
+        .append("text")
+        .text(function(d) {
           return d.id;
         })
-        .attr("class", styles.text).merge(labels);
+        .attr("class", styles.text)
+        .merge(labels);
 
       // update links
-      link = link.data(relationships, function (d) { return d.source.id + "-" + d.target.id; });
+      link = link.data(relationships, function(d) {
+        return d.source.id + "-" + d.target.id;
+      });
       link.exit().remove();
-      var linkEnter = link.enter().append("g")
+      var linkEnter = link
+        .enter()
+        .append("g")
         .attr("class", "linkGroup");
 
-      path = linkEnter.append("path")
+      path = linkEnter
+        .append("path")
         .attr("class", styles.line)
-        .attr("id", d => d.id).merge(path);
+        .attr("id", d => d.id)
+        .merge(path);
 
-      linkLabels = linkEnter.append("text")
+      linkLabels = linkEnter
+        .append("text")
         .append("textPath")
         .attr("class", styles.rLabel)
         .attr("startOffset", "50%")
         .attr("href", d => `#${d.id}`)
-        .text(function (d) {
+        .text(function(d) {
           return d.rType;
-        }).merge(linkLabels);
+        })
+        .merge(linkLabels);
 
       link = linkEnter.merge(link);
 
       // Update and restart the simulation.
       simulation.nodes(entities);
-      simulation.force(
-        "link",
-        d3.forceLink(relationships).id(function (d) {
-          return d.id;
-        }).distance(200)
-      )
-        .force("collide", d3.forceCollide(75))
+      simulation
+        .force(
+          "link",
+          d3
+            .forceLink(relationships)
+            .id(function(d) {
+              return d.id;
+            })
+            .distance(200)
+        )
+        .force("collide", d3.forceCollide(75));
       simulation.alpha(1).restart();
     }
 
@@ -308,14 +373,24 @@ export default function Force({ results }) {
       const { id } = node;
       resultsService.update(id).then(results => {
         let newResults = extract(results);
-        let newEntities = newResults.entities.filter(e => !entities.some(en => en.id === e.eID)).map(e => ({ ...e, id: e.eID, fromQuery: false, parent: id, menuOpen: false }));
-        let newRelationships = newResults.relationships.filter(r => !relationships.some(rn => rn.id === r.rID)).map(r => ({
-          ...r,
-          id: r.rID,
-          source: r.eID1,
-          target: r.eID2,
-          parent: id
-        }));
+        let newEntities = newResults.entities
+          .filter(e => !entities.some(en => en.id === e.eID))
+          .map(e => ({
+            ...e,
+            id: e.eID,
+            fromQuery: false,
+            parent: id,
+            menuOpen: false
+          }));
+        let newRelationships = newResults.relationships
+          .filter(r => !relationships.some(rn => rn.id === r.rID))
+          .map(r => ({
+            ...r,
+            id: r.rID,
+            source: r.eID1,
+            target: r.eID2,
+            parent: id
+          }));
         relationships = relationships.concat(newRelationships);
         entities = entities.concat(newEntities);
         node.expanded = true;
@@ -340,5 +415,5 @@ Force.defaultProps = {
 
 function extract(results) {
   return results.data.cursorResourceInfos[0].pageResourceInfos[0].data
-    .assignments[0]
+    .assignments[0];
 }
