@@ -10,6 +10,7 @@ import mockStructure from "../mocks/structures/Default";
 import useAutocomplete from "../hooks/useAutocomplete";
 
 import globalStyles from "../App.module.css";
+import { slateToQuery } from "../helpers";
 
 export default function TextArea() {
   const editor = useMemo(() => withReact(createEditor()), []);
@@ -45,10 +46,8 @@ export default function TextArea() {
 
   return (
     <div className={globalStyles.section}>
-      <div style={{ height: 200, background: 'grey', overflow: 'scroll' }}>
-        {
-          JSON.stringify(value)
-        }
+      <div style={{ height: 200, background: "grey", overflow: "scroll" }}>
+        {JSON.stringify(slateToQuery(value))}
       </div>
       <Autocomplete
         options={autocompleteOptions}

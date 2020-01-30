@@ -8,125 +8,65 @@ export default [
   },
   {
     type: "group",
-    variant: "quantifier",
+    variant: "filter_group",
+    forType: "entity",
     children: [
       {
         type: "token",
-        variant: "quantifier_label",
-        children: [{ text: "&" }],
+        variant: "filter_label",
+        children: [{ text: "ᗊ" }],
         focussed: false
       },
       {
         type: "group",
-        variant: "quantifier_entries",
+        variant: "filter_entries",
         children: [
           {
             type: "branch",
-            variant: "quantifier_entry",
+            variant: "filter",
             children: [
               {
-                children: [{ text: "Know", focussed: false }],
+                children: [{ text: "height", focussed: false }],
                 type: "token",
-                variant: "relationship_in",
+                variant: "variable",
                 valid: true,
                 isFirst: true
               },
               {
-                children: [{ text: "Person", focussed: false }],
+                children: [{ text: "eq", focussed: false }],
                 type: "token",
-                variant: "entity",
+                variant: "operator",
+                valid: true,
+                isFirst: false
+              },
+              {
+                children: [{ text: "100", focussed: false }],
+                type: "token",
+                variant: "value",
                 valid: true,
                 isFirst: false
               },
               { children: [{ text: "", focussed: false }] }
             ],
             path: [1, 1, 0]
-          },
-          {
-            variant: "quantifier_entry",
-            type: "branch",
-            children: [
-              {
-                children: [{ text: "Know", focussed: false }],
-                type: "token",
-                variant: "relationship_in",
-                valid: true,
-                isFirst: true
-              },
-              {
-                children: [{ text: "Person", focussed: false }],
-                type: "token",
-                variant: "entity",
-                valid: true,
-                isFirst: false
-              },
-              {
-                type: "group",
-                variant: "quantifier",
-                children: [
-                  {
-                    type: "token",
-                    variant: "quantifier_label",
-                    children: [{ text: "||" }],
-                    focussed: false
-                  },
-                  {
-                    type: "group",
-                    variant: "quantifier_entries",
-                    children: [
-                      {
-                        type: "branch",
-                        variant: "quantifier_entry",
-                        children: [
-                          {
-                            children: [{ text: "Know", focussed: false }],
-                            type: "token",
-                            variant: "relationship_in",
-                            valid: true,
-                            isFirst: true
-                          },
-                          {
-                            children: [{ text: "Person", focussed: false }],
-                            type: "token",
-                            variant: "entity",
-                            valid: true,
-                            isFirst: false
-                          },
-                          { children: [{ text: "", focussed: false }] }
-                        ],
-                        path: [1, 1, 1, 2, 1, 0]
-                      },
-                      {
-                        variant: "quantifier_entry",
-                        type: "branch",
-                        children: [
-                          {
-                            children: [{ text: "Know", focussed: false }],
-                            type: "token",
-                            variant: "relationship_in",
-                            valid: true,
-                            isFirst: true
-                          },
-                          {
-                            children: [{ text: "Guy", focussed: false }],
-                            type: "token",
-                            variant: "entity",
-                            valid: true,
-                            isFirst: false
-                          },
-                          { children: [{ text: "", focussed: false }] }
-                        ],
-                        path: [1, 1, 1, 2, 1, 1]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            path: [1, 1, 1]
           }
         ]
       }
     ]
-  }
+  },
+  {
+    children: [{ text: "Know", focussed: false }],
+    type: "token",
+    variant: "relationship_in",
+    valid: true,
+    isFirst: false
+  },
+  {
+    children: [{ text: "Person", focussed: false }],
+    type: "token",
+    variant: "entity",
+    valid: true,
+    isFirst: false
+  },
+  { children: [{ text: "", focussed: false }] }
 ];
