@@ -6,6 +6,7 @@ import getPreviousNode from "./getPreviousNode";
 import getPreviousPath from "./getPreviousPath";
 import getTokenType from "./getTokenType";
 import queryToSlate from "./queryToSlate";
+import slateToQuery from "./slateToQuery";
 import isInBranch from "./isInBranch";
 import getBranchPath from "./getBranchPath";
 import * as elements from "./elements";
@@ -19,6 +20,7 @@ export {
   getPreviousPath,
   getTokenType,
   queryToSlate,
+  slateToQuery,
   isInBranch,
   getBranchPath,
   elements

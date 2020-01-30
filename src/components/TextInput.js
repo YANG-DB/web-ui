@@ -11,7 +11,8 @@ import {
   elements,
   arraysEqual,
   isInBranch,
-  getBranchPath
+  getBranchPath,
+  slateToQuery
 } from "../helpers";
 import * as slateConstants from "../constants/slate";
 import * as queryConstants from "../constants/query";
