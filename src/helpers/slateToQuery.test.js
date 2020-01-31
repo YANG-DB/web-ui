@@ -323,7 +323,7 @@ test("Person & (Know< Person, MemberOf< Guild)", () => {
     {
       type: "MemberOf",
       alias: "m1",
-      dir: "in",
+      dir: "out",
       id: 5
     },
     {

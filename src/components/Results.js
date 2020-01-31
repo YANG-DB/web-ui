@@ -43,8 +43,8 @@ export default function Results() {
                 { label: "Lives", value: 2355 },
                 { label: "Horse", value: 1001 },
                 { label: "Kingdom", value: 40 }
-              ].map(el => (
-                <ListItem label={el.label} value={el.value} />
+              ].map((el, i) => (
+                <ListItem label={el.label} value={el.value} key={i} />
               ))}
             </ul>
           </div>
@@ -64,7 +64,10 @@ export default function Results() {
             {Object.keys(types).map(t => {
               console.log(resultType, types[t]);
               return (
-                <h3 className={cn(resultType === types[t] && styles.selected)}>
+                <h3
+                  className={cn(resultType === types[t] && styles.selected)}
+                  key={t}
+                >
                   <button
                     data-hover={types[t]}
                     onClick={() => setResultType(types[t])}
