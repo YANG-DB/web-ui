@@ -16,6 +16,11 @@ export default function TextArea({ onSubmit }) {
   const [structure, loadStructure] = useState(null);
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
 
+  const submit = useCallback(query => {
+    setAutocompleteOptions([]);
+    onSubmit(query);
+  }, []);
+
   const onSelect = useCallback(
     (text, shouldTokenise) => {
       onAutocompleteSelect(editor, ontology, structure, text, shouldTokenise);
@@ -30,10 +35,12 @@ export default function TextArea({ onSubmit }) {
     [setCursorPosition]
   );
 
-  const { highlightedIndex, isOpen, textboxRef } = useAutocomplete(
-    autocompleteOptions,
-    onSelect
-  );
+  const {
+    highlightedIndex,
+    isOpen,
+    textboxRef,
+    closeAutocomplete
+  } = useAutocomplete(autocompleteOptions, onSelect);
 
   useEffect(() => {
     apiService.getOntology().then(result => {
@@ -54,7 +61,7 @@ export default function TextArea({ onSubmit }) {
         cursorPosition={cursorPosition}
       />
       <TextInput
-        onSubmit={onSubmit}
+        onSubmit={submit}
         editor={editor}
         ontology={ontology}
         structure={structure}

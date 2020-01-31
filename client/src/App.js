@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { TextArea, Results, Header } from "./components";
 import apiService from "./services/api";
 import styles from "./App.module.css";
 
 export default function App() {
   const [results, setResults] = useState(null);
-  function onSubmit(query) {
+  const onSubmit = useCallback(query => {
     apiService.getResult(query).then(results => {
       setResults(results);
     });
-  }
+  }, []);
   return (
     <div className={styles.app}>
       <Header />

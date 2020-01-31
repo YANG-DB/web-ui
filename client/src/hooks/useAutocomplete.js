@@ -113,5 +113,8 @@ export default function useAutocomplete(possibilities, onSelect) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleKeyDown]);
-  return { ...state, textboxRef };
+  return {
+    ...state,
+    textboxRef
+  };
 }
