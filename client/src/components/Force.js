@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import * as d3 from "d3";
 import cn from "classnames";
 import useD3 from "../hooks/useD3";
-import resultsService from "../services/results";
-import mockResult from "../mocks/queries/Result.json";
+import apiService from "../services/api";
 import eyeOn from "../assets/eye.svg";
 import eyeOff from "../assets/eye-off.svg";
 import styles from "./Force.module.css";
@@ -175,9 +174,12 @@ export default function Force({ results }) {
       // create menu
       const IMAGE_HEIGHT = 20;
       const IMAGE_WIDTH = 20;
-      menu = menu.data(entities.filter(e => e.menuOpen), function(d) {
-        return d.id;
-      });
+      menu = menu.data(
+        entities.filter(e => e.menuOpen),
+        function(d) {
+          return d.id;
+        }
+      );
       menu.exit().remove();
       var menuEnter = menu
         .enter()
@@ -368,8 +370,8 @@ export default function Force({ results }) {
 
     function expand(node) {
       const { id } = node;
-      resultsService.update(id).then(results => {
-        let newResults = extract(results);
+      apiService.update(id).then(results => {
+        let newResults = results;
         let newEntities = newResults.entities
           .filter(e => !entities.some(en => en.id === e.eID))
           .map(e => ({
@@ -404,13 +406,4 @@ export default function Force({ results }) {
     zoom_handler(svg);
   }, []);
   return <svg ref={ref} className={styles.svg}></svg>;
-}
-
-Force.defaultProps = {
-  results: extract(mockResult)
-};
-
-function extract(results) {
-  return results.data.cursorResourceInfos[0].pageResourceInfos[0].data
-    .assignments[0];
 }

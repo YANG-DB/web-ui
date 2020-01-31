@@ -24,7 +24,6 @@ import {
   isNewBranchPossible,
   isEscapeGroupPossible
 } from "../helpers/getPossibleActions";
-import input from "../mocks/queries/Slate";
 
 const { textNode, quantifier, filter, GROUP_DEPTH, BRANCH_DEPTH } = elements;
 
@@ -253,11 +252,14 @@ function TextInput({
   ontology,
   structure,
   onCursorPositionChange,
-  onValue
+  onSubmit
 }) {
   const [value, setValue] = useState([textNode()]);
   const [focusPath, setFocusPath] = useState(null);
   const lastAutocompleteOptions = useRef(null);
+  function onSubmitClicked() {
+    onSubmit(slateToQuery(value));
+  }
 
   const renderElement = useCallback(
     props => {
@@ -282,8 +284,6 @@ function TextInput({
 
   useFocus(editor, focusPath, onCursorPositionChange);
 
-  console.log(value);
-
   return (
     <div className={styles.query}>
       <Slate
@@ -291,7 +291,6 @@ function TextInput({
         value={value}
         onChange={value => {
           setValue(value);
-          onValue(value);
           setFocusPath(editor.selection && editor.selection.focus.path);
           let autocompleteOptions = [];
           if (
@@ -393,7 +392,7 @@ function TextInput({
           }}
         />
       </Slate>
-      <SubmitButton />
+      <SubmitButton onSubmit={onSubmitClicked} />
     </div>
   );
 }

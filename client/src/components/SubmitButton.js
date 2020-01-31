@@ -2,9 +2,13 @@ import React from "react";
 import cn from "classnames";
 import styles from "./TextInput.module.css";
 
-export default function SubmitButton() {
+export default function SubmitButton({ onSubmit }) {
   return (
-    <button className={cn(styles.link, styles["link--arrowed"])} href="#">
+    <button
+      className={cn(styles.link, styles["link--arrowed"])}
+      href="#"
+      onClick={onSubmit}
+    >
       <svg
         className={styles["arrow-icon"]}
         xmlns="http://www.w3.org/2000/svg"

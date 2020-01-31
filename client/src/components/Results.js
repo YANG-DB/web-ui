@@ -18,15 +18,14 @@ function showResults(type, results) {
     case types.LIST:
       return <div></div>;
     case types.GRAPH:
-      return <Force></Force>;
+      return <Force results={results}></Force>;
     default:
       return <div></div>;
   }
 }
 
-export default function Results() {
+export default function Results({ results }) {
   const [resultType, setResultType] = useState(types.GRAPH);
-  const results = {}; // TODO
   return (
     <div className={cn(styles.results, globalStyles.section)}>
       <div className={cn(styles.wrapper, globalStyles.rounded)}>
@@ -62,7 +61,6 @@ export default function Results() {
         >
           <div className={styles.headers}>
             {Object.keys(types).map(t => {
-              console.log(resultType, types[t]);
               return (
                 <h3
                   className={cn(resultType === types[t] && styles.selected)}
@@ -79,10 +77,15 @@ export default function Results() {
             })}
           </div>
           <div className={styles.resultWrapper}>
-            {showResults(resultType, results)}
+            {results ? showResults(resultType, extract(results)) : <div></div>}
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function extract(results) {
+  return results.data.cursorResourceInfos[0].pageResourceInfos[0].data
+    .assignments[0];
 }

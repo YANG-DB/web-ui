@@ -3,22 +3,18 @@ import { createEditor } from "slate";
 import { withReact } from "slate-react";
 import TextInput, { onAutocompleteSelect } from "./TextInput";
 import Autocomplete from "./Autocomplete";
-
-import mockOntology from "../mocks/ontologies/Dragons";
-import mockStructure from "../mocks/structures/Default";
+import apiService from "../services/api";
 
 import useAutocomplete from "../hooks/useAutocomplete";
 
 import globalStyles from "../App.module.css";
-import { slateToQuery } from "../helpers";
 
-export default function TextArea() {
+export default function TextArea({ onSubmit }) {
   const editor = useMemo(() => withReact(createEditor()), []);
   const [cursorPosition, setCursorPosition] = useState(null);
   const [ontology, loadOntology] = useState(null);
   const [structure, loadStructure] = useState(null);
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
-  const [value, setValue] = useState([]);
 
   const onSelect = useCallback(
     (text, shouldTokenise) => {
@@ -40,15 +36,16 @@ export default function TextArea() {
   );
 
   useEffect(() => {
-    loadOntology(mockOntology.data[0]);
-    loadStructure(mockStructure);
+    apiService.getOntology().then(result => {
+      loadOntology(result);
+    });
+    apiService.getStructure().then(result => {
+      loadStructure(result);
+    });
   }, []);
 
   return (
     <div className={globalStyles.section}>
-      <div style={{ height: 200, background: "grey", overflow: "scroll" }}>
-        {JSON.stringify(slateToQuery(value))}
-      </div>
       <Autocomplete
         options={autocompleteOptions}
         isOpen={isOpen}
@@ -57,7 +54,7 @@ export default function TextArea() {
         cursorPosition={cursorPosition}
       />
       <TextInput
-        onValue={setValue}
+        onSubmit={onSubmit}
         editor={editor}
         ontology={ontology}
         structure={structure}
