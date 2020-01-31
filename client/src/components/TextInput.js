@@ -340,6 +340,8 @@ function TextInput({
                   } else if (isEscapeGroupPossible(editor)) {
                     escapeGroup(editor);
                   }
+                } else {
+                  onSubmitClicked();
                 }
                 return;
               }
