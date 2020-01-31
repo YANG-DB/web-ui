@@ -1,4 +1,6 @@
 export const START = "Start";
+export const CONSTRAINT = "constraint";
+export const VALUE = "value";
 export const QUANT = "Quant";
 export const IN = "in";
 export const OUT = "out";
