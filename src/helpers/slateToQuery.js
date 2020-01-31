@@ -1,5 +1,3 @@
-import test from "./test";
-
 function getText(element) {
   return element.children[0].text;
 }
