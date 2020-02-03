@@ -9,7 +9,7 @@
 }
 
 .headers button {
-  padding: 0.9em;
+  padding: 0.9em 0;
   position: relative;
   display: inline-block;
   letter-spacing: 1px;
@@ -42,7 +42,7 @@
   background-color: var(--secondary);
 }
 .headers button:after {
-  padding: 0.9em;
+  padding: 0.9em 0;
   position: absolute;
   bottom: 100%;
   left: 0;
