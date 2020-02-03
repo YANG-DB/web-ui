@@ -341,7 +341,9 @@ function TextInput({
                     escapeGroup(editor);
                   }
                 } else {
-                  onSubmitClicked();
+                  if (!autocompleteActive) {
+                    onSubmitClicked();
+                  }
                 }
                 return;
               }

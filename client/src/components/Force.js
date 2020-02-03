@@ -2,6 +2,7 @@ import React from "react";
 import * as d3 from "d3";
 import cn from "classnames";
 import useD3 from "../hooks/useD3";
+import extractResults from "../helpers/extractResults";
 import apiService from "../services/api";
 import eyeOn from "../assets/eye.svg";
 import eyeOff from "../assets/eye-off.svg";
@@ -370,8 +371,8 @@ export default function Force({ results }) {
 
     function expand(node) {
       const { id } = node;
-      apiService.update(id).then(results => {
-        let newResults = results;
+      apiService.updateResult(id).then(results => {
+        let newResults = extractResults(results);
         let newEntities = newResults.entities
           .filter(e => !entities.some(en => en.id === e.eID))
           .map(e => ({

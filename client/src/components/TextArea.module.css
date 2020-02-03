@@ -1,0 +1,59 @@
+.headers * {
+  box-sizing: border-box;
+  transition: all 0.35s ease;
+}
+
+.headers h3 {
+  overflow: hidden;
+  font-size: 16px;
+}
+
+.headers button {
+  padding: 0.9em;
+  position: relative;
+  display: inline-block;
+  letter-spacing: 1px;
+  margin: 0;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  font-family: var(--sans);
+  color: inherit;
+  cursor: pointer;
+}
+
+.headers button:focus {
+  outline: none;
+}
+
+.headers button:before,
+.headers button:after {
+  position: absolute;
+  transition: all 0.35s ease;
+}
+
+.headers button:before {
+  bottom: 100%;
+  display: block;
+  height: 3px;
+  width: 100%;
+  content: "";
+  background-color: var(--secondary);
+}
+.headers button:after {
+  padding: 0.9em;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  content: attr(data-hover);
+  white-space: nowrap;
+}
+.headers h3:hover button,
+.headers .selected button {
+  transform: translateY(100%);
+}
+
+.headers .selected button {
+  color: white;
+}

@@ -7,9 +7,6 @@ function callApi(endpoint, method = "GET", body) {
     }
   })
     .then(response => response.json())
-    .then(data => {
-      return data;
-    })
     .catch(error => {
       console.error(error);
     });
@@ -24,7 +21,7 @@ export default {
   },
   getOntology: async function() {
     const ontology = await callApi("/api/ontology");
-    return ontology.data[0];
+    return ontology && ontology.data[0];
   },
   getStructure: async function() {
     return await callApi("/api/structure");

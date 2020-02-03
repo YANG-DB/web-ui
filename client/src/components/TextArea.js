@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
+import cn from "classnames";
 import { createEditor } from "slate";
 import { withReact } from "slate-react";
 import TextInput, { onAutocompleteSelect } from "./TextInput";
@@ -7,7 +8,14 @@ import apiService from "../services/api";
 
 import useAutocomplete from "../hooks/useAutocomplete";
 
+import styles from "./TextArea.module.css";
 import globalStyles from "../App.module.css";
+
+const types = {
+  ONE: "Question One",
+  TWO: "Question Two",
+  THREE: "Question Three"
+};
 
 export default function TextArea({ onSubmit }) {
   const editor = useMemo(() => withReact(createEditor()), []);
@@ -15,6 +23,7 @@ export default function TextArea({ onSubmit }) {
   const [ontology, loadOntology] = useState(null);
   const [structure, loadStructure] = useState(null);
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
+  const [resultType, setResultType] = useState(types.ONE);
 
   const submit = useCallback(query => {
     setAutocompleteOptions([]);
@@ -53,6 +62,23 @@ export default function TextArea({ onSubmit }) {
 
   return (
     <div className={globalStyles.section}>
+      <div className={styles.headers}>
+        {Object.keys(types).map(t => {
+          return (
+            <h3
+              className={cn(resultType === types[t] && styles.selected)}
+              key={t}
+            >
+              <button
+                data-hover={types[t]}
+                onClick={() => setResultType(types[t])}
+              >
+                {types[t]}
+              </button>
+            </h3>
+          );
+        })}
+      </div>
       <Autocomplete
         options={autocompleteOptions}
         isOpen={isOpen}

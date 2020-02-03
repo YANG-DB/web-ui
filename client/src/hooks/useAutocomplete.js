@@ -70,6 +70,9 @@ export default function useAutocomplete(possibilities, onSelect) {
 
   const handleKeyDown = useCallback(
     function(e) {
+      if (e.key === "Escape") {
+        dispatch({ type: "CLOSE" });
+      }
       if (e.key === "Tab" || e.key === "Enter") {
         if (state.isOpen) {
           if (state.highlightedIndex >= 0) {

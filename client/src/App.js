@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { TextArea, Results, Header } from "./components";
+import { TextArea, Results, Header, Aggregates } from "./components";
 import apiService from "./services/api";
 import styles from "./App.module.css";
 
@@ -13,9 +13,12 @@ export default function App() {
   return (
     <div className={styles.app}>
       <Header />
-      <div className={styles.content}>
-        <Results results={results} />
-        <TextArea onSubmit={onSubmit} />
+      <div className={styles.row}>
+        <div className={styles.column}>
+          <TextArea onSubmit={onSubmit} />
+          <Results results={results} />
+        </div>
+        <Aggregates />
       </div>
     </div>
   );

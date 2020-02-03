@@ -9,6 +9,7 @@ import queryToSlate from "./queryToSlate";
 import slateToQuery from "./slateToQuery";
 import isInBranch from "./isInBranch";
 import getBranchPath from "./getBranchPath";
+import extractResults from "./extractResults";
 import * as elements from "./elements";
 
 export {
@@ -23,5 +24,6 @@ export {
   slateToQuery,
   isInBranch,
   getBranchPath,
-  elements
+  elements,
+  extractResults
 };

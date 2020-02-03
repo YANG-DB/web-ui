@@ -1,0 +1,30 @@
+import React from "react";
+import cn from "classnames";
+import { ListItem } from "../components";
+import styles from "./Results.module.css";
+import globalStyles from "../App.module.css";
+
+export default function Aggregates() {
+  return (
+    <div className={styles.aggregates}>
+      <div className={cn(globalStyles.card, styles.summary, globalStyles.top)}>
+        <h2>Summary</h2>
+        <ul className={styles.summaryTable}>
+          {[
+            { label: "Person", value: 4053 },
+            { label: "Know", value: 6454 },
+            { label: "Own", value: 1233 },
+            { label: "Lives", value: 2355 },
+            { label: "Horse", value: 1001 },
+            { label: "Kingdom", value: 40 }
+          ].map((el, i) => (
+            <ListItem label={el.label} value={el.value} key={i} />
+          ))}
+        </ul>
+      </div>
+      <div className={cn(globalStyles.card, styles.trends)}>
+        <h2>Trends</h2>
+      </div>
+    </div>
+  );
+}

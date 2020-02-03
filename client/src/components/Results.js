@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import cn from "classnames";
 import { ListItem } from "../components";
+import { extractResults } from "../helpers";
 import styles from "./Results.module.css";
 import globalStyles from "../App.module.css";
 import Force from "./Force";
@@ -29,11 +30,11 @@ export default function Results({ results }) {
   return (
     <div className={cn(styles.results, globalStyles.section)}>
       <div className={cn(styles.wrapper, globalStyles.rounded)}>
-        <div className={styles.aggregates}>
+        <div className={styles.history}>
           <div
             className={cn(globalStyles.card, styles.summary, globalStyles.top)}
           >
-            <h2>Summary</h2>
+            <h2>History</h2>
             <ul className={styles.summaryTable}>
               {[
                 { label: "Person", value: 4053 },
@@ -48,7 +49,7 @@ export default function Results({ results }) {
             </ul>
           </div>
           <div className={cn(globalStyles.card, styles.trends)}>
-            <h2>Trends</h2>
+            <h2>Bla Bla</h2>
           </div>
         </div>
         <div
@@ -77,15 +78,14 @@ export default function Results({ results }) {
             })}
           </div>
           <div className={styles.resultWrapper}>
-            {results ? showResults(resultType, extract(results)) : <div></div>}
+            {results ? (
+              showResults(resultType, extractResults(results))
+            ) : (
+              <div></div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-function extract(results) {
-  return results.data.cursorResourceInfos[0].pageResourceInfos[0].data
-    .assignments[0];
 }

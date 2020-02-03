@@ -7,6 +7,7 @@ import DatePicker from "./DatePicker";
 import Results from "./Results";
 import Header from "./Header";
 import ListItem from "./ListItem";
+import Aggregates from "./Aggregates";
 
 export {
   TextArea,
@@ -17,5 +18,6 @@ export {
   DatePicker,
   Results,
   Header,
-  ListItem
+  ListItem,
+  Aggregates
 };

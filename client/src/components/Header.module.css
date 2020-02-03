@@ -1,7 +1,7 @@
 .header {
   flex-grow: 0;
   flex-shrink: 0;
-  background: #151c25;
+  background: var(--dark-one);
   display: flex;
   padding: 15px 20px;
 }
