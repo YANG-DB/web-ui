@@ -8,24 +8,27 @@
 
 .day {
   cursor: pointer;
+  text-align: center;
 }
 
 .day:hover {
-  background: #d0d0d0;
+  background: var(--secondary);
 }
 
 .dayKeys,
 .day {
+  color: var(--grey-three);
   width: 30px;
 }
 
 .day.isSelected {
-  background: #4545ff;
+  background: var(--secondaru);
   color: white;
 }
 
 .month,
 .yearHeader {
+  color: var(--grey-three);
   text-align: center;
   font-family: var(--sans);
 }
@@ -40,6 +43,7 @@
   font-size: 24px;
   cursor: pointer;
   background: transparent;
+  color: white;
 }
 
 .buttons button:hover {
@@ -51,6 +55,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
 }
 
 .rangeHeader p {
@@ -61,7 +66,7 @@
   border-radius: 3px;
   width: 135px;
   display: inline-block;
-  background: #4545ff;
+  background: var(--secondary);
   padding: 5px;
   color: white;
 }
@@ -90,5 +95,5 @@
 }
 
 .isInRange {
-  background: #c3c3ff;
+  background: var(--secondary);
 }
