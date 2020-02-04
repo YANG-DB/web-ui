@@ -37,7 +37,7 @@ export default function Autocomplete({
       <div
         className={cn(styles.autocomplete, options.length && styles.visible)}
         style={{
-          top: `${cursorPosition.top}px`,
+          bottom: `${cursorPosition.bottom}px`,
           left: `${cursorPosition.left}px`
         }}
       >
@@ -50,7 +50,7 @@ export default function Autocomplete({
       <div
         className={cn(styles.autocomplete, options.length && styles.visible)}
         style={{
-          top: `${cursorPosition.top}px`,
+          bottom: `${cursorPosition.bottom}px`,
           left: `${cursorPosition.left}px`
         }}
       >

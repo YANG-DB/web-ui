@@ -41,11 +41,11 @@ export default function Results({ results }) {
                 },
                 {
                   date: "2d ago",
-                  value: "Guy ask the same question as lior but..."
+                  value: "Lior asks 4 questions about dragon"
                 },
                 {
                   date: "2d ago",
-                  value: "Guy ask the same question as lior but..."
+                  value: "Dana asks new question about dragon but there is"
                 },
                 {
                   date: "2d ago",
