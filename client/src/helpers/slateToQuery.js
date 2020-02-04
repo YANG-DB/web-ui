@@ -49,14 +49,21 @@ export default function slateToQuery(input) {
         return;
       }
       const item = {
-        type: getText(element),
         id: result.length
       };
       if (element.variant === slateConstants.RELATIONSHIP) {
+        item.type = queryConstants.RELATIONSHIP;
+        item.rType = getText(element);
         item.dir = "";
       }
       if (element.variant.includes("relationship_")) {
+        item.type = queryConstants.RELATIONSHIP;
+        item.rType = getText(element);
         item.dir = element.variant.replace("relationship_", "");
+      }
+      if (element.variant === slateConstants.ENTITY) {
+        item.type = queryConstants.ENTITY;
+        item.eType = getText(element);
       }
       result.push(item);
     }
@@ -66,7 +73,7 @@ export default function slateToQuery(input) {
         result.push({
           type: queryConstants.QUANT,
           id: index,
-          Type: element.children[0].children[0].text,
+          qType: element.children[0].children[0].text,
           next: []
         });
         element.children[1].children.forEach(el => {
@@ -111,7 +118,7 @@ export default function slateToQuery(input) {
       ![queryConstants.QUANT, queryConstants.START].includes(el.type) &&
       !el.alias
     ) {
-      const letter = el.type[0].toLowerCase();
+      const letter = (el.rType || el.eType || el.type)[0].toLowerCase();
       var key;
       for (; !key; key = checkAlias(letter)) {}
       return {
