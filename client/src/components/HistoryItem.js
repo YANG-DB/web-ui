@@ -7,8 +7,10 @@ export default function HistoryItem({ date, value }) {
       <div className={styles.profile}>
         <div></div>
       </div>
-      <div className={styles.message}>{value}</div>
-      <div className={styles.date}>{date}</div>
+      <div className={styles.section}>
+        <div className={styles.message}>{value}</div>
+        <div className={styles.date}>{date}</div>
+      </div>
     </div>
   );
 }
