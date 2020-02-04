@@ -68,37 +68,49 @@ export default function Results({ results }) {
             <h2>Bla Bla</h2>
           </div>
         </div>
-        <div
-          className={cn(
-            globalStyles.card,
-            styles.tabs,
-            globalStyles.right,
-            globalStyles.top
-          )}
-        >
-          <div className={styles.headers}>
-            <h2 className={styles.selectedOption}>{resultType}</h2>
-            <div className={styles.options}>
-              {Object.keys(types).map(t => {
-                return (
-                  <button
-                    key={t}
-                    className={cn(
-                      styles[types[t]],
-                      resultType === types[t] && styles.selected
-                    )}
-                    onClick={() => setResultType(types[t])}
-                  ></button>
-                );
-              })}
+        <div className={styles.chartWrapper}>
+          <div
+            className={cn(
+              globalStyles.card,
+              styles.tabs,
+              globalStyles.right,
+              globalStyles.top
+            )}
+          >
+            <div className={styles.headers}>
+              <h2 className={styles.selectedOption}>{resultType}</h2>
+              <div className={styles.options}>
+                {Object.keys(types).map(t => {
+                  return (
+                    <button
+                      key={t}
+                      className={cn(
+                        styles[types[t]],
+                        resultType === types[t] && styles.selected
+                      )}
+                      onClick={() => setResultType(types[t])}
+                    ></button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className={styles.resultWrapper}>
+              {results ? (
+                showResults(resultType, extractResults(results))
+              ) : (
+                <div></div>
+              )}
             </div>
           </div>
-          <div className={styles.resultWrapper}>
-            {results ? (
-              showResults(resultType, extractResults(results))
-            ) : (
-              <div></div>
+          <div
+            className={cn(
+              globalStyles.card,
+              styles.tabs,
+              globalStyles.right,
+              globalStyles.top
             )}
+          >
+            <h2>Timeline</h2>
           </div>
         </div>
       </div>

@@ -26,3 +26,8 @@
   display: flex;
   flex-direction: column;
 }
+
+.pieChart {
+  width: 60%;
+  margin: 0px auto;
+}

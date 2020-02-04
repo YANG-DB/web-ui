@@ -57,7 +57,7 @@
 .section h3,
 .card h3 {
   display: inline-block;
-  padding: 0px 35px;
+  padding: 0px 15px;
 }
 
 .card h3:last-child {

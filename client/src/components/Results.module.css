@@ -21,7 +21,7 @@
 }
 
 .wrapper {
-  margin: 0;
+  margin: 5px;
   padding: 0;
   width: 100%;
   display: flex;
@@ -45,6 +45,12 @@
 
 .resultWrapper img {
   max-height: 200px;
+}
+
+.chartWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .historyTable {

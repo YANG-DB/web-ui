@@ -3,6 +3,7 @@ import cn from "classnames";
 import { ListItem } from "../components";
 import styles from "./Aggregates.module.css";
 import globalStyles from "../App.module.css";
+import piePlaceholder from "../assets/pie_placeholder.png";
 
 export default function Aggregates() {
   return (
@@ -24,6 +25,11 @@ export default function Aggregates() {
       </div>
       <div className={cn(globalStyles.card, styles.trends)}>
         <h2>Trends</h2>
+        <img
+          src={piePlaceholder}
+          alt="pie_placeholder"
+          className={styles.pieChart}
+        />
         <ul className={styles.summaryTable}>
           {[
             { label: "Data 1", value: 4053 },
