@@ -24,6 +24,16 @@ export default function Aggregates() {
       </div>
       <div className={cn(globalStyles.card, styles.trends)}>
         <h2>Trends</h2>
+        <ul className={styles.summaryTable}>
+          {[
+            { label: "Data 1", value: 4053 },
+            { label: "Data 2", value: 6454 },
+            { label: "Data 3", value: 1233 },
+            { label: "Data 4", value: 2355 }
+          ].map((el, i) => (
+            <ListItem label={el.label} value={el.value} key={i} />
+          ))}
+        </ul>
       </div>
     </div>
   );

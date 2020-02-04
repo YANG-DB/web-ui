@@ -1,9 +1,6 @@
 .summary {
-  flex-grow: 1;
-  max-height: 50%;
   display: flex;
   flex-direction: column;
-  padding-right: 0;
 }
 
 .summaryTable {
@@ -12,7 +9,7 @@
 }
 
 .aggregates {
-  flex-basis: 25%;
+  width: calc(25% - 20px);
   flex-shrink: 0;
   flex-grow: 0;
   display: flex;
@@ -20,7 +17,12 @@
   margin: 10px;
 }
 
+.summary,
 .trends {
+  padding-right: 0;
   flex-grow: 1;
   max-height: 50%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
