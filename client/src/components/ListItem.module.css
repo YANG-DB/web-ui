@@ -2,11 +2,15 @@
   list-style: none;
   display: flex;
   justify-content: space-between;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 200;
-  margin: 10px 0px;
+  margin: 5px 0px;
   border-bottom: 1px solid var(--grey-four);
   padding: 10px 20px;
+}
+
+.item:last-child {
+  border-bottom: none;
 }
 
 .item div:first-child {

@@ -32,18 +32,21 @@ test("Person Know< Person", () => {
       id: 0
     },
     {
-      type: "Person",
+      type: "Entity",
+      eType: "Person",
       id: 1,
       alias: "p1"
     },
     {
-      type: "Know",
+      type: "Relationship",
+      rType: "Know",
       alias: "k1",
       dir: "in",
       id: 2
     },
     {
-      type: "Person",
+      type: "Entity",
+      eType: "Person",
       id: 3,
       alias: "p2"
     }
@@ -130,12 +133,14 @@ test("Person <Know (filter) Person", () => {
       id: 0
     },
     {
-      type: "Person",
+      type: "Entity",
+      eType: "Person",
       id: 1,
       alias: "p1"
     },
     {
-      type: "Know",
+      type: "Relationship",
+      rType: "Know",
       alias: "k1",
       dir: "in",
       id: 2,
@@ -147,7 +152,8 @@ test("Person <Know (filter) Person", () => {
       }
     },
     {
-      type: "Person",
+      type: "Entity",
+      eType: "Person",
       id: 3,
       alias: "p2"
     }
@@ -202,18 +208,21 @@ test("Person:p Know< Person:q", () => {
       id: 0
     },
     {
-      type: "Person",
+      type: "Entity",
+      eType: "Person",
       id: 1,
       alias: "p"
     },
     {
-      type: "Know",
+      type: "Relationship",
+      rType: "Know",
       alias: "k1",
       dir: "in",
       id: 2
     },
     {
-      type: "Person",
+      type: "Entity",
+      eType: "Person",
       id: 3,
       alias: "q"
     }
@@ -299,7 +308,8 @@ test("Person & (Know< Person, MemberOf< Guild)", () => {
       id: 0
     },
     {
-      type: "Person",
+      type: "Entity",
+      eType: "Person",
       id: 1,
       alias: "p1"
     },
@@ -310,24 +320,28 @@ test("Person & (Know< Person, MemberOf< Guild)", () => {
       next: [3, 5]
     },
     {
-      type: "Know",
+      type: "Relationship",
+      rType: "Know",
       alias: "k1",
       dir: "in",
       id: 3
     },
     {
-      type: "Person",
+      type: "Entity",
+      eType: "Person",
       id: 4,
       alias: "p2"
     },
     {
-      type: "MemberOf",
+      type: "Relationship",
+      rType: "MemberOf",
       alias: "m1",
       dir: "out",
       id: 5
     },
     {
-      type: "Guild",
+      type: "Entity",
+      eType: "Guild",
       id: 6,
       alias: "g1"
     }
