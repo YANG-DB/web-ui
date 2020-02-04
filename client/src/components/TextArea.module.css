@@ -3,6 +3,10 @@
   transition: all 0.35s ease;
 }
 
+.headers {
+  white-space: nowrap;
+}
+
 .headers h3 {
   overflow: hidden;
   font-size: 16px;

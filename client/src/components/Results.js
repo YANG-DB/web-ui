@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import cn from "classnames";
-import { ListItem } from "../components";
+import { HistoryItem } from "../components";
 import { extractResults } from "../helpers";
 import styles from "./Results.module.css";
 import globalStyles from "../App.module.css";
 import Force from "./Force";
 
 const types = {
-  TABLE: "Table",
-  LIST: "List",
-  GRAPH: "Graph"
+  TABLE: "table",
+  LIST: "list",
+  GRAPH: "graph"
 };
 
 function showResults(type, results) {
@@ -31,24 +31,40 @@ export default function Results({ results }) {
     <div className={cn(styles.results, globalStyles.section)}>
       <div className={cn(styles.wrapper, globalStyles.rounded)}>
         <div className={styles.history}>
-          <div
-            className={cn(globalStyles.card, styles.summary, globalStyles.top)}
-          >
+          <div className={cn(globalStyles.card, globalStyles.top)}>
             <h2>History</h2>
-            <ul className={styles.summaryTable}>
+            <ul className={styles.historyTable}>
               {[
-                { label: "Person", value: 4053 },
-                { label: "Know", value: 6454 },
-                { label: "Own", value: 1233 },
-                { label: "Lives", value: 2355 },
-                { label: "Horse", value: 1001 },
-                { label: "Kingdom", value: 40 }
+                {
+                  date: "2d ago",
+                  value: "Guy ask the same question as lior but..."
+                },
+                {
+                  date: "2d ago",
+                  value: "Guy ask the same question as lior but..."
+                },
+                {
+                  date: "2d ago",
+                  value: "Guy ask the same question as lior but..."
+                },
+                {
+                  date: "2d ago",
+                  value: "Guy ask the same question as lior but..."
+                },
+                {
+                  date: "2d ago",
+                  value: "Guy ask the same question as lior but..."
+                },
+                {
+                  date: "2d ago",
+                  value: "Guy ask the same question as lior but..."
+                }
               ].map((el, i) => (
-                <ListItem label={el.label} value={el.value} key={i} />
+                <HistoryItem date={el.date} value={el.value} key={i} />
               ))}
             </ul>
           </div>
-          <div className={cn(globalStyles.card, styles.trends)}>
+          <div className={cn(globalStyles.card)}>
             <h2>Bla Bla</h2>
           </div>
         </div>
@@ -61,21 +77,21 @@ export default function Results({ results }) {
           )}
         >
           <div className={styles.headers}>
-            {Object.keys(types).map(t => {
-              return (
-                <h3
-                  className={cn(resultType === types[t] && styles.selected)}
-                  key={t}
-                >
+            <h2 className={styles.selectedOption}>{resultType}</h2>
+            <div className={styles.options}>
+              {Object.keys(types).map(t => {
+                return (
                   <button
-                    data-hover={types[t]}
+                    key={t}
+                    className={cn(
+                      styles[types[t]],
+                      resultType === types[t] && styles.selected
+                    )}
                     onClick={() => setResultType(types[t])}
-                  >
-                    {types[t]}
-                  </button>
-                </h3>
-              );
-            })}
+                  ></button>
+                );
+              })}
+            </div>
           </div>
           <div className={styles.resultWrapper}>
             {results ? (

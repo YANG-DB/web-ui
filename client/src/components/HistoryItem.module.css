@@ -1,0 +1,39 @@
+.item {
+  height: 50px;
+  border-bottom: 1px solid white;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 5px 0px;
+  overflow: hidden;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.profile {
+  margin-right: 20px;
+}
+
+.profile > div {
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  background: white;
+}
+
+.message {
+  margin-right: 15px;
+  overflow: hidden;
+  line-height: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.date {
+  flex-basis: 30px;
+  flex-shrink: 0;
+  color: var(--grey-three);
+}

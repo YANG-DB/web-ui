@@ -1,7 +1,7 @@
 import React from "react";
 import cn from "classnames";
 import { ListItem } from "../components";
-import styles from "./Results.module.css";
+import styles from "./Aggregates.module.css";
 import globalStyles from "../App.module.css";
 
 export default function Aggregates() {

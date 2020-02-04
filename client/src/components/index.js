@@ -7,6 +7,7 @@ import DatePicker from "./DatePicker";
 import Results from "./Results";
 import Header from "./Header";
 import ListItem from "./ListItem";
+import HistoryItem from "./HistoryItem";
 import Aggregates from "./Aggregates";
 
 export {
@@ -19,5 +20,6 @@ export {
   Results,
   Header,
   ListItem,
+  HistoryItem,
   Aggregates
 };

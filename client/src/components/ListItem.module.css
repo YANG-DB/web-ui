@@ -9,6 +9,10 @@
   padding: 10px 20px;
 }
 
+.item div:first-child {
+  margin-right: 10px;
+}
+
 .item div:last-child {
   color: var(--secondary);
 }
