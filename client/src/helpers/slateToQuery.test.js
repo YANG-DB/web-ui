@@ -316,7 +316,7 @@ test("Person & (Know< Person, MemberOf< Guild)", () => {
     {
       id: 2,
       type: "Quant",
-      Type: "&",
+      qType: "&",
       next: [3, 5]
     },
     {
