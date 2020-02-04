@@ -5,7 +5,7 @@
 }
 .line {
   stroke: var(--secondary);
-  opacity: 0.3;
+  opacity: 1;
 }
 
 .node {
@@ -25,7 +25,7 @@
 
 .menuItem {
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.9;
 }
 
 .menuItem:hover {
@@ -41,11 +41,11 @@
 }
 
 .node.expanded {
-  fill: blue;
+  fill: white;
 }
 
 .rLabel {
-  fill: #235087;
+  fill: var(--highlight);
   text-transform: uppercase;
   text-anchor: middle;
 }
@@ -58,7 +58,7 @@
   transition: opacity 1s ease, font-size 1s ease, transform 1s ease,
     fill 1s ease;
   transform: translate(12px, 5px);
-  fill: #235087;
+  fill: var(--highlight);
   font-size: 12px;
 }
 
@@ -69,4 +69,3 @@
 .nodeGroup:hover .node {
   opacity: 1;
 }
-

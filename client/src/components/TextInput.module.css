@@ -151,9 +151,11 @@
   text-align: center;
 }
 
-.suggestion.highlighted,
-.suggestion:hover {
+.suggestion.highlighted {
   background: var(--secondary);
+}
+.suggestion:hover {
+  background: var(--highlight);
 }
 
 .branch {
@@ -219,8 +221,21 @@
   /* overflow: hidden; */
 }
 
-.filter_group > .group,
+.filter_group {
+  width: 60px;
+}
+
+.filter_group.focussed {
+  width: auto;
+}
+
+.filter_group > .group {
+  visibility: hidden;
+}
+
+.filter_group.focussed > .group,
 .quantifier > .group {
+  visibility: visible;
   display: flex;
   flex-direction: column;
   justify-content: center;

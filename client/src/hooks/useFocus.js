@@ -21,9 +21,11 @@ export default function(editor, focusPath, onFocusChange) {
     while (!result.done) {
       const [node, path] = result.value;
       if (
-        [slateConstants.QUANTIFIER_ENTRY, slateConstants.FILTER].includes(
-          node.variant
-        )
+        [
+          slateConstants.QUANTIFIER_ENTRY,
+          slateConstants.FILTER,
+          slateConstants.FILTER_GROUP
+        ].includes(node.variant)
       ) {
         // branches should have path stored on them in order to determine whether it should be expanded/collapsed
         Editor.setNodes(

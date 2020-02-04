@@ -267,7 +267,12 @@ function TextInput({
         case slateConstants.TOKEN:
           return <Token {...props} />;
         case slateConstants.GROUP:
-          return <Group {...props} />;
+          return (
+            <Group
+              {...props}
+              focussedPath={editor.selection && editor.selection.focus.path}
+            />
+          );
         case slateConstants.BRANCH:
           return (
             <DefaultElement
