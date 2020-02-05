@@ -1,6 +1,6 @@
 import React from "react";
 import { Header } from "./components";
-import { Research } from "./pages";
+import { Research, Schema } from "./pages";
 import {
   BrowserRouter as Router,
   Switch,
@@ -33,6 +33,9 @@ export default function App() {
           />
           <Route path={`/${links.RESEARCH}`}>
             <Research />
+          </Route>
+          <Route path={`/${links.SCHEMA}`}>
+            <Schema />
           </Route>
         </Switch>
       </div>

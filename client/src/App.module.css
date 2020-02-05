@@ -8,6 +8,10 @@
   overflow: hidden;
 }
 
+.page {
+  flex-grow: 1;
+}
+
 .section {
   text-align: left;
   margin: 5px;

@@ -1,3 +1,4 @@
 import Research from "./Research";
+import Schema from "./Schema";
 
-export { Research };
+export { Research, Schema };
