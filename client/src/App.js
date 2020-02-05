@@ -1,25 +1,41 @@
-import React, { useState, useCallback } from "react";
-import { TextArea, Results, Header, Aggregates } from "./components";
-import apiService from "./services/api";
+import React from "react";
+import { Header } from "./components";
+import { Research } from "./pages";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect
+} from "react-router-dom";
+
 import styles from "./App.module.css";
 
+const links = {
+  SCHEMA: "schema",
+  RESEARCH: "research",
+  ANALYTICS: "analytics",
+  REPORT: "report",
+  MONITORING: "monitoring",
+  MANAGEMENT: "management"
+};
+
 export default function App() {
-  const [results, setResults] = useState(null);
-  const onSubmit = useCallback(query => {
-    apiService.getResult(query).then(results => {
-      setResults(results);
-    });
-  }, []);
   return (
-    <div className={styles.app}>
-      <Header />
-      <div className={styles.row}>
-        <div className={styles.column}>
-          <TextArea onSubmit={onSubmit} />
-          <Results results={results} />
-        </div>
-        <Aggregates />
+    <Router>
+      <div className={styles.app}>
+        <Header links={links} />
+        <Switch>
+          {/* This first route defines the default route for the app */}
+          <Route
+            exact
+            path={`/`}
+            render={() => <Redirect to={`/${links.RESEARCH}`} />}
+          />
+          <Route path={`/${links.RESEARCH}`}>
+            <Research />
+          </Route>
+        </Switch>
       </div>
-    </div>
+    </Router>
   );
 }

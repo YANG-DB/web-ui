@@ -66,8 +66,6 @@ export default function useAutocomplete(possibilities, onSelect) {
   const textboxRef = useRef(null);
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  console.log("highlighted", state.highlightedIndex);
-
   const handleKeyDown = useCallback(
     function(e) {
       if (e.key === "Escape") {

@@ -90,13 +90,13 @@
 }
 
 .table {
-  background-image: url("../assets/table.png");
+  background-image: url("../assets/table.svg");
 }
 
 .list {
-  background-image: url("../assets/list.png");
+  background-image: url("../assets/list.svg");
 }
 
 .graph {
-  background-image: url("../assets/graph.png");
+  background-image: url("../assets/graph.svg");
 }
