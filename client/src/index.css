@@ -7,6 +7,7 @@
   --dark-one: #1a1a22;
   --dark-two: #24252a;
   --dark-three: #12121a;
+  --dark-four: #212121;
   --highlight: #6baeff;
   --highlight-dark: #3a80d4;
   --secondary: #19acb1;
@@ -26,4 +27,8 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+button {
+  font-family: var(--sans);
 }

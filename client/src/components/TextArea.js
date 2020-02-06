@@ -17,7 +17,7 @@ const types = {
   THREE: "Question Three"
 };
 
-export default function TextArea({ onSubmit }) {
+export default function TextArea({ onSubmit, lastQuery }) {
   const editor = useMemo(() => withReact(createEditor()), []);
   const [cursorPosition, setCursorPosition] = useState(null);
   const [ontology, loadOntology] = useState(null);
@@ -87,6 +87,7 @@ export default function TextArea({ onSubmit }) {
         cursorPosition={cursorPosition}
       />
       <TextInput
+        lastQuery={lastQuery}
         onSubmit={submit}
         editor={editor}
         ontology={ontology}

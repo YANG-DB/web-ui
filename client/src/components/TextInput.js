@@ -252,13 +252,14 @@ function TextInput({
   ontology,
   structure,
   onCursorPositionChange,
-  onSubmit
+  onSubmit,
+  lastQuery
 }) {
-  const [value, setValue] = useState([textNode()]);
+  const [value, setValue] = useState(lastQuery || [textNode()]);
   const [focusPath, setFocusPath] = useState(null);
   const lastAutocompleteOptions = useRef(null);
   function onSubmitClicked() {
-    onSubmit(slateToQuery(value));
+    onSubmit(value);
   }
 
   const renderElement = useCallback(

@@ -1,0 +1,51 @@
+.menu {
+  height: 50px;
+  background: var(--dark-four);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0px 20px;
+}
+.action {
+  margin: 0px 10px;
+  border: none;
+  height: 30px;
+  padding-left: 25px;
+  position: relative;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.action:before {
+  content: "";
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  background-size: contain;
+  transform: translateY(-50%);
+}
+
+.action.update:before {
+  background-image: url("../assets/update.svg");
+}
+
+.action.save:before {
+  background-image: url("../assets/save.svg");
+}
+
+.action.export:before {
+  background-image: url("../assets/export.svg");
+}
+
+.action.import:before {
+  background-image: url("../assets/import.svg");
+}
+
+.action.share:before {
+  background-image: url("../assets/share.svg");
+}
