@@ -25,5 +25,17 @@ export default {
   },
   getStructure: async function() {
     return await callApi("/api/structure");
+  },
+  getSchemaList: async function() {
+    return await callApi("/api/schema");
+  },
+  getSchema: async function(schemaId) {
+    return await callApi(`/api/schema/${schemaId}`);
+  },
+  saveSchema: async function(label, value) {
+    return await callApi("/api/schema", "POST", {
+      label,
+      value
+    });
   }
 };

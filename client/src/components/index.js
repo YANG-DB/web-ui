@@ -9,6 +9,7 @@ import Header from "./Header";
 import ListItem from "./ListItem";
 import HistoryItem from "./HistoryItem";
 import Aggregates from "./Aggregates";
+import Modal from "./Modal";
 
 export {
   TextArea,
@@ -21,5 +22,6 @@ export {
   Header,
   ListItem,
   HistoryItem,
-  Aggregates
+  Aggregates,
+  Modal
 };

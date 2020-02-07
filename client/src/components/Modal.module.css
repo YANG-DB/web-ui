@@ -1,0 +1,48 @@
+.buttons {
+}
+
+.wrap {
+  text-align: center;
+}
+
+:global body .ReactModal__Overlay {
+  z-index: 10;
+  /* opacity: 0.4 !important; */
+}
+
+:global body .ReactModal__Content {
+  z-index: 100;
+  text-align: center;
+  width: 400px;
+  height: auto;
+  min-height: 100px;
+  left: 50% !important;
+  top: 40% !important;
+  transform: translate(-50%, -50%);
+  border-radius: 5px;
+  background: var(--dark-four) !important;
+  padding: 30px !important;
+  color: white;
+}
+
+.close {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+:global body .ReactModal__Content :local button:not(.close) {
+  height: 40px;
+  padding: 0px 20px;
+  border: none;
+  background: var(--secondary);
+  font-size: 16px;
+  margin: 20px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
