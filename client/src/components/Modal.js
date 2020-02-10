@@ -15,9 +15,7 @@ function ModalComponent({ type, closeModal, renderContent, height }) {
     >
       {renderContent(type)}
       <div className={styles.buttons}>
-        <button onClick={closeModal} className={styles.close}>
-          Close
-        </button>
+        <button onClick={closeModal} className={styles.close}></button>
       </div>
     </Modal>
   );

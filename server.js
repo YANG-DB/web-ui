@@ -34,17 +34,24 @@ app.get("/api/schema", (req, res) => {
     schema: [
       { label: "Schema A", id: "A" },
       { label: "Schema B", id: "B" },
-      { label: "Schema C", id: "C" }
+      { label: "Schema C", id: "C" },
+      { label: "Schema D", id: "D" },
+      { label: "Schema E", id: "E" }
     ]
   });
 });
 
 app.get("/api/schema/:id", (req, res) => {
   console.log("getting schema: ", req.params);
-  res.send({
-    A: {
-      label: "Schema A",
-      value: `query SampleQuery {
+  if (!req.params.id) {
+    res.status(400).send({
+      message: "No schema selected"
+    });
+  } else {
+    res.send({
+      A: {
+        label: "Schema A",
+        value: `query SampleQuery {
         person {
           name
           friends {
@@ -52,15 +59,22 @@ app.get("/api/schema/:id", (req, res) => {
           }
         }
       }`
-    }
-  });
+      }
+    });
+  }
 });
 
 app.post("/api/schema", (req, res) => {
   const label = req.body.label;
   const value = req.body.value;
   console.log("Set schema: ", label, value);
-  res.send({ status: "Success" });
+  if (!label) {
+    res.status(400).send({
+      message: "No label included"
+    });
+  } else {
+    res.send({ status: "Success" });
+  }
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));

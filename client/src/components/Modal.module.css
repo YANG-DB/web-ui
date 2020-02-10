@@ -7,6 +7,7 @@
 
 :global body .ReactModal__Overlay {
   z-index: 10;
+  background: #ffffff73 !important;
   /* opacity: 0.4 !important; */
 }
 
@@ -19,8 +20,9 @@
   left: 50% !important;
   top: 40% !important;
   transform: translate(-50%, -50%);
-  border-radius: 5px;
+  border-radius: 10px !important;
   background: var(--dark-four) !important;
+  border: none !important;
   padding: 30px !important;
   color: white;
 }
@@ -29,6 +31,14 @@
   position: absolute;
   top: 0;
   right: 0;
+  height: 20px;
+  width: 20px;
+  background-image: url("../assets/x-circle.svg");
+  background-color: transparent;
+  border: none;
+  margin: 5px;
+  background-size: contain;
+  cursor: pointer;
 }
 
 :global body .ReactModal__Content :local button:not(.close) {
@@ -45,4 +55,27 @@
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+}
+
+.errorMessage {
+  color: red;
+  margin: 20px 0px;
+}
+
+.content select {
+  border: none;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.content option {
+  background: var(--grey-four);
+  color: white;
+  font-size: 16px;
+  padding: 2px;
+}
+
+.content select option:checked {
+  background-color: var(--grey-three) !important;
+  color: white;
 }

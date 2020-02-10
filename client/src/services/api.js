@@ -5,11 +5,13 @@ function callApi(endpoint, method = "GET", body) {
     headers: {
       "Content-Type": "application/json"
     }
-  })
-    .then(response => response.json())
-    .catch(error => {
-      console.error(error);
-    });
+  }).then(async response => {
+    if (!response.ok) {
+      const err = await response.json();
+      throw Error(err.message);
+    }
+    return response.json();
+  });
 }
 
 export default {

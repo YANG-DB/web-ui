@@ -4,18 +4,19 @@
   cursor: grab;
 }
 .line {
-  stroke: var(--secondary);
+  stroke: #00b1f2;
   opacity: 1;
+  stroke-dasharray: 5px;
 }
 
 .node {
   r: 10;
   transition: r 1s ease;
-  fill: var(--highlight);
-  stroke: var(--secondary);
+  fill: #d58d00;
+  stroke: #d58d00;
   stroke-width: 2px;
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 1;
 }
 
 .menu {
@@ -45,20 +46,20 @@
 }
 
 .rLabel {
-  fill: var(--highlight);
+  fill: white;
   text-transform: uppercase;
   text-anchor: middle;
 }
 
 .marker {
-  fill: var(--secondary);
+  fill: #00b1f2;
 }
 
 .text {
   transition: opacity 1s ease, font-size 1s ease, transform 1s ease,
     fill 1s ease;
   transform: translate(12px, 5px);
-  fill: var(--highlight);
+  fill: white;
   font-size: 12px;
 }
 

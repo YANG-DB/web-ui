@@ -17,12 +17,18 @@ const actions = {
 
 function Action({ onLoad, onAction, actionLabel, children }) {
   const [status, setStatus] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
   function render(children, status) {
     switch (status) {
       case "SUCCESS":
         return "Successfully completed.";
       case "ERROR":
-        return "Something went wrong";
+        return (
+          <div>
+            Something went wrong:
+            <div className={modalStyles.errorMessage}>{errorMessage}</div>
+          </div>
+        );
       default:
         return children;
     }
@@ -36,6 +42,7 @@ function Action({ onLoad, onAction, actionLabel, children }) {
         },
         err => {
           setStatus("ERROR");
+          setErrorMessage(err.message);
         }
       );
     }
@@ -53,10 +60,12 @@ function Action({ onLoad, onAction, actionLabel, children }) {
               setStatus("LOADING");
               onAction().then(
                 result => {
+                  console.log("result", result);
                   setStatus("SUCCESS");
                 },
                 err => {
                   setStatus("ERROR");
+                  setErrorMessage(err.message);
                 }
               );
             }}
@@ -106,7 +115,9 @@ function Save({ value }) {
       actionLabel={"Save"}
     >
       <div>
-        <label htmlFor="label">Enter schema name: </label>
+        <label htmlFor="label" className={styles.schemaLabel}>
+          Enter schema name:{" "}
+        </label>
         <input
           type="text"
           name="label"
@@ -119,7 +130,7 @@ function Save({ value }) {
 }
 
 export default function Schema() {
-  const [dialogKey, setDialogKey] = useState(actions.update);
+  const [dialogKey, setDialogKey] = useState(null);
   const [currentSchema, setCurrentSchema] = useState("");
 
   const closeModal = useCallback(() => {

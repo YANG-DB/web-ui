@@ -49,3 +49,8 @@
 .action.share:before {
   background-image: url("../assets/share.svg");
 }
+
+.schemaLabel {
+  display: block;
+  margin-bottom: 5px;
+}
