@@ -12,6 +12,10 @@ const types = {
   GRAPH: "graph"
 };
 
+function isMaximisable(type) {
+  return true;
+}
+
 function showResults(type, results) {
   switch (type) {
     case types.TABLE:
@@ -27,6 +31,7 @@ function showResults(type, results) {
 
 export default function Results({ results }) {
   const [resultType, setResultType] = useState(types.GRAPH);
+  const [maximised, setMaximised] = useState(false);
   return (
     <div className={cn(styles.results, globalStyles.section)}>
       <div className={cn(styles.wrapper, globalStyles.rounded)}>
@@ -94,7 +99,24 @@ export default function Results({ results }) {
                 })}
               </div>
             </div>
-            <div className={styles.resultWrapper}>
+            <div
+              className={cn(
+                styles.resultWrapper,
+                maximised && styles.maximised
+              )}
+            >
+              {isMaximisable(resultType) && !maximised && (
+                <button
+                  onClick={() => setMaximised(true)}
+                  className={styles.maximise}
+                ></button>
+              )}
+              {maximised && (
+                <button
+                  onClick={() => setMaximised(false)}
+                  className={styles.minimise}
+                ></button>
+              )}
               {results ? (
                 showResults(resultType, extractResults(results))
               ) : (

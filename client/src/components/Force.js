@@ -10,6 +10,7 @@ import styles from "./Force.module.css";
 import { min } from "d3";
 
 const NODE_RADIUS = 10;
+const ALPHA = 0.01;
 const menuItems = ["toggleExpand", "functionTwo", "functionThree"];
 var pie = d3.pie().value(() => 1);
 var color = d3
@@ -19,6 +20,7 @@ var color = d3
 
 export default function Force({ results }) {
   const ref = useD3(svg => {
+    svg.html("");
     const { width, height } = svg.node().getBoundingClientRect();
     let entities = results.entities.map(e => ({
       ...e,
@@ -44,14 +46,13 @@ export default function Force({ results }) {
       )
       .force("x", d3.forceX())
       .force("y", d3.forceY())
-      .alphaDecay(0.04)
       .on("tick", ticked);
 
     svg.attr("width", width);
     svg.attr("height", height);
 
     function dragstarted(d) {
-      if (!d3.event.active) simulation.alpha(0.01).restart();
+      if (!d3.event.active) simulation.alpha(ALPHA).restart();
       d.fx = d.x;
       d.fy = d.y;
     }
@@ -62,7 +63,7 @@ export default function Force({ results }) {
     }
 
     function dragended(d) {
-      if (!d3.event.active) simulation.alpha(0.01);
+      if (!d3.event.active) simulation.alpha(ALPHA);
       if (!d.menuOpen) {
         d.fx = null;
         d.fy = null;
@@ -151,14 +152,6 @@ export default function Force({ results }) {
       path
         .attr("d", d => lineFunction(d.source, d.target))
         .attr("marker-end", d => d.directional && "url(#arrow-end)");
-
-      linkLabels
-        .attr("x", function(d) {
-          return d.source.x;
-        })
-        .attr("y", function(d) {
-          return d.source.y;
-        });
 
       menu.attr("transform", d => `translate(${d.x} ${d.y})`);
 
@@ -373,7 +366,7 @@ export default function Force({ results }) {
             .distance(200)
         )
         .force("collide", d3.forceCollide(75));
-      simulation.alpha(0.01).restart();
+      simulation.alpha(ALPHA).restart();
     }
 
     function openMenu(node) {
