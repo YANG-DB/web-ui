@@ -8,8 +8,6 @@ export default function(cb, deps) {
       cb(select(ref.current));
     }
     paintD3();
-    window.addEventListener("resize", paintD3);
-    return () => window.removeEventListener("resize", paintD3);
   }, [cb, deps]);
   return ref;
 }

@@ -7,7 +7,9 @@ import apiService from "../services/api";
 import eyeOn from "../assets/eye.svg";
 import eyeOff from "../assets/eye-off.svg";
 import styles from "./Force.module.css";
+import { min } from "d3";
 
+const NODE_RADIUS = 10;
 const menuItems = ["toggleExpand", "functionTwo", "functionThree"];
 var pie = d3.pie().value(() => 1);
 var color = d3
@@ -42,12 +44,14 @@ export default function Force({ results }) {
       )
       .force("x", d3.forceX())
       .force("y", d3.forceY())
+      .alphaDecay(0.04)
       .on("tick", ticked);
 
-    svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
+    svg.attr("width", width);
+    svg.attr("height", height);
 
     function dragstarted(d) {
-      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      if (!d3.event.active) simulation.alpha(0.01).restart();
       d.fx = d.x;
       d.fy = d.y;
     }
@@ -58,7 +62,7 @@ export default function Force({ results }) {
     }
 
     function dragended(d) {
-      if (!d3.event.active) simulation.alphaTarget(0);
+      if (!d3.event.active) simulation.alpha(0.01);
       if (!d.menuOpen) {
         d.fx = null;
         d.fy = null;
@@ -140,6 +144,10 @@ export default function Force({ results }) {
     }
 
     function ticked() {
+      var minX = Infinity;
+      var minY = Infinity;
+      var maxX = -Infinity;
+      var maxY = -Infinity;
       path
         .attr("d", d => lineFunction(d.source, d.target))
         .attr("marker-end", d => d.directional && "url(#arrow-end)");
@@ -156,6 +164,18 @@ export default function Force({ results }) {
 
       circle
         .attr("cx", function(d) {
+          if (d.x < minX) {
+            minX = d.x;
+          }
+          if (d.x > maxX) {
+            maxX = d.x;
+          }
+          if (d.y < minY) {
+            minY = d.y;
+          }
+          if (d.y > maxY) {
+            maxY = d.y;
+          }
           return d.x;
         })
         .attr("cy", function(d) {
@@ -169,6 +189,13 @@ export default function Force({ results }) {
         .attr("y", function(d) {
           return d.y;
         });
+
+      svg.attr("viewBox", [
+        minX - NODE_RADIUS,
+        minY - NODE_RADIUS,
+        maxX - minX + NODE_RADIUS * 2,
+        maxY - minY + NODE_RADIUS * 2
+      ]); // ensures that all nodes are visible on load
     }
 
     function restart() {
@@ -287,6 +314,7 @@ export default function Force({ results }) {
             .on("end", dragended)
         )
         .merge(circle)
+        .attr("r", NODE_RADIUS)
         .attr("class", d => {
           return cn(
             styles.node,
@@ -345,7 +373,7 @@ export default function Force({ results }) {
             .distance(200)
         )
         .force("collide", d3.forceCollide(75));
-      simulation.alpha(1).restart();
+      simulation.alpha(0.01).restart();
     }
 
     function openMenu(node) {

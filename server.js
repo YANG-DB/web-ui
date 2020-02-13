@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-const results = require("./mocks/queries/Result");
+const results = require("./mocks/queries/ResultLarge");
 const update = require("./mocks/queries/Update");
 const structure = require("./mocks/structures/Default");
 const ontology = require("./mocks/ontologies/Dragons.json");

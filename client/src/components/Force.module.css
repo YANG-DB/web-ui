@@ -10,7 +10,6 @@
 }
 
 .node {
-  r: 10;
   transition: r 1s ease;
   fill: #d58d00;
   stroke: #d58d00;
