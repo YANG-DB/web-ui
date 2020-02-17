@@ -4,261 +4,208 @@
   "renderElapsed": "00000280",
   "totalElapsed": "00002141",
   "data": {
-    "resourceUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba",
-    "resourceId": "b5714263-97b7-482d-88e5-135f4b18e3ba",
-    "cursorStoreUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/cursor/1/page",
-    "explainPlanUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/plan",
-    "v1QueryUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/v1",
-    "asgUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/asg",
-    "elasticQueryUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/elastic",
-    "type": "concrete",
-    "error": null,
-    "innerUrlResourceInfos": [],
-    "cursorResourceInfos": [
+    "pattern": {
+      "ont": "Dragons",
+      "name": "Match (p:Person)-[o:Own]->(d:Dragon)  Return *"
+    },
+    "assignments": [
       {
-        "resourceUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/cursor/1",
-        "resourceId": "1",
-        "error": null,
-        "cursorRequest": {
-          "maxExecutionTime": 600000,
-          "cursorType": "LogicalGraphCursorRequest",
-          "createPageRequest": {
-            "pageSize": 1000,
-            "fetch": false
-          },
-          "include": "all",
-          "format": "JSON",
-          "countTags": []
-        },
-        "pageStoreUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/cursor/1/page",
-        "pageResourceInfos": [
+        "entities": [
           {
-            "resourceUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/cursor/1/page/1",
-            "resourceId": "1",
-            "executionTime": 0,
-            "dataUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/cursor/1/page/1/data",
-            "requestedPageSize": 1000,
-            "actualPageSize": 1,
-            "data": {
-              "pattern": {
-                "ont": "Dragons",
-                "name": "Match (p:Person)-[o:Own]->(d:Dragon)  Return *"
+            "eTag": ["d"],
+            "eID": "D01_Myriel",
+            "eType": "Dragon",
+            "properties": [
+              {
+                "pType": "gender",
+                "agg": "raw",
+                "value": "female"
               },
-              "assignments": [
-                {
-                  "entities": [
-                    {
-                      "eTag": [
-                        "d"
-                      ],
-                      "eID": "D01_Myriel",
-                      "eType": "Dragon",
-                      "properties": [
-                        {
-                          "pType": "gender",
-                          "agg": "raw",
-                          "value": "female"
-                        },
-                        {
-                          "pType": "color",
-                          "agg": "raw",
-                          "value": "gold"
-                        },
-                        {
-                          "pType": "name",
-                          "agg": "raw",
-                          "value": "Myriel"
-                        },
-                        {
-                          "pType": "power",
-                          "agg": "raw",
-                          "value": "100"
-                        },
-                        {
-                          "pType": "birthDate",
-                          "agg": "raw",
-                          "value": "2000-01-31 22:00:00.000"
-                        }
-                      ]
-                    },
-                    {
-                      "eTag": [
-                        "d"
-                      ],
-                      "eID": "D02_Kolbert",
-                      "eType": "Dragon",
-                      "properties": [
-                        {
-                          "pType": "gender",
-                          "agg": "raw",
-                          "value": "male"
-                        },
-                        {
-                          "pType": "color",
-                          "agg": "raw",
-                          "value": "silver"
-                        },
-                        {
-                          "pType": "name",
-                          "agg": "raw",
-                          "value": "Kolbert"
-                        },
-                        {
-                          "pType": "power",
-                          "agg": "raw",
-                          "value": "200"
-                        },
-                        {
-                          "pType": "birthDate",
-                          "agg": "raw",
-                          "value": "0400-01-31 22:00:00.000"
-                        }
-                      ]
-                    },
-                    {
-                      "eTag": [
-                        "d"
-                      ],
-                      "eID": "D03_Neptun",
-                      "eType": "Dragon",
-                      "properties": [
-                        {
-                          "pType": "gender",
-                          "agg": "raw",
-                          "value": "male"
-                        },
-                        {
-                          "pType": "color",
-                          "agg": "raw",
-                          "value": "blue"
-                        },
-                        {
-                          "pType": "name",
-                          "agg": "raw",
-                          "value": "Neptun"
-                        },
-                        {
-                          "pType": "power",
-                          "agg": "raw",
-                          "value": "50"
-                        },
-                        {
-                          "pType": "birthDate",
-                          "agg": "raw",
-                          "value": "1300-01-31 22:00:00.000"
-                        }
-                      ]
-                    },
-                    {
-                      "eTag": [
-                        "p"
-                      ],
-                      "eID": "P01_Napoleon",
-                      "eType": "Person",
-                      "properties": [
-                        {
-                          "pType": "lastName",
-                          "agg": "raw",
-                          "value": "Bonaparte"
-                        },
-                        {
-                          "pType": "gender",
-                          "agg": "raw",
-                          "value": "male"
-                        },
-                        {
-                          "pType": "deathDate",
-                          "agg": "raw",
-                          "value": "21/7/1773"
-                        },
-                        {
-                          "pType": "birthDate",
-                          "agg": "raw",
-                          "value": "1743-12-09 22:00:00.000"
-                        },
-                        {
-                          "pType": "height",
-                          "agg": "raw",
-                          "value": "158"
-                        }
-                      ]
-                    },
-                    {
-                      "eTag": [
-                        "p"
-                      ],
-                      "eID": "P02_Mlle.Baptistine",
-                      "eType": "Person",
-                      "properties": [
-                        {
-                          "pType": "lastName",
-                          "agg": "raw",
-                          "value": "Baptistine"
-                        },
-                        {
-                          "pType": "gender",
-                          "agg": "raw",
-                          "value": "male"
-                        },
-                        {
-                          "pType": "deathDate",
-                          "agg": "raw",
-                          "value": "11/12/1783"
-                        },
-                        {
-                          "pType": "birthDate",
-                          "agg": "raw",
-                          "value": "1723-01-01 22:00:00.000"
-                        },
-                        {
-                          "pType": "height",
-                          "agg": "raw",
-                          "value": "178"
-                        }
-                      ]
-                    }
-                  ],
-                  "relationships": [
-                    {
-                      "rID": "OwnP02_Mlle.BaptistineD01_Myriel",
-                      "agg": false,
-                      "rType": "Own",
-                      "directional": true,
-                      "eID1": "P02_Mlle.Baptistine",
-                      "eID2": "D01_Myriel",
-                      "eTag1": "p",
-                      "eTag2": "d"
-                    },
-                    {
-                      "rID": "OwnP02_Mlle.BaptistineD03_Neptun",
-                      "agg": false,
-                      "rType": "Own",
-                      "directional": true,
-                      "eID1": "P02_Mlle.Baptistine",
-                      "eID2": "D03_Neptun",
-                      "eTag1": "p",
-                      "eTag2": "d"
-                    },
-                    {
-                      "rID": "OwnP02_Mlle.BaptistineD02_Kolbert",
-                      "agg": false,
-                      "rType": "Own",
-                      "directional": false,
-                      "eID1": "P02_Mlle.Baptistine",
-                      "eID2": "D02_Kolbert",
-                      "eTag1": "p",
-                      "eTag2": "d"
-                    }
-                  ]
-                }
-              ],
-              "resultType": "assignments"
-            },
-            "elasticQueryUrl": "http://127.0.1.1:8888/fuse/query/b5714263-97b7-482d-88e5-135f4b18e3ba/cursor/1/page/1/elastic",
-            "available": true
+              {
+                "pType": "color",
+                "agg": "raw",
+                "value": "gold"
+              },
+              {
+                "pType": "name",
+                "agg": "raw",
+                "value": "Myriel"
+              },
+              {
+                "pType": "power",
+                "agg": "raw",
+                "value": "100"
+              },
+              {
+                "pType": "birthDate",
+                "agg": "raw",
+                "value": "2000-01-31 22:00:00.000"
+              }
+            ]
+          },
+          {
+            "eTag": ["d"],
+            "eID": "D02_Kolbert",
+            "eType": "Dragon",
+            "properties": [
+              {
+                "pType": "gender",
+                "agg": "raw",
+                "value": "male"
+              },
+              {
+                "pType": "color",
+                "agg": "raw",
+                "value": "silver"
+              },
+              {
+                "pType": "name",
+                "agg": "raw",
+                "value": "Kolbert"
+              },
+              {
+                "pType": "power",
+                "agg": "raw",
+                "value": "200"
+              },
+              {
+                "pType": "birthDate",
+                "agg": "raw",
+                "value": "0400-01-31 22:00:00.000"
+              }
+            ]
+          },
+          {
+            "eTag": ["d"],
+            "eID": "D03_Neptun",
+            "eType": "Dragon",
+            "properties": [
+              {
+                "pType": "gender",
+                "agg": "raw",
+                "value": "male"
+              },
+              {
+                "pType": "color",
+                "agg": "raw",
+                "value": "blue"
+              },
+              {
+                "pType": "name",
+                "agg": "raw",
+                "value": "Neptun"
+              },
+              {
+                "pType": "power",
+                "agg": "raw",
+                "value": "50"
+              },
+              {
+                "pType": "birthDate",
+                "agg": "raw",
+                "value": "1300-01-31 22:00:00.000"
+              }
+            ]
+          },
+          {
+            "eTag": ["p"],
+            "eID": "P01_Napoleon",
+            "eType": "Person",
+            "properties": [
+              {
+                "pType": "lastName",
+                "agg": "raw",
+                "value": "Bonaparte"
+              },
+              {
+                "pType": "gender",
+                "agg": "raw",
+                "value": "male"
+              },
+              {
+                "pType": "deathDate",
+                "agg": "raw",
+                "value": "21/7/1773"
+              },
+              {
+                "pType": "birthDate",
+                "agg": "raw",
+                "value": "1743-12-09 22:00:00.000"
+              },
+              {
+                "pType": "height",
+                "agg": "raw",
+                "value": "158"
+              }
+            ]
+          },
+          {
+            "eTag": ["p"],
+            "eID": "P02_Mlle.Baptistine",
+            "eType": "Person",
+            "properties": [
+              {
+                "pType": "lastName",
+                "agg": "raw",
+                "value": "Baptistine"
+              },
+              {
+                "pType": "gender",
+                "agg": "raw",
+                "value": "male"
+              },
+              {
+                "pType": "deathDate",
+                "agg": "raw",
+                "value": "11/12/1783"
+              },
+              {
+                "pType": "birthDate",
+                "agg": "raw",
+                "value": "1723-01-01 22:00:00.000"
+              },
+              {
+                "pType": "height",
+                "agg": "raw",
+                "value": "178"
+              }
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "rID": "OwnP02_Mlle.BaptistineD01_Myriel",
+            "agg": false,
+            "rType": "Own",
+            "directional": true,
+            "eID1": "P02_Mlle.Baptistine",
+            "eID2": "D01_Myriel",
+            "eTag1": "p",
+            "eTag2": "d"
+          },
+          {
+            "rID": "OwnP02_Mlle.BaptistineD03_Neptun",
+            "agg": false,
+            "rType": "Own",
+            "directional": true,
+            "eID1": "P02_Mlle.Baptistine",
+            "eID2": "D03_Neptun",
+            "eTag1": "p",
+            "eTag2": "d"
+          },
+          {
+            "rID": "OwnP02_Mlle.BaptistineD02_Kolbert",
+            "agg": false,
+            "rType": "Own",
+            "directional": false,
+            "eID1": "P02_Mlle.Baptistine",
+            "eID2": "D02_Kolbert",
+            "eTag1": "p",
+            "eTag2": "d"
           }
         ]
       }
-    ]
+    ],
+    "resultType": "assignments"
   }
 }

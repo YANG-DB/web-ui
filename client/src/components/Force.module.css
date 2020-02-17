@@ -18,11 +18,6 @@
   opacity: 1;
 }
 
-.menu {
-  /* r: 20; */
-  fill: var(--highlight);
-}
-
 .menuItem {
   cursor: pointer;
   opacity: 0.9;
