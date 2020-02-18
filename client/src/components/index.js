@@ -10,6 +10,9 @@ import ListItem from "./ListItem";
 import HistoryItem from "./HistoryItem";
 import Aggregates from "./Aggregates";
 import Modal from "./Modal";
+import Force from "./Force";
+import List from "./List";
+import AssignmentItem from "./AssignmentItem";
 
 export {
   TextArea,
@@ -23,5 +26,8 @@ export {
   ListItem,
   HistoryItem,
   Aggregates,
-  Modal
+  Modal,
+  Force,
+  List,
+  AssignmentItem
 };

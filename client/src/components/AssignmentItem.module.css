@@ -1,0 +1,36 @@
+.list {
+  min-height: 50px;
+}
+
+.entity {
+  display: inline-block;
+  background: var(--secondary);
+  margin: 5px 40px;
+  padding: 7px;
+  border-radius: 40px;
+}
+
+.node {
+  fill: #d58d00;
+  stroke: #d58d00;
+}
+
+.item svg {
+  width: 100%;
+}
+
+.link {
+  stroke: #00b1f2;
+  opacity: 1;
+  stroke-dasharray: 1px;
+}
+
+.nodeLabel {
+  font-size: 6px;
+  fill: var(--highlight);
+}
+
+.rLabel {
+  font-size: 4px;
+  fill: white;
+}

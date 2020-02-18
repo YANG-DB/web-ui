@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import cn from "classnames";
-import { HistoryItem } from "../components";
+import { HistoryItem, Force, List } from "../components";
 import { extractResults } from "../helpers";
 import styles from "./Results.module.css";
 import globalStyles from "../App.module.css";
-import Force from "./Force";
 
 const types = {
   TABLE: "table",
@@ -13,7 +12,7 @@ const types = {
 };
 
 function isMaximisable(type) {
-  return true;
+  return type === types.GRAPH;
 }
 
 function showResults(type, results) {
@@ -21,9 +20,9 @@ function showResults(type, results) {
     case types.TABLE:
       return <div></div>;
     case types.LIST:
-      return <div></div>;
+      return <List results={results.data.assignments} />;
     case types.GRAPH:
-      return <Force results={results}></Force>;
+      return <Force results={extractResults(results)} />;
     default:
       return <div></div>;
   }
@@ -117,11 +116,7 @@ export default function Results({ results }) {
                   className={styles.minimise}
                 ></button>
               )}
-              {results ? (
-                showResults(resultType, extractResults(results))
-              ) : (
-                <div></div>
-              )}
+              {results ? showResults(resultType, results) : <div></div>}
             </div>
           </div>
           <div

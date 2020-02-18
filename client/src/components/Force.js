@@ -1,6 +1,7 @@
 import React from "react";
 import * as d3 from "d3";
 import cn from "classnames";
+import { uniqBy } from "lodash";
 import useD3 from "../hooks/useD3";
 import extractResults from "../helpers/extractResults";
 import apiService from "../services/api";
@@ -61,14 +62,13 @@ function drawLine(source, target) {
 
 export default function Force({ results }) {
   const ref = useD3(svg => {
-    // svg.html("");
     const { width, height } = svg.node().getBoundingClientRect();
     svg.attr("width", width);
     svg.attr("height", height);
 
     // ---------------------------------- Translate data ---------------------------------- //
 
-    let entities = results.entities.map(e => ({
+    let entities = uniqBy(results.entities, el => el.eID).map(e => ({
       ...e,
       id: e.eID,
       fromQuery: true,
@@ -92,6 +92,7 @@ export default function Force({ results }) {
           return d.id;
         })
       )
+      .force("collide", d3.forceCollide(75))
       .force("x", d3.forceX())
       .force("y", d3.forceY())
       .on("tick", ticked);
@@ -244,48 +245,40 @@ export default function Force({ results }) {
         .data(entities, function(d) {
           return d.id;
         })
-        .join(
-          enter => {
-            const group = enter
-              .append("g")
-              .attr("class", styles.nodeGroup)
-              .call(
-                d3
-                  .drag()
-                  .on("start", dragstarted)
-                  .on("drag", dragged)
-                  .on("end", dragended)
-              );
+        .join(enter => {
+          const group = enter
+            .append("g")
+            .attr("class", styles.nodeGroup)
+            .call(
+              d3
+                .drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended)
+            );
 
-            group
-              .append("circle")
-              .attr("r", NODE_RADIUS)
-              .on("click", d => {
-                if (d.fromQuery) {
-                  if (!d.menuOpen) {
-                    openMenu(d);
-                  } else {
-                    closeMenu(d);
-                  }
+          group
+            .append("circle")
+            .attr("r", NODE_RADIUS)
+            .on("click", d => {
+              if (d.fromQuery) {
+                if (!d.menuOpen) {
+                  openMenu(d);
+                } else {
+                  closeMenu(d);
                 }
-              });
+              }
+            });
 
-            group
-              .append("text")
-              .text(function(d) {
-                return d.id;
-              })
-              .attr("class", styles.text);
+          group
+            .append("text")
+            .text(function(d) {
+              return d.id;
+            })
+            .attr("class", styles.text);
 
-            return group;
-          },
-          update => {
-            return update;
-          },
-          exit => {
-            exit.remove();
-          }
-        )
+          return group;
+        })
         .call(merged => {
           merged.select("circle").attr("class", d => {
             return cn(
@@ -404,19 +397,6 @@ export default function Force({ results }) {
         );
 
       // ------------------------ Update and restart the simulation. ------------------------ //
-
-      simulation.nodes(entities);
-      simulation
-        .force(
-          "link",
-          d3
-            .forceLink(relationships)
-            .id(function(d) {
-              return d.id;
-            })
-            .distance(200)
-        )
-        .force("collide", d3.forceCollide(75));
       simulation.alpha(ALPHA).restart();
     }
 
