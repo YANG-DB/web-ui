@@ -1,52 +1,53 @@
 import resultsToTree from "./resultsToTree";
 
 test("simple example", () => {
+  const pattern = {
+    ont: "Knowledge",
+    elements: [
+      {
+        type: "Start",
+        id: 1
+      },
+      {
+        type: "ETyped",
+        eTag: "B",
+        eType: "Entity",
+        id: 2
+      },
+      {
+        type: "Quant",
+        qType: "all",
+        next: [3, 5],
+        id: 3
+      },
+      {
+        type: "Rel",
+        rType: "relatedEntity",
+        dir: "R",
+        id: 4
+      },
+      {
+        type: "ETyped",
+        eTag: "A",
+        eType: "Entity",
+        id: 5
+      },
+      {
+        type: "Rel",
+        rType: "hasEvalue",
+        dir: "R",
+        id: 6
+      },
+      {
+        type: "ETyped",
+        eTag: "C",
+        eType: "Evalue",
+        id: 7
+      }
+    ]
+  };
+
   const input = {
-    pattern: {
-      ont: "Knowledge",
-      elements: [
-        {
-          type: "Start",
-          id: 1
-        },
-        {
-          type: "ETyped",
-          eTag: "B",
-          eType: "Entity",
-          id: 2
-        },
-        {
-          type: "Quant",
-          qType: "all",
-          next: [3, 5],
-          id: 3
-        },
-        {
-          type: "Rel",
-          rType: "relatedEntity",
-          dir: "R",
-          id: 4
-        },
-        {
-          type: "ETyped",
-          eTag: "A",
-          eType: "Entity",
-          id: 5
-        },
-        {
-          type: "Rel",
-          rType: "hasEvalue",
-          dir: "R",
-          id: 6
-        },
-        {
-          type: "ETyped",
-          eTag: "C",
-          eType: "Evalue",
-          id: 7
-        }
-      ]
-    },
     entities: [
       {
         eTag: ["A"],
@@ -85,20 +86,11 @@ test("simple example", () => {
       }
     ]
   };
-  expect(resultsToTree(input)).toEqual({
+  expect(resultsToTree(input, pattern)).toEqual({
     name: "2",
     alias: "B",
     link: null,
     children: [
-      {
-        name: "1",
-        alias: "A",
-        link: {
-          label: "21",
-          directional: false,
-          type: "relatedEntity"
-        }
-      },
       {
         name: "3",
         alias: "C",
@@ -106,6 +98,15 @@ test("simple example", () => {
           label: "23",
           directional: false,
           type: "hasEvalue"
+        }
+      },
+      {
+        name: "1",
+        alias: "A",
+        link: {
+          label: "21",
+          directional: false,
+          type: "relatedEntity"
         }
       }
     ]

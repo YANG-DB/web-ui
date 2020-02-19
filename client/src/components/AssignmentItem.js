@@ -16,7 +16,7 @@ const margin = { top: 10, right: 120, bottom: 10, left: 40 };
 export default function AssignmentItem({ data }) {
   const ref = useD3(svg => {
     const { width, height } = svg.node().getBoundingClientRect();
-    const treeData = resultsToTree(data);
+    const treeData = data;
     const root = hierarchy(treeData);
     const linkWrapper = svg
       .selectAll(`.${styles.linkWrapper}`)
@@ -67,7 +67,7 @@ export default function AssignmentItem({ data }) {
           .attr("dy", "0.31em")
           .attr("x", d => (d.children ? -6 : 6))
           .attr("text-anchor", d => (d.children ? "end" : "start"))
-          .text(d => d.data.alias);
+          .text(d => `${d.data.name} (${d.data.alias})`);
         return group;
       });
 

@@ -20,7 +20,12 @@ function showResults(type, results) {
     case types.TABLE:
       return <div></div>;
     case types.LIST:
-      return <List results={results.data.assignments} />;
+      return (
+        <List
+          results={results.data.assignments}
+          pattern={results.data.pattern}
+        />
+      );
     case types.GRAPH:
       return <Force results={extractResults(results)} />;
     default:
