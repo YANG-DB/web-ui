@@ -1,6 +1,14 @@
-import React from "react";
+import React, { useRef } from "react";
 import { resultsToTree, getPreviousPath } from "../helpers";
-import { hierarchy, path, linkHorizontal, tree } from "d3";
+import {
+  hierarchy,
+  path,
+  linkHorizontal,
+  tree,
+  select,
+  event,
+  mouse
+} from "d3";
 import useD3 from "../hooks/useD3";
 import styles from "./AssignmentItem.module.css";
 
@@ -14,10 +22,34 @@ const treeLayout = tree().nodeSize([dx, dy]);
 const margin = { top: 10, right: 120, bottom: 10, left: 40 };
 
 export default function AssignmentItem({ data }) {
+  const tooltipRef = useRef(null);
+
   const ref = useD3(svg => {
     const { width, height } = svg.node().getBoundingClientRect();
     const treeData = data;
     const root = hierarchy(treeData);
+
+    const tooltip = select(tooltipRef.current).style("display", "none");
+
+    function showTooltip(d) {
+      tooltip.style("display", "inline");
+      const props = d.target ? d.target.data.properties : d.data.properties;
+      tooltip.html(
+        props
+          .map(p => `<strong>${p.pType}</strong>: ${JSON.stringify(p.value)}`)
+          .join("<br/>")
+      );
+    }
+
+    function hideTooltip() {
+      tooltip.style("display", "none");
+    }
+
+    function mousemove() {
+      const [x, y] = mouse(select(`body`).node());
+      tooltip.style("left", x + "px").style("top", y + "px");
+    }
+
     const linkWrapper = svg
       .selectAll(`.${styles.linkWrapper}`)
       .data([null])
@@ -60,7 +92,10 @@ export default function AssignmentItem({ data }) {
         group
           .append("circle")
           .attr("r", 2.5)
-          .attr("class", styles.node);
+          .attr("class", styles.node)
+          .on("mouseover", showTooltip)
+          .on("mousemove", mousemove)
+          .on("mouseout", hideTooltip);
         group
           .append("text")
           .attr("class", styles.nodeLabel)
@@ -75,7 +110,12 @@ export default function AssignmentItem({ data }) {
         .selectAll(`.${styles.linkGroup}`)
         .data(links, d => d.target.id);
       link.join(enter => {
-        const group = enter.append("g").attr("class", styles.linkGroup);
+        const group = enter
+          .append("g")
+          .attr("class", styles.linkGroup)
+          .on("mouseover", showTooltip)
+          .on("mousemove", mousemove)
+          .on("mouseout", hideTooltip);
         group
           .append("path")
           .attr("d", diagonal)
@@ -98,6 +138,7 @@ export default function AssignmentItem({ data }) {
   });
   return (
     <li className={styles.item}>
+      <div className={styles.tooltip} ref={tooltipRef}></div>
       <svg ref={ref} />
     </li>
   );

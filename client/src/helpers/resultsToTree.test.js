@@ -90,12 +90,14 @@ test("simple example", () => {
     name: "2",
     alias: "B",
     link: null,
+    properties: undefined,
     children: [
       {
         name: "3",
         alias: "C",
         link: {
           label: "23",
+          properties: undefined,
           directional: false,
           type: "hasEvalue"
         }
@@ -103,8 +105,10 @@ test("simple example", () => {
       {
         name: "1",
         alias: "A",
+        properties: undefined,
         link: {
           label: "21",
+          properties: undefined,
           directional: false,
           type: "relatedEntity"
         }

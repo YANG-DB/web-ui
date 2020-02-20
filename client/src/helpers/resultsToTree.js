@@ -37,6 +37,7 @@ export default function(results, pattern) {
       result = {
         name: entity.eID,
         alias: entity.eTag[0],
+        properties: entity.properties,
         link: null
       };
       if (acc) {
@@ -54,10 +55,12 @@ export default function(results, pattern) {
       const current = {
         name: entity.eID,
         alias: entity.eTag[0],
+        properties: entity.properties,
         link: {
           label: link.rID,
           directional: link.directional,
-          type: link.rType
+          type: link.rType,
+          properties: link.properties
         }
       };
       if (acc) {
@@ -79,10 +82,12 @@ export default function(results, pattern) {
         const current = {
           name: entity.eID,
           alias: entity.eTag[0],
+          properties: entity.properties,
           link: {
             label: link.rID,
             directional: link.directional,
-            type: link.rType
+            type: link.rType,
+            properties: link.properties
           }
         };
         if (acc) {

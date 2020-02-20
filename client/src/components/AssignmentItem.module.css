@@ -15,6 +15,15 @@
   stroke: #d58d00;
 }
 
+.node:hover {
+  transition: r 0.3s ease, color 0.3s ease;
+  fill: white;
+  r: 3;
+}
+
+.item {
+}
+
 .item svg {
   width: 100%;
 }
@@ -30,7 +39,26 @@
   fill: var(--highlight);
 }
 
+.linkGroup:hover path {
+  stroke-dasharray: unset;
+  stroke: white;
+}
+
 .rLabel {
   font-size: 4px;
   fill: white;
+}
+
+.tooltip {
+  width: 300px;
+  z-index: 1000;
+  background: var(--secondary);
+  opacity: 0.9;
+  color: white;
+  padding: 8px;
+  border-radius: 3px;
+  border: 2px solid #e7e7e7;
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
 }
