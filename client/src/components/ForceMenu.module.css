@@ -1,0 +1,14 @@
+.wrapper {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.menu {
+  flex-basis: 350px;
+  flex-grow: 0;
+}
+
+.wrapper > svg {
+  flex-grow: 1;
+}

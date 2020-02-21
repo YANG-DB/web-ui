@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import cn from "classnames";
-import { HistoryItem, Force, List } from "../components";
+import { HistoryItem, Force, List, ForceMenu } from "../components";
 import { extractResults } from "../helpers";
 import styles from "./Results.module.css";
 import globalStyles from "../App.module.css";
@@ -15,7 +15,7 @@ function isMaximisable(type) {
   return type === types.GRAPH;
 }
 
-function showResults(type, results) {
+function showResults(type, results, isMaximised) {
   switch (type) {
     case types.TABLE:
       return <div></div>;
@@ -26,8 +26,13 @@ function showResults(type, results) {
           pattern={results.data.pattern}
         />
       );
-    case types.GRAPH:
-      return <Force results={extractResults(results)} />;
+    case types.GRAPH: {
+      return isMaximised ? (
+        <ForceMenu results={results} />
+      ) : (
+        <Force results={results} hoveredIndex={null} />
+      );
+    }
     default:
       return <div></div>;
   }
@@ -121,7 +126,11 @@ export default function Results({ results }) {
                   className={styles.minimise}
                 ></button>
               )}
-              {results ? showResults(resultType, results) : <div></div>}
+              {results ? (
+                showResults(resultType, results, maximised)
+              ) : (
+                <div></div>
+              )}
             </div>
           </div>
           <div

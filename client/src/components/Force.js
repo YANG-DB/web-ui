@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import * as d3 from "d3";
 import cn from "classnames";
-import { uniqBy } from "lodash";
 import useD3 from "../hooks/useD3";
 import extractResults from "../helpers/extractResults";
 import apiService from "../services/api";
@@ -14,6 +13,7 @@ const IMAGE_HEIGHT = 20;
 const IMAGE_WIDTH = 20;
 const NODE_RADIUS = 10;
 const ALPHA = 0.01;
+const UNHOVERED_OPACITY = 0.4;
 
 const menuItems = ["toggleExpand", "functionTwo", "functionThree"];
 
@@ -60,31 +60,23 @@ function drawLine(source, target) {
     })([source, target]);
 }
 
-export default function Force({ results }) {
-  const ref = useD3(svg => {
-    const { width, height } = svg.node().getBoundingClientRect();
-    svg.attr("width", width);
-    svg.attr("height", height);
-
-    // ---------------------------------- Translate data ---------------------------------- //
-
-    let entities = uniqBy(results.entities, el => el.eID).map(e => ({
-      ...e,
-      id: e.eID,
-      fromQuery: true,
-      expanded: false,
-      menuOpen: false
-    }));
-    let relationships = results.relationships.map(r => ({
-      ...r,
-      id: r.rID,
-      source: r.eID1,
-      target: r.eID2
-    }));
-
-    // ------------------------------- Initialise simulation ------------------------------ //
-
-    const simulation = d3
+export default function Force({ results, hoveredIndex }) {
+  const r = extractResults(results);
+  let entities = r.entities.map(e => ({
+    ...e,
+    id: e.eID,
+    fromQuery: true,
+    expanded: false,
+    menuOpen: false
+  }));
+  let relationships = r.relationships.map(r => ({
+    ...r,
+    id: r.rID,
+    source: r.eID1,
+    target: r.eID2
+  }));
+  const [simulation] = useState(
+    d3
       .forceSimulation(entities)
       .force(
         "link",
@@ -95,7 +87,18 @@ export default function Force({ results }) {
       .force("collide", d3.forceCollide(75))
       .force("x", d3.forceX())
       .force("y", d3.forceY())
-      .on("tick", ticked);
+      .alphaDecay(0.2)
+  );
+  const ref = useD3(svg => {
+    const { width, height } = svg.node().getBoundingClientRect();
+    svg.attr("width", width);
+    svg.attr("height", height);
+
+    // ---------------------------------- Translate data ---------------------------------- //
+
+    // ------------------------------- Initialise simulation ------------------------------ //
+
+    simulation.on("tick", ticked);
 
     // --------------------------------- Define callbacks --------------------------------- //
 
@@ -257,18 +260,15 @@ export default function Force({ results }) {
                 .on("end", dragended)
             );
 
-          group
-            .append("circle")
-            .attr("r", NODE_RADIUS)
-            .on("click", d => {
-              if (d.fromQuery) {
-                if (!d.menuOpen) {
-                  openMenu(d);
-                } else {
-                  closeMenu(d);
-                }
+          group.append("circle").on("click", d => {
+            if (d.fromQuery) {
+              if (!d.menuOpen) {
+                openMenu(d);
+              } else {
+                closeMenu(d);
               }
-            });
+            }
+          });
 
           group
             .append("text")
@@ -280,13 +280,27 @@ export default function Force({ results }) {
           return group;
         })
         .call(merged => {
-          merged.select("circle").attr("class", d => {
-            return cn(
-              styles.node,
-              !d.fromQuery && styles.cannotExpand,
-              d.expanded && styles.expanded
-            );
-          });
+          merged
+            .select("circle")
+            .attr("r", d => {
+              if (d.assignments.includes(hoveredIndex)) {
+                return NODE_RADIUS * 1.5;
+              }
+              return NODE_RADIUS;
+            })
+            .attr("opacity", d => {
+              if (d.assignments.includes(hoveredIndex)) {
+                return 1;
+              }
+              return UNHOVERED_OPACITY;
+            })
+            .attr("class", d => {
+              return cn(
+                styles.node,
+                !d.fromQuery && styles.cannotExpand,
+                d.expanded && styles.expanded
+              );
+            });
         });
 
       // --------------------------------- Create menu items -------------------------------- //
@@ -369,35 +383,45 @@ export default function Force({ results }) {
         .data(relationships, function(d) {
           return d.source.id + "-" + d.target.id;
         })
-        .join(
-          enter => {
-            const group = enter.append("g").attr("class", "linkGroup");
-            group
-              .append("path")
-              .attr("class", styles.line)
-              .attr("id", d => d.id)
-              .attr("marker-end", d => d.directional && "url(#arrow-end)");
-            group
-              .append("text")
-              .append("textPath")
-              .attr("class", styles.rLabel)
-              .attr("startOffset", "50%")
-              .attr("href", d => `#${d.id}`)
-              .text(function(d) {
-                return d.rType;
-              });
-            return group;
-          },
-          update => {
-            return update;
-          },
-          exit => {
-            exit.remove();
+        .join(enter => {
+          const group = enter.append("g").attr("class", "linkGroup");
+          group
+            .append("path")
+            .attr("class", styles.line)
+            .attr("id", d => d.id)
+            .attr("marker-end", d => d.directional && "url(#arrow-end)");
+          group
+            .append("text")
+            .append("textPath")
+            .attr("class", styles.rLabel)
+            .attr("startOffset", "50%")
+            .attr("href", d => `#${d.id}`)
+            .text(function(d) {
+              return d.rType;
+            });
+          return group;
+        })
+        .attr("stroke-width", d => {
+          if (d.assignments.includes(hoveredIndex)) {
+            return "3px";
           }
-        );
+          return "1px";
+        })
+        .attr("stroke-dasharray", d => {
+          if (d.assignments.includes(hoveredIndex)) {
+            return "none";
+          }
+          return "5px";
+        })
+        .attr("opacity", d => {
+          if (d.assignments.includes(hoveredIndex)) {
+            return 1;
+          }
+          return UNHOVERED_OPACITY;
+        });
 
       // ------------------------ Update and restart the simulation. ------------------------ //
-      simulation.alpha(ALPHA).restart();
+      // simulation.alpha(1).restart();
     }
 
     // -------------------------------- Setup zoom handlers ------------------------------- //

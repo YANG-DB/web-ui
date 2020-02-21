@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { connect } from "react-redux";
 import { submitQuery, storeResults } from "../reducers/research";
 import { TextArea, Results, Aggregates } from "../components";

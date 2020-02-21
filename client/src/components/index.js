@@ -11,6 +11,7 @@ import HistoryItem from "./HistoryItem";
 import Aggregates from "./Aggregates";
 import Modal from "./Modal";
 import Force from "./Force";
+import ForceMenu from "./ForceMenu";
 import List from "./List";
 import AssignmentItem from "./AssignmentItem";
 
@@ -28,6 +29,7 @@ export {
   Aggregates,
   Modal,
   Force,
+  ForceMenu,
   List,
   AssignmentItem
 };

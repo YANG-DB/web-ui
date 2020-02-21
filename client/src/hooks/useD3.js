@@ -8,6 +8,6 @@ export default function(cb, deps) {
       cb(select(ref.current));
     }
     paintD3();
-  }, [cb, deps]);
+  }, [cb]);
   return ref;
 }
