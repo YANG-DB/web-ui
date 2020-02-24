@@ -13,7 +13,7 @@ const IMAGE_HEIGHT = 20;
 const IMAGE_WIDTH = 20;
 const NODE_RADIUS = 10;
 const ALPHA = 0.01;
-const UNHOVERED_OPACITY = 0.4;
+const UNHOVERED_OPACITY = 0.7;
 
 const menuItems = ["toggleExpand", "functionTwo", "functionThree"];
 
@@ -305,6 +305,19 @@ export default function Force({ results, hoveredIndex }) {
                 !d.fromQuery && styles.cannotExpand,
                 d.expanded && styles.expanded
               );
+            });
+          merged
+            .select("text")
+            .transition()
+            .attr("opacity", d => {
+              if (typeof hoveredIndex === "number") {
+                if (d.assignments.includes(hoveredIndex)) {
+                  return 1;
+                }
+                return 0.2;
+              }
+
+              return UNHOVERED_OPACITY;
             });
         });
 
