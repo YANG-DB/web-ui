@@ -282,6 +282,7 @@ export default function Force({ results, hoveredIndex }) {
         .call(merged => {
           merged
             .select("circle")
+            .transition()
             .attr("r", d => {
               if (d.assignments.includes(hoveredIndex)) {
                 return NODE_RADIUS * 1.5;
@@ -289,9 +290,13 @@ export default function Force({ results, hoveredIndex }) {
               return NODE_RADIUS;
             })
             .attr("opacity", d => {
-              if (d.assignments.includes(hoveredIndex)) {
-                return 1;
+              if (typeof hoveredIndex === "number") {
+                if (d.assignments.includes(hoveredIndex)) {
+                  return 1;
+                }
+                return 0.2;
               }
+
               return UNHOVERED_OPACITY;
             })
             .attr("class", d => {
@@ -401,27 +406,32 @@ export default function Force({ results, hoveredIndex }) {
             });
           return group;
         })
-        .attr("stroke-width", d => {
-          if (d.assignments.includes(hoveredIndex)) {
-            return "3px";
-          }
-          return "1px";
-        })
-        .attr("stroke-dasharray", d => {
-          if (d.assignments.includes(hoveredIndex)) {
-            return "none";
-          }
-          return "5px";
-        })
-        .attr("opacity", d => {
-          if (d.assignments.includes(hoveredIndex)) {
-            return 1;
-          }
-          return UNHOVERED_OPACITY;
-        });
+        .call(selection => {
+          selection
+            .transition()
+            .attr("stroke-width", d => {
+              if (d.assignments.includes(hoveredIndex)) {
+                return "3px";
+              }
+              return "1px";
+            })
+            .attr("stroke-dasharray", d => {
+              if (d.assignments.includes(hoveredIndex)) {
+                return "none";
+              }
+              return "5px";
+            })
+            .attr("opacity", d => {
+              if (typeof hoveredIndex === "number") {
+                if (d.assignments.includes(hoveredIndex)) {
+                  return 1;
+                }
+                return 0.2;
+              }
 
-      // ------------------------ Update and restart the simulation. ------------------------ //
-      // simulation.alpha(1).restart();
+              return UNHOVERED_OPACITY;
+            });
+        });
     }
 
     // -------------------------------- Setup zoom handlers ------------------------------- //
