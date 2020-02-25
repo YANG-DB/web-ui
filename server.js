@@ -13,8 +13,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post("/api/results", (req, res) => {
-  console.log("Request received: ", req.body);
-  res.send(results);
+  if (req.body.collapsed) {
+    console.log("Request for collapsed data received: ", req.body);
+    res.send(results);
+  } else {
+    console.log("Request received: ", req.body);
+    res.send(results);
+  }
 });
 
 app.post("/api/update", (req, res) => {

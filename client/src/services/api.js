@@ -19,7 +19,7 @@ export default {
     return await callApi("/api/results", "POST", { query });
   },
   getCollapsedResult: async function(query) {
-    return await callApi("/api/results", "POST", { query });
+    return await callApi("/api/results", "POST", { query, collapsed: true });
   },
   updateResult: async function(nodeId) {
     return await callApi("/api/update", "POST", { nodeId });
