@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Editor, Node, Path } from "slate";
 import { Slate, Editable } from "slate-react";
 import cn from "classnames";
@@ -289,6 +289,14 @@ function TextInput({
     [editor]
   );
 
+  useEffect(() => {
+    function handleClick(e) {
+      cacheQuery(value);
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  });
+
   useFocus(editor, focusPath, onCursorPositionChange);
 
   return (
@@ -299,10 +307,6 @@ function TextInput({
         onChange={value => {
           setValue(value);
           setFocusPath(editor.selection && editor.selection.focus.path);
-          if (!editor.selection) {
-            // handle blur event
-            cacheQuery(value);
-          }
           let autocompleteOptions = [];
           if (
             editor.selection &&
