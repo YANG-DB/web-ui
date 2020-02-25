@@ -1,3 +1,6 @@
+import apiService from "../services/api";
+import { slateToQuery } from "../helpers";
+
 const initialState = {
   history: []
 };
@@ -16,6 +19,22 @@ export function storeResults(results) {
   };
 }
 
+export function collapseResults() {
+  return (dispatch, getState) => {
+    dispatch({
+      type: "COLLAPSE_PENDING"
+    });
+    const history = getState().research.history;
+    const query = slateToQuery(history[history.length - 1].query);
+    apiService.getCollapsedResult(query).then(collapsedResults => {
+      dispatch({
+        type: "COLLAPSED_RESULTS",
+        collapsedResults
+      });
+    });
+  };
+}
+
 export default (state = initialState, action) => {
   switch (action.type) {
     case "SUBMIT_QUERY":
@@ -27,6 +46,24 @@ export default (state = initialState, action) => {
             query: action.query
           }
         ]
+      };
+    case "COLLAPSE_PENDING":
+      return {
+        ...state,
+        history: state.history.map((h, i) =>
+          i === state.history.length - 1
+            ? { ...h, collapsedResults: "LOADING" }
+            : h
+        )
+      };
+    case "COLLAPSED_RESULTS":
+      return {
+        ...state,
+        history: state.history.map((h, i) =>
+          i === state.history.length - 1
+            ? { ...h, collapsedResults: action.collapsedResults }
+            : h
+        )
       };
     case "STORE_RESULTS":
       return {
