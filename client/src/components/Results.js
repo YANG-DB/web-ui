@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { Resizable } from "re-resizable";
 import cn from "classnames";
 import { HistoryItem, Force, List, ForceMenu } from "../components";
 import { extractResults } from "../helpers";
 import styles from "./Results.module.css";
 import globalStyles from "../App.module.css";
 
+let timelineHeight = 300;
 const types = {
   TABLE: "table",
   LIST: "list",
@@ -41,6 +43,7 @@ function showResults(type, results, isMaximised) {
 export default function Results({ results }) {
   const [resultType, setResultType] = useState(types.GRAPH);
   const [maximised, setMaximised] = useState(false);
+  const resizeRef = useRef(null);
   return (
     <div className={cn(styles.results, globalStyles.section)}>
       <div className={cn(styles.wrapper, globalStyles.rounded)}>
@@ -133,16 +136,30 @@ export default function Results({ results }) {
               )}
             </div>
           </div>
-          <div
-            className={cn(
-              globalStyles.card,
-              styles.tabs,
-              globalStyles.right,
-              globalStyles.top
-            )}
+          <Resizable
+            ref={resizeRef}
+            enable={{
+              top: true,
+              right: false,
+              bottom: false,
+              left: false,
+              topRight: false,
+              bottomRight: false,
+              bottomLeft: false,
+              topLeft: false
+            }}
           >
-            <h2>Timeline</h2>
-          </div>
+            <div
+              className={cn(
+                globalStyles.card,
+                styles.tabs,
+                globalStyles.right,
+                globalStyles.top
+              )}
+            >
+              <h2>Timeline</h2>
+            </div>
+          </Resizable>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@
 }
 
 .aggregates {
-  width: calc(25% - 20px);
+  width: calc(100% - 20px);
   flex-shrink: 0;
   flex-grow: 0;
   display: flex;

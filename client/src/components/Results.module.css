@@ -34,6 +34,7 @@
   overflow: auto;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .resultWrapper {
@@ -86,6 +87,7 @@
   background: black;
   animation: maximise 0.7s ease-in;
   animation-fill-mode: forwards;
+  z-index: 10;
 }
 
 .resultWrapper img {

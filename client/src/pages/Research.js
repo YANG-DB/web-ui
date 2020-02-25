@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { Resizable } from "re-resizable";
 import { connect } from "react-redux";
 import { submitQuery, storeResults } from "../reducers/research";
 import { TextArea, Results, Aggregates } from "../components";
@@ -7,6 +8,7 @@ import styles from "../App.module.css";
 import { slateToQuery } from "../helpers";
 
 function Research({ submitQuery, storeResults, results, query }) {
+  const resizeRef = useRef(null);
   const onSubmit = useCallback(query => {
     submitQuery(query);
     apiService.getResult(slateToQuery(query)).then(results => {
@@ -19,7 +21,21 @@ function Research({ submitQuery, storeResults, results, query }) {
         <TextArea onSubmit={onSubmit} lastQuery={query} />
         <Results results={results} />
       </div>
-      <Aggregates />
+      <Resizable
+        ref={resizeRef}
+        enable={{
+          top: false,
+          right: false,
+          bottom: false,
+          left: true,
+          topRight: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false
+        }}
+      >
+        <Aggregates />
+      </Resizable>
     </div>
   );
 }
