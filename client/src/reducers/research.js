@@ -5,9 +5,9 @@ const initialState = {
   history: []
 };
 
-export function submitQuery(query) {
+export function cacheQuery(query) {
   return {
-    type: "SUBMIT_QUERY",
+    type: "CACHE_QUERY",
     query
   };
 }
@@ -34,7 +34,7 @@ export function collapseResults() {
 
 export default (state = initialState, action) => {
   switch (action.type) {
-    case "SUBMIT_QUERY":
+    case "CACHE_QUERY":
       return {
         ...state,
         history: [

@@ -47,44 +47,58 @@ export default function Results({ results }) {
   return (
     <div className={cn(styles.results, globalStyles.section)}>
       <div className={cn(styles.wrapper, globalStyles.rounded)}>
-        <div className={styles.history}>
-          <div className={cn(globalStyles.card, globalStyles.top)}>
-            <h2>History</h2>
-            <ul className={styles.historyTable}>
-              {[
-                {
-                  date: "2d ago",
-                  value: "Guy ask the same question as lior but..."
-                },
-                {
-                  date: "2d ago",
-                  value: "Lior asks 4 questions about dragon"
-                },
-                {
-                  date: "2d ago",
-                  value: "Dana asks new question about dragon but there is"
-                },
-                {
-                  date: "2d ago",
-                  value: "Guy ask the same question as lior but..."
-                },
-                {
-                  date: "2d ago",
-                  value: "Guy ask the same question as lior but..."
-                },
-                {
-                  date: "2d ago",
-                  value: "Guy ask the same question as lior but..."
-                }
-              ].map((el, i) => (
-                <HistoryItem date={el.date} value={el.value} key={i} />
-              ))}
-            </ul>
+        <Resizable
+          minWidth={100}
+          enable={{
+            top: false,
+            right: true,
+            bottom: false,
+            left: false,
+            topRight: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topLeft: false
+          }}
+        >
+          <div className={styles.history}>
+            <div className={cn(globalStyles.card, globalStyles.top)}>
+              <h2>History</h2>
+              <ul className={styles.historyTable}>
+                {[
+                  {
+                    date: "2d ago",
+                    value: "Guy ask the same question as lior but..."
+                  },
+                  {
+                    date: "2d ago",
+                    value: "Lior asks 4 questions about dragon"
+                  },
+                  {
+                    date: "2d ago",
+                    value: "Dana asks new question about dragon but there is"
+                  },
+                  {
+                    date: "2d ago",
+                    value: "Guy ask the same question as lior but..."
+                  },
+                  {
+                    date: "2d ago",
+                    value: "Guy ask the same question as lior but..."
+                  },
+                  {
+                    date: "2d ago",
+                    value: "Guy ask the same question as lior but..."
+                  }
+                ].map((el, i) => (
+                  <HistoryItem date={el.date} value={el.value} key={i} />
+                ))}
+              </ul>
+            </div>
+            <div className={cn(globalStyles.card)}>
+              <h2>Bla Bla</h2>
+            </div>
           </div>
-          <div className={cn(globalStyles.card)}>
-            <h2>Bla Bla</h2>
-          </div>
-        </div>
+        </Resizable>
         <div className={styles.chartWrapper}>
           <div
             className={cn(
@@ -138,6 +152,7 @@ export default function Results({ results }) {
           </div>
           <Resizable
             ref={resizeRef}
+            minHeight={100}
             enable={{
               top: true,
               right: false,

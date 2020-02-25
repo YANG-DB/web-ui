@@ -253,7 +253,8 @@ function TextInput({
   structure,
   onCursorPositionChange,
   onSubmit,
-  lastQuery
+  lastQuery,
+  cacheQuery
 }) {
   const [value, setValue] = useState(lastQuery || [textNode()]);
   const [focusPath, setFocusPath] = useState(null);
@@ -298,6 +299,10 @@ function TextInput({
         onChange={value => {
           setValue(value);
           setFocusPath(editor.selection && editor.selection.focus.path);
+          if (!editor.selection) {
+            // handle blur event
+            cacheQuery(value);
+          }
           let autocompleteOptions = [];
           if (
             editor.selection &&
