@@ -2,8 +2,16 @@ import apiService from "../services/api";
 import { slateToQuery } from "../helpers";
 
 const initialState = {
-  history: []
+  history: [],
+  lastQuery: null
 };
+
+export function submitQuery(query) {
+  return {
+    type: "SUBMIT_QUERY",
+    query
+  };
+}
 
 export function cacheQuery(query) {
   return {
@@ -34,7 +42,13 @@ export function collapseResults() {
 
 export default (state = initialState, action) => {
   switch (action.type) {
-    case "CACHE_QUERY":
+    case "CACHE_QUERY": {
+      return {
+        ...state,
+        lastQuery: action.query
+      };
+    }
+    case "SUBMIT_QUERY":
       return {
         ...state,
         history: [
@@ -42,7 +56,8 @@ export default (state = initialState, action) => {
           {
             query: action.query
           }
-        ]
+        ],
+        lastQuery: action.query
       };
     case "COLLAPSED_RESULTS":
       return {

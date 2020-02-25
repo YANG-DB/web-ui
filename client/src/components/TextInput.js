@@ -254,6 +254,7 @@ function TextInput({
   onCursorPositionChange,
   onSubmit,
   lastQuery,
+  submitQuery,
   cacheQuery
 }) {
   const [value, setValue] = useState(lastQuery || [textNode()]);

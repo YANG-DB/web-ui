@@ -1,16 +1,22 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Resizable } from "re-resizable";
 import { connect } from "react-redux";
-import { cacheQuery, storeResults } from "../reducers/research";
+import { submitQuery, storeResults, cacheQuery } from "../reducers/research";
 import { TextArea, Results, Aggregates } from "../components";
 import apiService from "../services/api";
 import styles from "../App.module.css";
 import { slateToQuery } from "../helpers";
 
-function Research({ cacheQuery, storeResults, results, query }) {
+function Research({
+  submitQuery,
+  storeResults,
+  results,
+  lastQuery,
+  cacheQuery
+}) {
   const resizeRef = useRef(null);
   const onSubmit = useCallback(query => {
-    cacheQuery(query);
+    submitQuery(query);
     apiService.getResult(slateToQuery(query)).then(results => {
       storeResults(results);
     });
@@ -20,7 +26,8 @@ function Research({ cacheQuery, storeResults, results, query }) {
       <div className={styles.column}>
         <TextArea
           onSubmit={onSubmit}
-          lastQuery={query}
+          lastQuery={lastQuery}
+          submitQuery={submitQuery}
           cacheQuery={cacheQuery}
         />
         <Results results={results} />
@@ -47,12 +54,10 @@ function Research({ cacheQuery, storeResults, results, query }) {
 
 export default connect(
   state => ({
-    query:
-      state.research.history[state.research.history.length - 1] &&
-      state.research.history[state.research.history.length - 1].query,
+    lastQuery: state.research.lastQuery,
     results:
       state.research.history[state.research.history.length - 1] &&
       state.research.history[state.research.history.length - 1].results
   }),
-  { cacheQuery, storeResults }
+  { submitQuery, storeResults, cacheQuery }
 )(Research);
