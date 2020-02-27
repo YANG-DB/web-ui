@@ -24,6 +24,7 @@ export default function TextArea({
   cacheQuery
 }) {
   const editor = useMemo(() => withReact(createEditor()), []);
+  const [maximised, setMaximised] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(null);
   const [ontology, loadOntology] = useState(null);
   const [structure, loadStructure] = useState(null);
@@ -66,7 +67,7 @@ export default function TextArea({
   }, []);
 
   return (
-    <div className={globalStyles.section}>
+    <div className={cn(globalStyles.section, styles.wrapper)}>
       <div className={styles.headers}>
         {Object.keys(types).map(t => {
           return (
@@ -84,26 +85,39 @@ export default function TextArea({
           );
         })}
       </div>
-      <Autocomplete
-        options={autocompleteOptions}
-        isOpen={isOpen}
-        onSelect={onSelect}
-        highlightedIndex={highlightedIndex}
-        cursorPosition={cursorPosition}
-      />
-      <TextInput
-        cacheQuery={cacheQuery}
-        submitQuery={submitQuery}
-        lastQuery={lastQuery}
-        onSubmit={submit}
-        editor={editor}
-        ontology={ontology}
-        structure={structure}
-        autocompleteActive={isOpen && highlightedIndex !== -1}
-        textboxRef={textboxRef}
-        setAutocompleteOptions={setAutocompleteOptions}
-        onCursorPositionChange={onCursorPositionChange}
-      />
+      <div className={cn(styles.text, maximised && styles.max)}>
+        <Autocomplete
+          options={autocompleteOptions}
+          isOpen={isOpen}
+          onSelect={onSelect}
+          highlightedIndex={highlightedIndex}
+          cursorPosition={cursorPosition}
+        />
+        <TextInput
+          cacheQuery={cacheQuery}
+          submitQuery={submitQuery}
+          lastQuery={lastQuery}
+          onSubmit={submit}
+          editor={editor}
+          ontology={ontology}
+          structure={structure}
+          autocompleteActive={isOpen && highlightedIndex !== -1}
+          textboxRef={textboxRef}
+          setAutocompleteOptions={setAutocompleteOptions}
+          onCursorPositionChange={onCursorPositionChange}
+        />
+        {maximised ? (
+          <button
+            onClick={() => setMaximised(false)}
+            className={styles.minimise}
+          ></button>
+        ) : (
+          <button
+            onClick={() => setMaximised(true)}
+            className={styles.maximise}
+          ></button>
+        )}
+      </div>
     </div>
   );
 }

@@ -61,3 +61,47 @@
 .headers .selected button {
   color: white;
 }
+
+.maximise {
+  background-image: url("../assets/maximize.svg");
+}
+
+.minimise {
+  background-image: url("../assets/minimize.svg");
+}
+
+.maximise,
+.minimise {
+  position: absolute;
+  bottom: 0;
+  right: 10px;
+  background-size: contain;
+  height: 25px;
+  width: 25px;
+  border: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.text {
+  position: relative;
+}
+
+.text.max {
+  position: fixed;
+  height: 500px;
+  z-index: 100000;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000e6;
+}
+
+.text.max :global .query {
+  width: 80%;
+}

@@ -301,7 +301,7 @@ function TextInput({
   useFocus(editor, focusPath, onCursorPositionChange);
 
   return (
-    <div className={styles.query}>
+    <div className={cn(styles.query, "query")}>
       <Slate
         editor={editor}
         value={value}
