@@ -108,12 +108,18 @@ export default function TextArea({
         />
         {maximised ? (
           <button
-            onClick={() => setMaximised(false)}
+            onClick={() => {
+              setMaximised(false);
+              closeAutocomplete();
+            }}
             className={styles.minimise}
           ></button>
         ) : (
           <button
-            onClick={() => setMaximised(true)}
+            onClick={() => {
+              setMaximised(true);
+              closeAutocomplete();
+            }}
             className={styles.maximise}
           ></button>
         )}

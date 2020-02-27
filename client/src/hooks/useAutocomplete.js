@@ -66,6 +66,12 @@ export default function useAutocomplete(possibilities, onSelect) {
   const textboxRef = useRef(null);
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  const closeAutocomplete = useCallback(() => {
+    dispatch({
+      type: "CLOSE"
+    });
+  }, []);
+
   const handleKeyDown = useCallback(
     function(e) {
       if (e.key === "Escape") {
@@ -113,6 +119,7 @@ export default function useAutocomplete(possibilities, onSelect) {
   }, [handleKeyDown]);
   return {
     ...state,
+    closeAutocomplete,
     textboxRef
   };
 }

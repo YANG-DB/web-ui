@@ -86,7 +86,7 @@
   background: black;
   animation: maximise 0.7s ease-in;
   animation-fill-mode: forwards;
-  z-index: 10;
+  z-index: 1000;
 }
 
 .resultWrapper img {
