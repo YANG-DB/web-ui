@@ -33,6 +33,7 @@
 
 .card {
   composes: section;
+  position: relative;
   padding: 20px;
   background: var(--dark-three);
   color: white;

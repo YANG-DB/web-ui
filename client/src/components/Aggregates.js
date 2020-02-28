@@ -1,6 +1,6 @@
 import React from "react";
 import cn from "classnames";
-import { ListItem } from "../components";
+import { ListItem, Card } from "../components";
 import styles from "./Aggregates.module.css";
 import globalStyles from "../App.module.css";
 import piePlaceholder from "../assets/pie_placeholder.png";
@@ -8,7 +8,7 @@ import piePlaceholder from "../assets/pie_placeholder.png";
 export default function Aggregates() {
   return (
     <div className={styles.aggregates}>
-      <div className={cn(globalStyles.card, styles.summary, globalStyles.top)}>
+      <Card classname={cn(styles.summary, globalStyles.top)}>
         <h2>Summary</h2>
         <ul className={styles.summaryTable}>
           {[
@@ -22,8 +22,8 @@ export default function Aggregates() {
             <ListItem label={el.label} value={el.value} key={i} />
           ))}
         </ul>
-      </div>
-      <div className={cn(globalStyles.card, styles.trends)}>
+      </Card>
+      <Card classname={styles.trends}>
         <h2>Trends</h2>
         <img
           src={piePlaceholder}
@@ -40,7 +40,7 @@ export default function Aggregates() {
             <ListItem label={el.label} value={el.value} key={i} />
           ))}
         </ul>
-      </div>
+      </Card>
     </div>
   );
 }

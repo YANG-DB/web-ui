@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Resizable } from "re-resizable";
 import cn from "classnames";
-import { HistoryItem, Force, List, ForceMenu } from "../components";
+import { HistoryItem, Force, List, ForceMenu, Card } from "../components";
 import { extractResults } from "../helpers";
 import styles from "./Results.module.css";
 import globalStyles from "../App.module.css";
@@ -61,7 +61,7 @@ export default function Results({ results }) {
           }}
         >
           <div className={styles.history}>
-            <div className={cn(globalStyles.card, globalStyles.top)}>
+            <Card classname={styles.top}>
               <h2>History</h2>
               <ul className={styles.historyTable}>
                 {[
@@ -93,10 +93,10 @@ export default function Results({ results }) {
                   <HistoryItem date={el.date} value={el.value} key={i} />
                 ))}
               </ul>
-            </div>
-            <div className={cn(globalStyles.card)}>
+            </Card>
+            <Card>
               <h2>Bla Bla</h2>
-            </div>
+            </Card>
           </div>
         </Resizable>
         <div className={styles.chartWrapper}>
@@ -164,16 +164,11 @@ export default function Results({ results }) {
               topLeft: false
             }}
           >
-            <div
-              className={cn(
-                globalStyles.card,
-                styles.tabs,
-                globalStyles.right,
-                globalStyles.top
-              )}
+            <Card
+              classname={cn(styles.tabs, globalStyles.right, globalStyles.top)}
             >
               <h2>Timeline</h2>
-            </div>
+            </Card>
           </Resizable>
         </div>
       </div>

@@ -14,6 +14,7 @@ import Force from "./Force";
 import ForceMenu from "./ForceMenu";
 import List from "./List";
 import AssignmentItem from "./AssignmentItem";
+import Card from "./Card";
 
 export {
   TextArea,
@@ -31,5 +32,6 @@ export {
   Force,
   ForceMenu,
   List,
-  AssignmentItem
+  AssignmentItem,
+  Card
 };

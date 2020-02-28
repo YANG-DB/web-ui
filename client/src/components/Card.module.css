@@ -1,0 +1,27 @@
+.minimise {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 20px;
+  width: 30px;
+  background: transparent;
+  border: none;
+}
+
+.minimise:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 20px);
+  height: 3px;
+  background: white;
+  border-radius: 3px;
+}
+
+.minimised {
+  max-height: 20px !important;
+  overflow: hidden;
+}
