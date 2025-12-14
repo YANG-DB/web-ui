@@ -50,7 +50,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41
+        uses: tj-actions/changed-files@v47
         with:
           files: |
             server.js
@@ -67,7 +67,7 @@ jobs:
 
       - name: Get changed client files
         id: changed-client-files
-        uses: tj-actions/changed-files@v41
+        uses: tj-actions/changed-files@v47
         with:
           files: |
             client/**
