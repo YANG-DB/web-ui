@@ -3,6 +3,7 @@ import cn from "classnames";
 import { GraphQLEditor } from "graphql-editor";
 import { Modal } from "../components";
 import apiService from "../services/api";
+import convertOntologyToGraphQL from "../helpers/ontologyToGraphQL";
 import styles from "./Schema.module.css";
 import globalStyles from "../App.module.css";
 import modalStyles from "../components/Modal.module.css";
@@ -132,6 +133,19 @@ function Save({ value }) {
 export default function Schema() {
   const [dialogKey, setDialogKey] = useState(null);
   const [currentSchema, setCurrentSchema] = useState({ libraries: "" });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Load ontology from API and convert to GraphQL schema
+    apiService.getOntology().then(ontologyData => {
+      const graphqlSchema = convertOntologyToGraphQL(ontologyData);
+      setCurrentSchema({ libraries: graphqlSchema });
+      setIsLoading(false);
+    }).catch(error => {
+      console.error("Failed to load ontology:", error);
+      setIsLoading(false);
+    });
+  }, []);
 
   const closeModal = useCallback(() => {
     setDialogKey(null);
@@ -149,7 +163,7 @@ export default function Schema() {
       default:
         return <div>No match</div>;
     }
-  });
+  }, [currentSchema]);
 
   const handleSetSchema = useCallback((schema) => {
     setCurrentSchema(schema);
@@ -177,7 +191,13 @@ export default function Schema() {
         </div>
       </div>
       <div style={{ height: 'calc(100vh - 110px)', width: '100%' }}>
-        <GraphQLEditor schema={currentSchema} setSchema={handleSetSchema} />
+        {isLoading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white' }}>
+            Loading ontology...
+          </div>
+        ) : (
+          <GraphQLEditor schema={currentSchema} setSchema={handleSetSchema} />
+        )}
       </div>
     </div>
   );
