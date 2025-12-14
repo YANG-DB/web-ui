@@ -1,0 +1,28 @@
+yarn run v1.22.22
+$ concurrently --kill-others-on-fail "yarn server" "yarn client"
+[0] $ kill $(lsof -t -i :5000) 2>/dev/null || true && nodemon server.js
+[1] $ cd client && yarn start
+[0] [33m[nodemon] 2.0.2[39m
+[0] [33m[nodemon] to restart at any time, enter `rs`[39m
+[0] [33m[nodemon] watching dir(s): *.*[39m
+[0] [33m[nodemon] watching extensions: js,mjs,json[39m
+[0] [32m[nodemon] starting `node server.js`[39m
+[1] $ react-scripts start
+[0] Listening on port 5000
+[1] (node:13768) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[1] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1] (node:13768) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[1] Starting the development server...
+[1]
+[1] Compiled successfully!
+[1]
+[1] You can now view yang-ui in the browser.
+[1]
+[1]   Local:            http://localhost:3000
+[1]   On Your Network:  http://192.168.0.2:3000
+[1]
+[1] Note that the development build is not optimized.
+[1] To create a production build, use yarn build.
+[1]
+[1] webpack compiled successfully
+[1] (node:13768) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
