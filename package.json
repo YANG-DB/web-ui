@@ -10,11 +10,10 @@
   },
   "dependencies": {
     "body-parser": "^1.18.3",
+    "concurrently": "^4.0.1",
     "express": "^4.16.4",
     "lodash": "^4.17.15",
     "nodemon": "^2.0.2"
   },
-  "devDependencies": {
-    "concurrently": "^4.0.1"
-  }
+  "devDependencies": {}
 }
