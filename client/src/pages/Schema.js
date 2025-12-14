@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import cn from "classnames";
-import { Editor } from "graphql-editor";
+import { GraphQLEditor } from "graphql-editor";
 import { Modal } from "../components";
 import apiService from "../services/api";
 import styles from "./Schema.module.css";
@@ -131,7 +131,7 @@ function Save({ value }) {
 
 export default function Schema() {
   const [dialogKey, setDialogKey] = useState(null);
-  const [currentSchema, setCurrentSchema] = useState("");
+  const [currentSchema, setCurrentSchema] = useState({ libraries: "" });
 
   const closeModal = useCallback(() => {
     setDialogKey(null);
@@ -150,6 +150,11 @@ export default function Schema() {
         return <div>No match</div>;
     }
   });
+
+  const handleSetSchema = useCallback((schema) => {
+    setCurrentSchema(schema);
+  }, []);
+
   console.log("current schema", currentSchema);
   return (
     <div className={globalStyles.page}>
@@ -164,13 +169,16 @@ export default function Schema() {
             <button
               className={cn(styles.action, styles[action])}
               onClick={() => openModal(action)}
+              key={action}
             >
               {action}
             </button>
           ))}
         </div>
       </div>
-      <Editor editorVisible={true} />
+      <div style={{ height: 'calc(100vh - 110px)', width: '100%' }}>
+        <GraphQLEditor schema={currentSchema} setSchema={handleSetSchema} />
+      </div>
     </div>
   );
 }

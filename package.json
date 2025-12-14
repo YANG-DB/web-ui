@@ -2,11 +2,14 @@
   "name": "web-ui-mock-server",
   "version": "1.0.0",
   "scripts": {
+    "postinstall": "cd client && yarn install",
     "client:dev": "cd client && yarn start:dev",
     "client": "cd client && yarn start",
-    "server": "kill $(lsof -t -i :5000) 2>/dev/null || true && nodemon server.js",
+    "server": "kill $(lsof -t -i :5001) 2>/dev/null || true && nodemon server.js",
     "start": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
-    "start:dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client:dev\""
+    "start:dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client:dev\"",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -15,6 +18,8 @@
     "nodemon": "^2.0.2"
   },
   "devDependencies": {
-    "concurrently": "^4.0.1"
+    "concurrently": "^4.0.1",
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4"
   }
 }

@@ -91,6 +91,9 @@ function typeCheck(text, type) {
 }
 
 function isValid(editor, ontology, structure, intendedType) {
+  if (!ontology || !structure) {
+    return false;
+  }
   if (intendedType === slateConstants.ALIAS) {
     return true; // TODO: should there be constraints on an alias?
   }

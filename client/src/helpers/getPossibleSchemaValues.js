@@ -7,6 +7,9 @@ import getPossibleActions from "./getPossibleActions";
 
 export default function getPossibleSchemaValues(editor, ontology, structure) {
   // return the possible tokens given the state of the editor and the available schema
+  if (!ontology || !structure) {
+    return [];
+  }
   const previousNode = getPreviousNode(editor, editor.selection.anchor.path);
   // first get possible token types based on previous type, then expand it to the schema
   return getPossibleTokenTypes(previousNode.variant)

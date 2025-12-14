@@ -1,0 +1,64 @@
+version: 2
+updates:
+  # Enable version updates for npm (root package.json)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "YOUR_USERNAME"  # Replace with your GitHub username
+    assignees:
+      - "YOUR_USERNAME"  # Replace with your GitHub username
+    labels:
+      - "dependencies"
+      - "server"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    ignore:
+      # Ignore major version updates for specific packages
+      - dependency-name: "express"
+        update-types: ["version-update:semver-major"]
+
+  # Enable version updates for npm (client package.json)
+  - package-ecosystem: "npm"
+    directory: "/client"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "YOUR_USERNAME"  # Replace with your GitHub username
+    assignees:
+      - "YOUR_USERNAME"  # Replace with your GitHub username
+    labels:
+      - "dependencies"
+      - "client"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    ignore:
+      # Ignore major version updates that might break things
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-scripts"
+        update-types: ["version-update:semver-major"]
+
+  # Keep GitHub Actions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"

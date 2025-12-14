@@ -14,6 +14,7 @@ export default function Header({ links }) {
       <div className={styles.center}>
         {Object.keys(links).map(l => (
           <NavLink
+            key={l}
             to={`/${links[l]}`}
             className={styles.link}
             activeClassName={styles.active}

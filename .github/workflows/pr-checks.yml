@@ -1,0 +1,169 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-metadata:
+    name: PR Metadata Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+        continue-on-error: true
+
+  test-changes:
+    name: Test Changed Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            server.js
+            mocks/**
+            package.json
+
+      - name: Install dependencies
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: yarn install --frozen-lockfile
+
+      - name: Run server tests
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: yarn test
+
+      - name: Get changed client files
+        id: changed-client-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            client/**
+
+      - name: Install client dependencies
+        if: steps.changed-client-files.outputs.any_changed == 'true'
+        run: cd client && yarn install --frozen-lockfile
+
+      - name: Test client build
+        if: steps.changed-client-files.outputs.any_changed == 'true'
+        run: cd client && yarn build
+        env:
+          CI: false
+
+  size-check:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install client dependencies
+        run: cd client && yarn install --frozen-lockfile
+
+      - name: Build and check size
+        run: |
+          cd client
+          yarn build
+          BUILD_SIZE=$(du -sh build | cut -f1)
+          echo "Build size: $BUILD_SIZE"
+          echo "BUILD_SIZE=$BUILD_SIZE" >> $GITHUB_ENV
+
+      - name: Comment bundle size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const size = process.env.BUILD_SIZE;
+            const comment = `### 📦 Bundle Size Report\n\nBuild size: **${size}**`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run tests with coverage
+        run: yarn test
+
+      - name: Generate coverage comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const coverage = JSON.parse(fs.readFileSync('./coverage/coverage-summary.json', 'utf8'));
+            const total = coverage.total;
+
+            const comment = `### 📊 Test Coverage Report\n\n` +
+              `| Metric | Coverage |\n` +
+              `|--------|----------|\n` +
+              `| Statements | ${total.statements.pct}% |\n` +
+              `| Branches | ${total.branches.pct}% |\n` +
+              `| Functions | ${total.functions.pct}% |\n` +
+              `| Lines | ${total.lines.pct}% |`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+        continue-on-error: true
