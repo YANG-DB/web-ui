@@ -15,6 +15,7 @@ import ForceMenu from "./ForceMenu";
 import List from "./List";
 import AssignmentItem from "./AssignmentItem";
 import Card from "./Card";
+import VisualQueryBuilder from "./VisualQueryBuilder";
 
 export {
   TextArea,
@@ -33,5 +34,6 @@ export {
   ForceMenu,
   List,
   AssignmentItem,
-  Card
+  Card,
+  VisualQueryBuilder
 };

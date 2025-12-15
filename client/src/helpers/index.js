@@ -11,6 +11,7 @@ import isInBranch from "./isInBranch";
 import getBranchPath from "./getBranchPath";
 import extractResults from "./extractResults";
 import resultsToTree from "./resultsToTree";
+import convertOntologyToQueryBuilderFields from "./ontologyToQueryBuilder";
 import * as elements from "./elements";
 
 export {
@@ -27,5 +28,6 @@ export {
   getBranchPath,
   elements,
   extractResults,
-  resultsToTree
+  resultsToTree,
+  convertOntologyToQueryBuilderFields
 };

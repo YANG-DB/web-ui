@@ -1,0 +1,268 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  background: var(--dark-three);
+  border-radius: 4px;
+  padding: 15px;
+  color: white;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--dark-four);
+}
+
+.header h3 {
+  margin: 0;
+  color: var(--grey-three);
+  letter-spacing: 2px;
+  font-weight: 300;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.previewButton,
+.clearButton,
+.submitButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.previewButton {
+  background: #5a5a5a;
+  color: white;
+}
+
+.previewButton:hover {
+  background: #6a6a6a;
+}
+
+.clearButton {
+  background: var(--dark-four);
+  color: white;
+}
+
+.clearButton:hover {
+  background: #4a4a4a;
+}
+
+.submitButton {
+  background: var(--highlight);
+  color: white;
+  font-weight: 500;
+}
+
+.submitButton:hover {
+  background: #ff6b9d;
+  transform: translateY(-1px);
+}
+
+.queryBuilderWrapper {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+.loading,
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--grey-three);
+  font-size: 14px;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+.queryPreview {
+  background: var(--dark-two);
+  padding: 15px;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.queryPreview h4 {
+  margin: 0;
+  color: var(--grey-three);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 300;
+}
+
+.languageSelector {
+  background: var(--dark-four);
+  border: 1px solid #4a4a4a;
+  border-radius: 3px;
+  color: white;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.languageSelector:hover {
+  border-color: var(--highlight);
+}
+
+.languageSelector:focus {
+  outline: none;
+  border-color: var(--highlight);
+}
+
+.queryPreview pre {
+  margin: 0;
+  font-size: 11px;
+  color: #a0a0a0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Override react-querybuilder default styles */
+.queryBuilder :global(.queryBuilder) {
+  background: transparent;
+  color: white;
+}
+
+.queryBuilder :global(.ruleGroup) {
+  background: var(--dark-four);
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.queryBuilder :global(.ruleGroup-header) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.queryBuilder :global(.rule) {
+  background: var(--dark-three);
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.queryBuilder :global(select),
+.queryBuilder :global(input[type="text"]),
+.queryBuilder :global(input[type="number"]),
+.queryBuilder :global(input[type="date"]) {
+  background: var(--dark-two);
+  border: 1px solid #4a4a4a;
+  border-radius: 3px;
+  color: white;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.queryBuilder :global(select:focus),
+.queryBuilder :global(input:focus) {
+  outline: none;
+  border-color: var(--highlight);
+}
+
+.queryBuilder :global(button) {
+  background: var(--dark-four);
+  border: 1px solid #4a4a4a;
+  border-radius: 3px;
+  color: white;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.queryBuilder :global(button:hover) {
+  background: #4a4a4a;
+  border-color: #5a5a5a;
+}
+
+.queryBuilder :global(.ruleGroup-addRule),
+.queryBuilder :global(.ruleGroup-addGroup) {
+  background: var(--highlight);
+  border-color: var(--highlight);
+}
+
+.queryBuilder :global(.ruleGroup-addRule:hover),
+.queryBuilder :global(.ruleGroup-addGroup:hover) {
+  background: #ff6b9d;
+}
+
+.queryBuilder :global(.ruleGroup-remove),
+.queryBuilder :global(.rule-remove) {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+.queryBuilder :global(.ruleGroup-remove:hover),
+.queryBuilder :global(.rule-remove:hover) {
+  background: #c82333;
+}
+
+/* Relationship field styling */
+.queryBuilder :global(select option[value^="relationship:"]) {
+  background: #2a4a5a;
+  color: #88ddff;
+  font-weight: 500;
+}
+
+/* Style for selected relationship rules */
+.queryBuilder :global(.rule:has(select[value^="relationship:"])) {
+  border-left: 3px solid #88ddff;
+  background: rgba(136, 221, 255, 0.05);
+}
+
+/* Scrollbar styling */
+.queryBuilderWrapper::-webkit-scrollbar,
+.queryPreview::-webkit-scrollbar {
+  width: 8px;
+}
+
+.queryBuilderWrapper::-webkit-scrollbar-track,
+.queryPreview::-webkit-scrollbar-track {
+  background: var(--dark-two);
+}
+
+.queryBuilderWrapper::-webkit-scrollbar-thumb,
+.queryPreview::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 4px;
+}
+
+.queryBuilderWrapper::-webkit-scrollbar-thumb:hover,
+.queryPreview::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+}

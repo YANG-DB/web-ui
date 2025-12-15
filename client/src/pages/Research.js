@@ -1,11 +1,10 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useCallback } from "react";
 import { Resizable } from "re-resizable";
 import { connect } from "react-redux";
 import { submitQuery, storeResults, cacheQuery } from "../reducers/research";
-import { TextArea, Results, Aggregates } from "../components";
+import { VisualQueryBuilder, Results } from "../components";
 import apiService from "../services/api";
 import styles from "../App.module.css";
-import { slateToQuery } from "../helpers";
 
 function Research({
   submitQuery,
@@ -14,23 +13,84 @@ function Research({
   lastQuery,
   cacheQuery
 }) {
-  const resizeRef = useRef(null);
   const onSubmit = useCallback(query => {
+    console.log("Visual query submitted:", query);
     submitQuery(query);
-    apiService.getResult(slateToQuery(query)).then(results => {
+
+    // For now, we'll convert the query to a simple format
+    // You may need to enhance this based on your backend requirements
+    apiService.getResult(query).then(results => {
       storeResults(results);
+    }).catch(error => {
+      console.error("Error fetching results:", error);
     });
-  }, []);
+  }, [submitQuery, storeResults]);
+
   return (
     <div className={styles.row}>
-      <div className={styles.column}>
-        <TextArea
-          onSubmit={onSubmit}
-          lastQuery={lastQuery}
-          submitQuery={submitQuery}
-          cacheQuery={cacheQuery}
-        />
-        <Results results={results} />
+      <div className={styles.column} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Resizable
+          defaultSize={{
+            height: '40%',
+            width: '100%'
+          }}
+          minHeight={200}
+          maxHeight="80%"
+          enable={{
+            top: false,
+            right: false,
+            bottom: true,
+            left: false,
+            topRight: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topLeft: false
+          }}
+          handleStyles={{
+            bottom: {
+              height: '12px',
+              bottom: '-6px',
+              cursor: 'row-resize',
+              background: 'linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 60%, transparent 100%)',
+              zIndex: 10
+            }
+          }}
+          handleComponent={{
+            bottom: (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  pointerEvents: 'none'
+                }}
+              >
+                <div
+                  style={{
+                    width: '80px',
+                    height: '6px',
+                    background: '#6a6a6a',
+                    borderRadius: '3px',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  className="resize-handle-bar"
+                />
+              </div>
+            )
+          }}
+          style={{ marginBottom: '10px' }}
+        >
+          <VisualQueryBuilder onSubmit={onSubmit} />
+        </Resizable>
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <Results results={results} />
+        </div>
       </div>
       {/* Aggregates/Trends panel removed */}
     </div>
