@@ -12,11 +12,7 @@ import styles from "./App.module.css";
 
 const links = {
   SCHEMA: "schema",
-  RESEARCH: "research",
-  ANALYTICS: "analytics",
-  REPORT: "report",
-  MONITORING: "monitoring",
-  MANAGEMENT: "management"
+  RESEARCH: "research"
 };
 
 export default function App() {

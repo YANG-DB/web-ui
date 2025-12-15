@@ -32,22 +32,7 @@ function Research({
         />
         <Results results={results} />
       </div>
-      <Resizable
-        ref={resizeRef}
-        minWidth={100}
-        enable={{
-          top: false,
-          right: false,
-          bottom: false,
-          left: true,
-          topRight: false,
-          bottomRight: false,
-          bottomLeft: false,
-          topLeft: false
-        }}
-      >
-        <Aggregates />
-      </Resizable>
+      {/* Aggregates/Trends panel removed */}
     </div>
   );
 }

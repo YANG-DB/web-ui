@@ -31,6 +31,9 @@ export function convertOntologyToGraphQL(ontologyData) {
     });
   }
 
+  // Track union types we need to create
+  const unionTypes = new Set();
+
   // Generate entity types
   if (entityTypes && entityTypes.length > 0) {
     entityTypes.forEach(entity => {
@@ -47,22 +50,51 @@ export function convertOntologyToGraphQL(ontologyData) {
 
       // Add relationships as fields
       if (relationshipTypes && relationshipTypes.length > 0) {
+        // Group relationships by name to avoid duplicates
+        const relationshipFields = {};
+
         relationshipTypes.forEach(rel => {
           rel.ePairs.forEach(pair => {
             if (pair.eTypeA === entity.eType) {
               const fieldName = rel.rType.toLowerCase();
-              schema += `  ${fieldName}: [${pair.eTypeB}]\n`;
+              if (!relationshipFields[fieldName]) {
+                relationshipFields[fieldName] = new Set();
+              }
+              relationshipFields[fieldName].add(pair.eTypeB);
             }
             // For bidirectional relationships
             if (!rel.directional && pair.eTypeB === entity.eType) {
               const fieldName = rel.rType.toLowerCase();
-              schema += `  ${fieldName}: [${pair.eTypeA}]\n`;
+              if (!relationshipFields[fieldName]) {
+                relationshipFields[fieldName] = new Set();
+              }
+              relationshipFields[fieldName].add(pair.eTypeA);
             }
           });
+        });
+
+        // Output unique relationship fields
+        Object.keys(relationshipFields).forEach(fieldName => {
+          const targetTypes = Array.from(relationshipFields[fieldName]).sort();
+          if (targetTypes.length === 1) {
+            schema += `  ${fieldName}: [${targetTypes[0]}]\n`;
+          } else {
+            // Multiple target types - create a union type
+            const unionName = targetTypes.join('Or');
+            unionTypes.add({ name: unionName, types: targetTypes });
+            schema += `  ${fieldName}: [${unionName}]\n`;
+          }
         });
       }
 
       schema += `}\n\n`;
+    });
+  }
+
+  // Generate union types
+  if (unionTypes.size > 0) {
+    unionTypes.forEach(union => {
+      schema += `union ${union.name} = ${union.types.join(' | ')}\n\n`;
     });
   }
 

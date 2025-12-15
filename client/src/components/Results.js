@@ -47,58 +47,7 @@ export default function Results({ results }) {
   return (
     <div className={cn(styles.results, globalStyles.section)}>
       <div className={cn(styles.wrapper, globalStyles.rounded)}>
-        <Resizable
-          minWidth={100}
-          enable={{
-            top: false,
-            right: true,
-            bottom: false,
-            left: false,
-            topRight: false,
-            bottomRight: false,
-            bottomLeft: false,
-            topLeft: false
-          }}
-        >
-          <div className={styles.history}>
-            <Card classname={styles.top}>
-              <h2>History</h2>
-              <ul className={styles.historyTable}>
-                {[
-                  {
-                    date: "2d ago",
-                    value: "Guy ask the same question as lior but..."
-                  },
-                  {
-                    date: "2d ago",
-                    value: "Lior asks 4 questions about dragon"
-                  },
-                  {
-                    date: "2d ago",
-                    value: "Dana asks new question about dragon but there is"
-                  },
-                  {
-                    date: "2d ago",
-                    value: "Guy ask the same question as lior but..."
-                  },
-                  {
-                    date: "2d ago",
-                    value: "Guy ask the same question as lior but..."
-                  },
-                  {
-                    date: "2d ago",
-                    value: "Guy ask the same question as lior but..."
-                  }
-                ].map((el, i) => (
-                  <HistoryItem date={el.date} value={el.value} key={i} />
-                ))}
-              </ul>
-            </Card>
-            <Card>
-              <h2>Bla Bla</h2>
-            </Card>
-          </div>
-        </Resizable>
+        {/* History and Bla Bla panels removed */}
         <div className={styles.chartWrapper}>
           <div
             className={cn(
@@ -150,26 +99,7 @@ export default function Results({ results }) {
               )}
             </div>
           </div>
-          <Resizable
-            ref={resizeRef}
-            minHeight={100}
-            enable={{
-              top: true,
-              right: false,
-              bottom: false,
-              left: false,
-              topRight: false,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false
-            }}
-          >
-            <Card
-              classname={cn(styles.tabs, globalStyles.right, globalStyles.top)}
-            >
-              <h2>Timeline</h2>
-            </Card>
-          </Resizable>
+          {/* Timeline panel removed */}
         </div>
       </div>
     </div>

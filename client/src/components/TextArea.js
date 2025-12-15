@@ -68,23 +68,7 @@ export default function TextArea({
 
   return (
     <div className={cn(globalStyles.section, styles.wrapper)}>
-      <div className={styles.headers}>
-        {Object.keys(types).map(t => {
-          return (
-            <h3
-              className={cn(resultType === types[t] && styles.selected)}
-              key={t}
-            >
-              <button
-                data-hover={types[t]}
-                onClick={() => setResultType(types[t])}
-              >
-                {types[t]}
-              </button>
-            </h3>
-          );
-        })}
-      </div>
+      {/* Question type tabs removed */}
       <div className={cn(styles.text, maximised && styles.max)}>
         <Autocomplete
           options={autocompleteOptions}

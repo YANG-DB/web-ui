@@ -50,8 +50,7 @@ function Action({ onLoad, onAction, actionLabel, children }) {
   }, []);
   return (
     <div
-      className={cn(status === "LOADING" && styles.loading)}
-      className={modalStyles.content}
+      className={cn(modalStyles.content, status === "LOADING" && styles.loading)}
     >
       {render(children, status)}
       {(onLoad && status === "LOADING_SUCCESS") || !status ? (
@@ -132,14 +131,30 @@ function Save({ value }) {
 
 export default function Schema() {
   const [dialogKey, setDialogKey] = useState(null);
-  const [currentSchema, setCurrentSchema] = useState({ libraries: "" });
+  const [currentSchema, setCurrentSchema] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Load ontology from API and convert to GraphQL schema
     apiService.getOntology().then(ontologyData => {
-      const graphqlSchema = convertOntologyToGraphQL(ontologyData);
-      setCurrentSchema({ libraries: graphqlSchema });
+      console.log("=== RAW ONTOLOGY RESPONSE ===");
+      console.log(JSON.stringify(ontologyData, null, 2));
+      console.log("=== END RAW ONTOLOGY ===");
+
+      // apiService.getOntology already extracts data[0], so wrap it back
+      const wrappedData = { data: [ontologyData] };
+      const graphqlSchema = convertOntologyToGraphQL(wrappedData);
+      console.log("=== CONVERTED GRAPHQL SCHEMA ===");
+      console.log("Schema length:", graphqlSchema.length, "characters");
+      console.log("Schema preview (first 500 chars):");
+      console.log(graphqlSchema.substring(0, 500));
+      console.log("\n--- FULL SCHEMA ---\n");
+      console.log(graphqlSchema);
+      console.log("\n=== END GRAPHQL SCHEMA ===");
+
+      // Set the schema - use only 'code' field to avoid duplication
+      // 'libraries' is for shared/reusable schema, 'code' is the main schema
+      setCurrentSchema({ code: graphqlSchema });
       setIsLoading(false);
     }).catch(error => {
       console.error("Failed to load ontology:", error);
@@ -166,10 +181,13 @@ export default function Schema() {
   }, [currentSchema]);
 
   const handleSetSchema = useCallback((schema) => {
+    console.log("=== SCHEMA SET BY EDITOR ===");
+    console.log(schema);
+    console.log("=== END SCHEMA SET ===");
     setCurrentSchema(schema);
   }, []);
 
-  console.log("current schema", currentSchema);
+  console.log("=== CURRENT SCHEMA STATE ===", currentSchema);
   return (
     <div className={globalStyles.page}>
       <Modal
