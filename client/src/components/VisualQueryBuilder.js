@@ -4,6 +4,7 @@ import "react-querybuilder/dist/query-builder.css";
 import { convertOntologyToQueryBuilderFields, queryBuilderToGraphQLQuery } from "../helpers/ontologyToQueryBuilder";
 import apiService from "../services/api";
 import styles from "./VisualQueryBuilder.module.css";
+import RelationshipValueEditor from "./RelationshipValueEditor";
 
 const initialQuery = {
   combinator: "and",
@@ -44,8 +45,27 @@ export default function VisualQueryBuilder({ onSubmit }) {
 
   const handleQueryChange = useCallback((newQuery) => {
     console.log("Query changed:", newQuery);
+
+    // Log relationship operator usage (both new simple format and old pattern format)
+    const relationshipRules = newQuery.rules?.filter(r => {
+      if (!r.operator) return false;
+      // Check for old pattern format
+      if (r.operator.startsWith('-[') && r.operator.endsWith(']->')) return true;
+      // Check for new simple format (operator is a relationship type)
+      if (ontology && ontology.data && ontology.data[0]) {
+        const { relationshipTypes } = ontology.data[0];
+        if (relationshipTypes) {
+          return relationshipTypes.some(rel => rel.rType === r.operator);
+        }
+      }
+      return false;
+    });
+    if (relationshipRules && relationshipRules.length > 0) {
+      console.log("Relationship rules detected:", relationshipRules);
+    }
+
     setQuery(newQuery);
-  }, []);
+  }, [ontology]);
 
   const handleSubmit = useCallback(() => {
     console.log("Submitting query:", query);
@@ -144,7 +164,46 @@ export default function VisualQueryBuilder({ onSubmit }) {
             return nested.length > 0 ? `(${nested.join(` ${rule.combinator.toUpperCase()} `)})` : null;
           }
 
-          // Handle relationship patterns
+          // Handle simple relationship operator format (e.g., operator="Own", field="Person", value="Dragon")
+          if (rule.operator && ontology && ontology.data && ontology.data[0]) {
+            const { relationshipTypes } = ontology.data[0];
+            if (relationshipTypes) {
+              const relationship = relationshipTypes.find(r => r.rType === rule.operator);
+              if (relationship) {
+                const sourceEntity = rule.field;
+                const relType = rule.operator;
+                const targetEntity = rule.value;
+
+                cypherRelationships.push({
+                  source: sourceEntity.toLowerCase(),
+                  relation: relType.toUpperCase(),
+                  target: targetEntity.toLowerCase(),
+                  exists: true
+                });
+                return null; // Handled in MATCH pattern
+              }
+            }
+          }
+
+          // Handle new relationship operator format (old pattern style)
+          if (rule.operator && rule.operator.startsWith('-[') && rule.operator.endsWith(']->')) {
+            const relTypeMatch = rule.operator.match(/-\[(.+)\]->/);
+            if (relTypeMatch) {
+              const sourceEntity = rule.field;
+              const relType = relTypeMatch[1];
+              const targetEntity = rule.value;
+
+              cypherRelationships.push({
+                source: sourceEntity.toLowerCase(),
+                relation: relType.toUpperCase(),
+                target: targetEntity.toLowerCase(),
+                exists: true
+              });
+              return null; // Handled in MATCH pattern
+            }
+          }
+
+          // Handle relationship patterns (old format)
           if (rule.field.startsWith('relationship:')) {
             const relationshipPattern = rule.field.replace('relationship:', '');
 
@@ -263,6 +322,14 @@ export default function VisualQueryBuilder({ onSubmit }) {
             addGroup: styles.addGroup,
             removeRule: styles.removeRule,
             removeGroup: styles.removeGroup
+          }}
+          controlElements={{
+            valueEditor: (props) => (
+              <RelationshipValueEditor
+                {...props}
+                ontology={ontology}
+              />
+            )
           }}
         />
       </div>

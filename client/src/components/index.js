@@ -16,6 +16,7 @@ import List from "./List";
 import AssignmentItem from "./AssignmentItem";
 import Card from "./Card";
 import VisualQueryBuilder from "./VisualQueryBuilder";
+import RelationshipValueEditor from "./RelationshipValueEditor";
 
 export {
   TextArea,
@@ -35,5 +36,6 @@ export {
   List,
   AssignmentItem,
   Card,
-  VisualQueryBuilder
+  VisualQueryBuilder,
+  RelationshipValueEditor
 };

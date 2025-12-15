@@ -4,29 +4,61 @@
 
 The Visual Query Builder now supports graph relationship patterns, allowing users to construct queries that traverse relationships between entities in the Dragons ontology.
 
+The builder provides **two methods** for creating relationship queries:
+
+1. **Operator-based approach** (NEW, RECOMMENDED): Select an entity, then choose a relationship operator
+2. **Field-based approach** (Legacy): Select pre-built relationship pattern fields
+
 ## Features
 
-### 1. Relationship Existence Queries
+### Method 1: Operator-Based Relationship Queries (NEW)
+
+When you select an **entity type field** (e.g., `Person`), the operator dropdown dynamically shows:
+- Standard operators: `=`, `!=`
+- **Relationship operators**: `-[RelationType]->` with target entity labels
+
+**Example Workflow**:
+1. Add Rule
+2. Select field: `Person`
+3. Select operator: `-[MemberOf]-> Guild`
+4. Value dropdown automatically shows: `Guild` (or other valid targets for this relationship)
+
+This creates: `Person -[MemberOf]-> Guild`
+
+**Benefits**:
+- More intuitive: Operators clearly show "Person relates to Guild via MemberOf"
+- Context-aware: Value dropdown only shows valid target entities for the selected relationship
+- Less cluttered: No separate relationship fields needed
+
+### Method 2: Field-Based Relationship Queries (Legacy)
+
+**1. Relationship Existence Queries**
 
 Users can query for the existence or non-existence of relationships between entities:
 
 **Example**: Find all Persons who are members of a Guild
 ```
-Person -[MemberOf]-> Guild = Exists
+Field: Person -[MemberOf]-> Guild
+Operator: =
+Value: Exists
 ```
 
 **Example**: Find all Persons who do NOT own a Dragon
 ```
-Person -[Own]-> Dragon = Does Not Exist
+Field: Person -[Own]-> Dragon
+Operator: =
+Value: Does Not Exist
 ```
 
-### 2. Relationship Property Filters
+**2. Relationship Property Filters**
 
 Users can filter based on properties of relationships:
 
 **Example**: Find all Persons who joined a Guild after 2020
 ```
-Person -[MemberOf]-> Guild > startDate >= "2020-01-01"
+Field: Person -[MemberOf]-> Guild > startDate
+Operator: >=
+Value: "2020-01-01"
 ```
 
 ## Implementation Details

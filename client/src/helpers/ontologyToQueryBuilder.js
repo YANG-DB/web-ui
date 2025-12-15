@@ -42,18 +42,40 @@ export function convertOntologyToQueryBuilderFields(ontologyData) {
 
   const fields = [];
 
+  // Build relationship operators for each entity (just the relationship types)
+  const buildRelationshipOperators = (entityType) => {
+    const operators = [];
+    const addedRelationships = new Set();
+
+    if (relationshipTypes && relationshipTypes.length > 0) {
+      relationshipTypes.forEach(rel => {
+        rel.ePairs.forEach(pair => {
+          if (pair.eTypeA === entityType && !addedRelationships.has(rel.rType)) {
+            operators.push({
+              name: rel.rType,
+              label: rel.rType
+            });
+            addedRelationships.add(rel.rType);
+          }
+        });
+      });
+    }
+
+    return operators;
+  };
+
   // Add entity type fields
   if (entityTypes && entityTypes.length > 0) {
     entityTypes.forEach(entity => {
-      // Add a field for the entity type itself
+      // Add a field for the entity type itself with relationship operators
+      const relationshipOps = buildRelationshipOperators(entity.eType);
+
       fields.push({
         name: entity.eType,
         label: entity.name || entity.eType,
-        inputType: 'select',
-        values: [
-          { name: entity.eType, label: entity.name || entity.eType }
-        ],
-        operators: ['=', '!=']
+        operators: relationshipOps,
+        defaultOperator: relationshipOps.length > 0 ? relationshipOps[0].name : '=',
+        valueEditorType: 'select'
       });
 
       // Add fields for entity properties
@@ -168,7 +190,49 @@ export function queryBuilderToGraphQLQuery(ruleGroup, ontologyData) {
       }
       return null;
     } else {
-      // Check if it's a relationship rule
+      // Check if operator is a simple relationship name (e.g., "Own", "MemberOf")
+      // This is the new preferred format: field=entity, operator=relationship, value=targetEntity
+      if (rule.operator && ontologyData && ontologyData.data && ontologyData.data[0]) {
+        const { relationshipTypes } = ontologyData.data[0];
+        if (relationshipTypes) {
+          const relationship = relationshipTypes.find(r => r.rType === rule.operator);
+          if (relationship) {
+            const sourceEntity = rule.field;
+            const relType = rule.operator;
+            const targetEntity = rule.value;
+
+            entityTypes.add(sourceEntity);
+            relationships.push({
+              source: sourceEntity,
+              relation: relType,
+              target: targetEntity,
+              exists: true
+            });
+            return `${sourceEntity}-[${relType}]->${targetEntity}`;
+          }
+        }
+      }
+
+      // Check if operator is a relationship pattern (old format: -[RelType]->)
+      if (rule.operator && rule.operator.startsWith('-[') && rule.operator.endsWith(']->')) {
+        const relTypeMatch = rule.operator.match(/-\[(.+)\]->/);
+        if (relTypeMatch) {
+          const sourceEntity = rule.field;
+          const relType = relTypeMatch[1];
+          const targetEntity = rule.value;
+
+          entityTypes.add(sourceEntity);
+          relationships.push({
+            source: sourceEntity,
+            relation: relType,
+            target: targetEntity,
+            exists: true
+          });
+          return `${sourceEntity}-[${relType}]->${targetEntity}`;
+        }
+      }
+
+      // Check if it's a relationship rule (old format)
       if (rule.field.startsWith('relationship:')) {
         const relationshipPattern = rule.field.replace('relationship:', '');
 
