@@ -93,17 +93,22 @@
 
 .queryPreview {
   background: var(--dark-two);
-  padding: 15px;
+  padding: 0;
   border-radius: 4px;
-  max-height: 200px;
-  overflow-y: auto;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #3a3a3a;
 }
 
 .previewHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  padding: 12px 15px;
+  background: var(--dark-four);
+  border-bottom: 1px solid #3a3a3a;
+  border-radius: 4px 4px 0 0;
 }
 
 .queryPreview h4 {
@@ -135,12 +140,61 @@
   border-color: var(--highlight);
 }
 
+.previewContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  background: #1a1a1a;
+  border-radius: 0 0 4px 4px;
+  min-height: 100px;
+  max-height: 350px;
+}
+
 .queryPreview pre {
   margin: 0;
-  font-size: 11px;
-  color: #a0a0a0;
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d4d4d4;
+  white-space: pre;
+  overflow-x: auto;
+  tab-size: 2;
+  text-align: left;
+}
+
+/* Syntax highlighting colors */
+.queryPreview pre .keyword {
+  color: #569cd6;
+  font-weight: 500;
+}
+
+.queryPreview pre .string {
+  color: #ce9178;
+}
+
+.queryPreview pre .number {
+  color: #b5cea8;
+}
+
+.queryPreview pre .operator {
+  color: #d4d4d4;
+}
+
+.queryPreview pre .entity {
+  color: #4ec9b0;
+}
+
+.queryPreview pre .property {
+  color: #9cdcfe;
+}
+
+.queryPreview pre .relationship {
+  color: #c586c0;
+}
+
+.queryPreview pre .comment {
+  color: #6a9955;
+  font-style: italic;
 }
 
 /* Override react-querybuilder default styles */
@@ -247,22 +301,23 @@
 
 /* Scrollbar styling */
 .queryBuilderWrapper::-webkit-scrollbar,
-.queryPreview::-webkit-scrollbar {
+.previewContent::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 .queryBuilderWrapper::-webkit-scrollbar-track,
-.queryPreview::-webkit-scrollbar-track {
+.previewContent::-webkit-scrollbar-track {
   background: var(--dark-two);
 }
 
 .queryBuilderWrapper::-webkit-scrollbar-thumb,
-.queryPreview::-webkit-scrollbar-thumb {
+.previewContent::-webkit-scrollbar-thumb {
   background: #4a4a4a;
   border-radius: 4px;
 }
 
 .queryBuilderWrapper::-webkit-scrollbar-thumb:hover,
-.queryPreview::-webkit-scrollbar-thumb:hover {
+.previewContent::-webkit-scrollbar-thumb:hover {
   background: #5a5a5a;
 }

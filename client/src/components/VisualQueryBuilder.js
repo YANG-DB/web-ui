@@ -85,14 +85,65 @@ export default function VisualQueryBuilder({ onSubmit }) {
     setQuery(initialQuery);
   }, []);
 
+  // Helper function to add syntax highlighting
+  const syntaxHighlight = useCallback((code, language) => {
+    if (!code) return code;
+
+    // Simple syntax highlighting - can be enhanced further
+    let highlighted = code;
+
+    switch (language) {
+      case 'cypher':
+        // Highlight Cypher keywords
+        highlighted = highlighted.replace(/\b(MATCH|WHERE|RETURN|AND|OR|NOT|IS|NULL)\b/g, '<span class="keyword">$1</span>');
+        // Highlight strings
+        highlighted = highlighted.replace(/'([^']*)'/g, '<span class="string">\'$1\'</span>');
+        // Highlight node/relationship patterns
+        highlighted = highlighted.replace(/\(([a-z]+):([A-Z][a-z]*)\)/g, '(<span class="entity">$1:$2</span>)');
+        highlighted = highlighted.replace(/\[([a-z]+):([A-Z_]+)\]/g, '[<span class="relationship">$1:$2</span>]');
+        break;
+
+      case 'graphql':
+        // Highlight GraphQL keywords
+        highlighted = highlighted.replace(/\b(query|mutation|fragment|on)\b/g, '<span class="keyword">$1</span>');
+        // Highlight comments
+        highlighted = highlighted.replace(/#([^\n]*)/g, '<span class="comment">#$1</span>');
+        // Highlight strings
+        highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
+        break;
+
+      case 'sql':
+        // Highlight SQL keywords
+        highlighted = highlighted.replace(/\b(SELECT|FROM|WHERE|AND|OR|LIKE|IS|NULL|NOT)\b/g, '<span class="keyword">$1</span>');
+        // Highlight strings
+        highlighted = highlighted.replace(/'([^']*)'/g, '<span class="string">\'$1\'</span>');
+        break;
+
+      case 'mongodb':
+        // Highlight MongoDB operators
+        highlighted = highlighted.replace(/"\$([a-z]+)"/g, '"<span class="operator">$$$1</span>"');
+        // Highlight strings
+        highlighted = highlighted.replace(/: "([^"]*)"/g, ': <span class="string">"$1"</span>');
+        break;
+
+      default:
+        break;
+    }
+
+    return highlighted;
+  }, []);
+
   const getPreviewContent = useCallback(() => {
     if (!query || query.rules.length === 0) {
       return 'No query built yet. Add rules to see preview.';
     }
 
+    let content = '';
+
     switch (previewLanguage) {
       case 'json':
-        return JSON.stringify(query, null, 2);
+        content = JSON.stringify(query, null, 2);
+        return content;
 
       case 'sql':
         // Simple SQL-like conversion
@@ -118,7 +169,8 @@ export default function VisualQueryBuilder({ onSubmit }) {
           return condition;
         };
         const whereClause = processSQLRule(query);
-        return `SELECT *\nFROM entities\nWHERE ${whereClause || 'TRUE'};`;
+        content = `SELECT *\nFROM entities\nWHERE ${whereClause || 'TRUE'};`;
+        return { __html: syntaxHighlight(content, 'sql') };
 
       case 'mongodb':
         // MongoDB-like conversion
@@ -147,12 +199,14 @@ export default function VisualQueryBuilder({ onSubmit }) {
           }
         };
         const mongoQuery = processMongoRule(query);
-        return `db.collection.find(\n${JSON.stringify(mongoQuery, null, 2)}\n)`;
+        content = `db.collection.find(\n${JSON.stringify(mongoQuery, null, 2)}\n)`;
+        return { __html: syntaxHighlight(content, 'mongodb') };
 
       case 'graphql':
         // GraphQL-like conversion using the existing helper
         const gqlQuery = queryBuilderToGraphQLQuery(query, ontology);
-        return gqlQuery || 'query {\n  # Add rules to generate query\n}';
+        content = gqlQuery || 'query {\n  # Add rules to generate query\n}';
+        return { __html: syntaxHighlight(content, 'graphql') };
 
       case 'cypher':
         // Neo4j Cypher-like conversion
@@ -263,15 +317,17 @@ export default function VisualQueryBuilder({ onSubmit }) {
           const rel = cypherRelationships[0];
           let matchPattern = `MATCH (a:${rel.source.charAt(0).toUpperCase() + rel.source.slice(1)})-[r:${rel.relation}]->(b:${rel.target.charAt(0).toUpperCase() + rel.target.slice(1)})`;
           let whereClause = cypherWhere ? `\nWHERE ${cypherWhere}` : '';
-          return `${matchPattern}${whereClause}\nRETURN a, r, b`;
+          content = `${matchPattern}${whereClause}\nRETURN a, r, b`;
+          return { __html: syntaxHighlight(content, 'cypher') };
         }
 
-        return `MATCH (n)\nWHERE ${cypherWhere || 'TRUE'}\nRETURN n`;
+        content = `MATCH (n)\nWHERE ${cypherWhere || 'TRUE'}\nRETURN n`;
+        return { __html: syntaxHighlight(content, 'cypher') };
 
       default:
         return JSON.stringify(query, null, 2);
     }
-  }, [query, previewLanguage, ontology]);
+  }, [query, previewLanguage, ontology, syntaxHighlight]);
 
   if (isLoading) {
     return (
@@ -350,7 +406,13 @@ export default function VisualQueryBuilder({ onSubmit }) {
               <option value="cypher">Cypher (Neo4j)</option>
             </select>
           </div>
-          <pre>{getPreviewContent()}</pre>
+          <div className={styles.previewContent}>
+            <pre dangerouslySetInnerHTML={
+              typeof getPreviewContent() === 'string'
+                ? { __html: getPreviewContent() }
+                : getPreviewContent()
+            } />
+          </div>
         </div>
       )}
     </div>
