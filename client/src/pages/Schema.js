@@ -133,10 +133,25 @@ export default function Schema() {
   const [dialogKey, setDialogKey] = useState(null);
   const [currentSchema, setCurrentSchema] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [ontologies, setOntologies] = useState([]);
+  const [selectedOntology, setSelectedOntology] = useState('dragons');
 
+  // Load available ontologies on mount
   useEffect(() => {
+    apiService.getOntologies().then(data => {
+      setOntologies(data.ontologies);
+    }).catch(error => {
+      console.error("Failed to load ontologies list:", error);
+    });
+  }, []);
+
+  // Load ontology when selection changes
+  useEffect(() => {
+    if (!selectedOntology) return;
+
+    setIsLoading(true);
     // Load ontology from API and convert to GraphQL schema
-    apiService.getOntology().then(ontologyData => {
+    apiService.getOntology(selectedOntology).then(ontologyData => {
       console.log("=== RAW ONTOLOGY RESPONSE ===");
       console.log(JSON.stringify(ontologyData, null, 2));
       console.log("=== END RAW ONTOLOGY ===");
@@ -152,15 +167,15 @@ export default function Schema() {
       console.log(graphqlSchema);
       console.log("\n=== END GRAPHQL SCHEMA ===");
 
-      // Set the schema - use only 'code' field to avoid duplication
+      // Set the schema - GraphQLEditor requires both 'code' and 'libraries'
       // 'libraries' is for shared/reusable schema, 'code' is the main schema
-      setCurrentSchema({ code: graphqlSchema });
+      setCurrentSchema({ code: graphqlSchema, libraries: '' });
       setIsLoading(false);
     }).catch(error => {
       console.error("Failed to load ontology:", error);
       setIsLoading(false);
     });
-  }, []);
+  }, [selectedOntology]);
 
   const closeModal = useCallback(() => {
     setDialogKey(null);
@@ -196,6 +211,20 @@ export default function Schema() {
         renderContent={renderModalContent}
       />
       <div className={styles.menu}>
+        <div className={styles.ontologySelector}>
+          <label htmlFor="ontology-select">Ontology: </label>
+          <select
+            id="ontology-select"
+            value={selectedOntology}
+            onChange={(e) => setSelectedOntology(e.target.value)}
+          >
+            {ontologies.map(ont => (
+              <option key={ont.id} value={ont.id}>
+                {ont.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className={styles.actions}>
           {Object.keys(actions).map(action => (
             <button

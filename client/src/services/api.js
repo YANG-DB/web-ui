@@ -24,9 +24,12 @@ export default {
   updateResult: async function(nodeId) {
     return await callApi("/api/update", "POST", { nodeId });
   },
-  getOntology: async function() {
-    const ontology = await callApi("/api/ontology");
+  getOntology: async function(type = 'dragons') {
+    const ontology = await callApi(`/api/ontology?type=${type}`);
     return ontology && ontology.data[0];
+  },
+  getOntologies: async function() {
+    return await callApi("/api/ontologies");
   },
   getStructure: async function() {
     return await callApi("/api/structure");

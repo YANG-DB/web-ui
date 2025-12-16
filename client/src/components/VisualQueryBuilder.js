@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { QueryBuilder } from "react-querybuilder";
 import "react-querybuilder/dist/query-builder.css";
 import { convertOntologyToQueryBuilderFields, queryBuilderToGraphQLQuery } from "../helpers/ontologyToQueryBuilder";
 import apiService from "../services/api";
 import styles from "./VisualQueryBuilder.module.css";
 import RelationshipValueEditor from "./RelationshipValueEditor";
+import RelationshipRuleActions from "./RelationshipRuleActions";
 
 const initialQuery = {
   combinator: "and",
   rules: []
 };
 
-export default function VisualQueryBuilder({ onSubmit }) {
+export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' }) {
   const [query, setQuery] = useState(initialQuery);
   const [fields, setFields] = useState([]);
   const [ontology, setOntology] = useState(null);
@@ -21,7 +22,11 @@ export default function VisualQueryBuilder({ onSubmit }) {
 
   useEffect(() => {
     // Load ontology and convert to query builder fields
-    apiService.getOntology().then(ontologyData => {
+    setIsLoading(true);
+    // Clear query when ontology changes to avoid invalid field references
+    setQuery(initialQuery);
+
+    apiService.getOntology(ontologyType).then(ontologyData => {
       console.log("Loaded ontology for query builder:", ontologyData);
 
       // Wrap the data since getOntology returns data[0]
@@ -41,31 +46,125 @@ export default function VisualQueryBuilder({ onSubmit }) {
       console.error("Failed to load ontology for query builder:", error);
       setIsLoading(false);
     });
-  }, []);
+  }, [ontologyType]);
 
   const handleQueryChange = useCallback((newQuery) => {
     console.log("Query changed:", newQuery);
-
-    // Log relationship operator usage (both new simple format and old pattern format)
-    const relationshipRules = newQuery.rules?.filter(r => {
-      if (!r.operator) return false;
-      // Check for old pattern format
-      if (r.operator.startsWith('-[') && r.operator.endsWith(']->')) return true;
-      // Check for new simple format (operator is a relationship type)
-      if (ontology && ontology.data && ontology.data[0]) {
-        const { relationshipTypes } = ontology.data[0];
-        if (relationshipTypes) {
-          return relationshipTypes.some(rel => rel.rType === r.operator);
-        }
-      }
-      return false;
-    });
-    if (relationshipRules && relationshipRules.length > 0) {
-      console.log("Relationship rules detected:", relationshipRules);
-    }
-
     setQuery(newQuery);
+  }, []);
+
+  // Helper function to build relationship operators for an entity
+  const buildRelationshipOperators = useCallback((entityType) => {
+    if (!ontology || !ontology.data || !ontology.data[0]) return [];
+
+    const { relationshipTypes } = ontology.data[0];
+    const operators = [];
+    if (relationshipTypes) {
+      relationshipTypes.forEach(rel => {
+        rel.ePairs.forEach(pair => {
+          if (pair.eTypeA === entityType) {
+            operators.push({ name: rel.rType, label: rel.rType });
+          }
+        });
+      });
+    }
+    return operators;
   }, [ontology]);
+
+  // Function to expand a relationship rule into a nested group
+  const expandRelationshipRule = useCallback((ruleId, rulePath = []) => {
+    if (!ontology || !ontology.data || !ontology.data[0]) return;
+
+    const { relationshipTypes, entityTypes } = ontology.data[0];
+
+    // Use functional update to avoid dependency on query state
+    setQuery(currentQuery => {
+      // Find the rule by traversing the path
+      const findAndExpandRule = (rules, path, currentIndex = 0) => {
+        return rules.map((rule, idx) => {
+          // If this is a group, recurse into it
+          if ('rules' in rule) {
+            if (path[currentIndex] === idx) {
+              return {
+                ...rule,
+                rules: findAndExpandRule(rule.rules, path, currentIndex + 1)
+              };
+            }
+            return rule;
+          }
+
+          // If this is the target rule (end of path)
+          if (path.length === currentIndex + 1 && path[currentIndex] === idx) {
+            // Check if it's a relationship rule
+            if (rule.operator && relationshipTypes) {
+              const relationship = relationshipTypes.find(r => r.rType === rule.operator);
+
+              if (relationship && rule.field) {
+                // Find possible target entities for this relationship
+                const possibleTargets = [];
+                relationship.ePairs.forEach(pair => {
+                  if (pair.eTypeA === rule.field) {
+                    possibleTargets.push(pair.eTypeB);
+                  }
+                });
+
+                // Use rule's value if set, otherwise use first possible target
+                const targetEntity = rule.value || (possibleTargets.length > 0 ? possibleTargets[0] : null);
+
+                if (targetEntity) {
+                  const targetEntityType = entityTypes?.find(e => e.eType === targetEntity);
+
+                  if (targetEntityType) {
+                    console.log(`Expanding relationship: ${rule.field} -[${rule.operator}]-> ${targetEntity}`);
+
+                    // Determine the default operator for the target entity
+                    const targetRelOps = buildRelationshipOperators(targetEntity);
+                    const targetDefaultOp = targetRelOps.length > 0
+                      ? targetRelOps[0].name
+                      : '=';
+
+                    // Create a nested rule group with the relationship rule
+                    // and a nested subgroup for the target entity
+                    return {
+                      id: `${rule.id}-group`,
+                      combinator: 'and',
+                      rules: [
+                        {
+                          ...rule,
+                          value: targetEntity, // Ensure value is set
+                          _expanded: true // Mark as expanded
+                        },
+                        {
+                          // Nested subgroup for the target entity
+                          id: `${rule.id}-target-group`,
+                          combinator: 'and',
+                          rules: [
+                            {
+                              id: `rule-${Date.now()}-${Math.random()}-target`,
+                              field: targetEntity,
+                              operator: targetDefaultOp,
+                              value: ''
+                            }
+                          ]
+                        }
+                      ]
+                    };
+                  }
+                }
+              }
+            }
+          }
+
+          return rule;
+        });
+      };
+
+      return {
+        ...currentQuery,
+        rules: findAndExpandRule(currentQuery.rules, rulePath)
+      };
+    });
+  }, [ontology, buildRelationshipOperators]);
 
   const handleSubmit = useCallback(() => {
     console.log("Submitting query:", query);
@@ -84,6 +183,24 @@ export default function VisualQueryBuilder({ onSubmit }) {
   const handleClear = useCallback(() => {
     setQuery(initialQuery);
   }, []);
+
+  // Memoize control elements to prevent input focus loss
+  // This must be before any conditional returns to follow Rules of Hooks
+  const controlElements = useMemo(() => ({
+    valueEditor: (props) => (
+      <RelationshipValueEditor
+        {...props}
+        ontology={ontology}
+      />
+    ),
+    removeRuleAction: (props) => (
+      <RelationshipRuleActions
+        {...props}
+        ontology={ontology}
+        onExpandRelationship={expandRelationshipRule}
+      />
+    )
+  }), [ontology, expandRelationshipRule]);
 
   // Helper function to add syntax highlighting
   const syntaxHighlight = useCallback((code, language) => {
@@ -379,14 +496,7 @@ export default function VisualQueryBuilder({ onSubmit }) {
             removeRule: styles.removeRule,
             removeGroup: styles.removeGroup
           }}
-          controlElements={{
-            valueEditor: (props) => (
-              <RelationshipValueEditor
-                {...props}
-                ontology={ontology}
-              />
-            )
-          }}
+          controlElements={controlElements}
         />
       </div>
 

@@ -4,7 +4,17 @@ const bodyParser = require("body-parser");
 const results = require("./mocks/queries/ResultLarge.json");
 const update = require("./mocks/queries/Update.json");
 const structure = require("./mocks/structures/Default.json");
-const ontology = require("./mocks/ontologies/Dragons.json");
+const dragonsOntology = require("./mocks/ontology/dragons/ontology.json");
+const linkedinOntology = require("./mocks/ontology/linkedin/ontology.json");
+
+// Map of available ontologies
+const ontologies = {
+  dragons: dragonsOntology,
+  linkedin: linkedinOntology
+};
+
+// Legacy support - default to dragons
+const ontology = dragonsOntology;
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -34,7 +44,21 @@ app.post("/api/update", (req, res) => {
 });
 
 app.get("/api/ontology", (req, res) => {
-  res.send(ontology);
+  // Support query parameter for selecting ontology: /api/ontology?type=linkedin
+  const ontologyType = req.query.type || 'dragons';
+  const selectedOntology = ontologies[ontologyType] || ontology;
+  console.log(`Serving ontology: ${ontologyType}`);
+  res.send(selectedOntology);
+});
+
+// Get list of available ontologies
+app.get("/api/ontologies", (req, res) => {
+  res.send({
+    ontologies: [
+      { id: "dragons", name: "Dragons", description: "Dragons fantasy ontology with persons, dragons, horses, kingdoms, and guilds" },
+      { id: "linkedin", name: "LinkedIn", description: "LinkedIn professional network ontology with persons, companies, positions, skills, and connections" }
+    ]
+  });
 });
 
 app.get("/api/structure", (req, res) => {

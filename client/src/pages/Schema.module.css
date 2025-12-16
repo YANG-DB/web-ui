@@ -2,9 +2,40 @@
   height: 50px;
   background: var(--dark-four);
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0px 20px;
+}
+
+.ontologySelector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ontologySelector label {
+  color: white;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.ontologySelector select {
+  background: var(--dark-three);
+  color: white;
+  border: 1px solid var(--dark-two);
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ontologySelector select:hover {
+  border-color: var(--dark-one);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
 }
 .action {
   margin: 0px 10px;

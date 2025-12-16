@@ -1,0 +1,141 @@
+{
+  "requestId": "LI-RES-001",
+  "elapsed": "00000002",
+  "renderElapsed": "00000018",
+  "totalElapsed": "00000020",
+  "data": [
+    {
+      "type": "Person",
+      "id": "P001",
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john.smith@example.com",
+      "headline": "Software Engineer at Tech Corp",
+      "location": "San Francisco, CA",
+      "industry": "Technology",
+      "connections": 500,
+      "followers": 1200
+    },
+    {
+      "type": "Person",
+      "id": "P002",
+      "firstName": "Sarah",
+      "lastName": "Johnson",
+      "email": "sarah.j@example.com",
+      "headline": "Product Manager | AI & ML Enthusiast",
+      "location": "New York, NY",
+      "industry": "Technology",
+      "connections": 800,
+      "followers": 2500
+    },
+    {
+      "type": "Company",
+      "id": "C001",
+      "name": "Tech Corp",
+      "industry": "Software Development",
+      "size": "1001-5000",
+      "foundedYear": 2010,
+      "headquarters": "San Francisco, CA",
+      "followers": 50000
+    },
+    {
+      "type": "Company",
+      "id": "C002",
+      "name": "Innovation Labs",
+      "industry": "Artificial Intelligence",
+      "size": "501-1000",
+      "foundedYear": 2015,
+      "headquarters": "New York, NY",
+      "followers": 35000
+    },
+    {
+      "type": "Position",
+      "id": "POS001",
+      "title": "Senior Software Engineer",
+      "location": "San Francisco, CA",
+      "startDate": "2020-01-15",
+      "isCurrent": "true"
+    },
+    {
+      "type": "Skill",
+      "id": "S001",
+      "name": "JavaScript",
+      "category": "Programming",
+      "endorsements": 45
+    },
+    {
+      "type": "Skill",
+      "id": "S002",
+      "name": "React",
+      "category": "Framework",
+      "endorsements": 38
+    },
+    {
+      "type": "School",
+      "id": "SCH001",
+      "name": "Stanford University",
+      "location": "Stanford, CA",
+      "type": "University"
+    },
+    {
+      "type": "Post",
+      "id": "POST001",
+      "content": "Excited to announce our new AI product launch!",
+      "publishedDate": "2024-01-15",
+      "likes": 150,
+      "comments": 25,
+      "shares": 12
+    }
+  ],
+  "relationships": [
+    {
+      "type": "WorksAt",
+      "id": "R001",
+      "source": "P001",
+      "target": "C001",
+      "startDate": "2020-01-15",
+      "isCurrent": true
+    },
+    {
+      "type": "ConnectedTo",
+      "id": "R002",
+      "source": "P001",
+      "target": "P002",
+      "connectedDate": "2019-05-20",
+      "strength": "strong"
+    },
+    {
+      "type": "HasSkill",
+      "id": "R003",
+      "source": "P001",
+      "target": "S001",
+      "level": "expert",
+      "yearsOfExperience": 8
+    },
+    {
+      "type": "HasSkill",
+      "id": "R004",
+      "source": "P001",
+      "target": "S002",
+      "level": "expert",
+      "yearsOfExperience": 5
+    },
+    {
+      "type": "StudiedAt",
+      "id": "R005",
+      "source": "P001",
+      "target": "SCH001",
+      "degree": "B.S.",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2008-09-01",
+      "endDate": "2012-06-15"
+    },
+    {
+      "type": "Published",
+      "id": "R006",
+      "source": "P002",
+      "target": "POST001",
+      "publishedDate": "2024-01-15"
+    }
+  ]
+}

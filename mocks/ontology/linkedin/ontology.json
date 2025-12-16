@@ -1,0 +1,623 @@
+{
+  "requestId": "LI391282989268533248",
+  "elapsed": "00000001",
+  "renderElapsed": "00000014",
+  "totalElapsed": "00000015",
+  "data": [
+    {
+      "ont": "LinkedIn",
+      "entityTypes": [
+        {
+          "eType": "Person",
+          "name": "Person",
+          "properties": [
+            "firstName",
+            "lastName",
+            "email",
+            "phone",
+            "headline",
+            "summary",
+            "location",
+            "industry",
+            "profileUrl",
+            "photoUrl",
+            "connections",
+            "followers",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Company",
+          "name": "Company",
+          "properties": [
+            "name",
+            "industry",
+            "size",
+            "website",
+            "description",
+            "foundedYear",
+            "headquarters",
+            "specialties",
+            "logoUrl",
+            "followers",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Position",
+          "name": "Position",
+          "properties": [
+            "title",
+            "description",
+            "location",
+            "startDate",
+            "endDate",
+            "isCurrent",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "School",
+          "name": "School",
+          "properties": [
+            "name",
+            "location",
+            "website",
+            "type",
+            "logoUrl",
+            "id"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Education",
+          "name": "Education",
+          "properties": [
+            "degree",
+            "fieldOfStudy",
+            "grade",
+            "startDate",
+            "endDate",
+            "activities",
+            "description",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Skill",
+          "name": "Skill",
+          "properties": [
+            "name",
+            "category",
+            "endorsements",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Post",
+          "name": "Post",
+          "properties": [
+            "content",
+            "publishedDate",
+            "likes",
+            "comments",
+            "shares",
+            "mediaType",
+            "mediaUrl",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Group",
+          "name": "Group",
+          "properties": [
+            "name",
+            "description",
+            "memberCount",
+            "category",
+            "logoUrl",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        }
+      ],
+      "relationshipTypes": [
+        {
+          "rType": "WorksAt",
+          "name": "WorksAt",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Company"
+            }
+          ],
+          "properties": ["position", "startDate", "endDate", "isCurrent"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "HasPosition",
+          "name": "HasPosition",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Position"
+            }
+          ],
+          "properties": ["startDate", "endDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "PositionAt",
+          "name": "PositionAt",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Position",
+              "eTypeB": "Company"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "ConnectedTo",
+          "name": "ConnectedTo",
+          "directional": false,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Person"
+            }
+          ],
+          "properties": ["connectedDate", "strength"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Follows",
+          "name": "Follows",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Person"
+            },
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Company"
+            },
+            {
+              "eTypeA": "Person",
+              "eTypeB": "School"
+            }
+          ],
+          "properties": ["followedDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "StudiedAt",
+          "name": "StudiedAt",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "School"
+            }
+          ],
+          "properties": ["degree", "fieldOfStudy", "startDate", "endDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "HasEducation",
+          "name": "HasEducation",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Education"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "EducationAt",
+          "name": "EducationAt",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Education",
+              "eTypeB": "School"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "HasSkill",
+          "name": "HasSkill",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Skill"
+            }
+          ],
+          "properties": ["level", "yearsOfExperience"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Endorses",
+          "name": "Endorses",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Skill"
+            }
+          ],
+          "properties": ["endorsedDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Published",
+          "name": "Published",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Post"
+            }
+          ],
+          "properties": ["publishedDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Liked",
+          "name": "Liked",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Post"
+            }
+          ],
+          "properties": ["likedDate"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Commented",
+          "name": "Commented",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Post"
+            }
+          ],
+          "properties": ["commentDate", "commentText"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "MemberOf",
+          "name": "MemberOf",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Group"
+            }
+          ],
+          "properties": ["joinedDate", "role"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Recommends",
+          "name": "Recommends",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Person",
+              "eTypeB": "Person"
+            }
+          ],
+          "properties": ["recommendationDate", "recommendationText", "relationshipType"],
+          "metadata": ["id", "type"]
+        }
+      ],
+      "properties": [
+        {
+          "pType": "id",
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "pType": "type",
+          "name": "type",
+          "type": "string"
+        },
+        {
+          "pType": "firstName",
+          "name": "firstName",
+          "type": "text"
+        },
+        {
+          "pType": "lastName",
+          "name": "lastName",
+          "type": "text"
+        },
+        {
+          "pType": "email",
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "pType": "phone",
+          "name": "phone",
+          "type": "string"
+        },
+        {
+          "pType": "headline",
+          "name": "headline",
+          "type": "text"
+        },
+        {
+          "pType": "summary",
+          "name": "summary",
+          "type": "text"
+        },
+        {
+          "pType": "location",
+          "name": "location",
+          "type": "string"
+        },
+        {
+          "pType": "industry",
+          "name": "industry",
+          "type": "string"
+        },
+        {
+          "pType": "profileUrl",
+          "name": "profileUrl",
+          "type": "string"
+        },
+        {
+          "pType": "photoUrl",
+          "name": "photoUrl",
+          "type": "string"
+        },
+        {
+          "pType": "connections",
+          "name": "connections",
+          "type": "int"
+        },
+        {
+          "pType": "followers",
+          "name": "followers",
+          "type": "int"
+        },
+        {
+          "pType": "name",
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "pType": "size",
+          "name": "size",
+          "type": "string"
+        },
+        {
+          "pType": "website",
+          "name": "website",
+          "type": "string"
+        },
+        {
+          "pType": "description",
+          "name": "description",
+          "type": "text"
+        },
+        {
+          "pType": "foundedYear",
+          "name": "foundedYear",
+          "type": "int"
+        },
+        {
+          "pType": "headquarters",
+          "name": "headquarters",
+          "type": "string"
+        },
+        {
+          "pType": "specialties",
+          "name": "specialties",
+          "type": "text"
+        },
+        {
+          "pType": "logoUrl",
+          "name": "logoUrl",
+          "type": "string"
+        },
+        {
+          "pType": "title",
+          "name": "title",
+          "type": "text"
+        },
+        {
+          "pType": "startDate",
+          "name": "startDate",
+          "type": "date"
+        },
+        {
+          "pType": "endDate",
+          "name": "endDate",
+          "type": "date"
+        },
+        {
+          "pType": "isCurrent",
+          "name": "isCurrent",
+          "type": "string"
+        },
+        {
+          "pType": "degree",
+          "name": "degree",
+          "type": "string"
+        },
+        {
+          "pType": "fieldOfStudy",
+          "name": "fieldOfStudy",
+          "type": "string"
+        },
+        {
+          "pType": "grade",
+          "name": "grade",
+          "type": "string"
+        },
+        {
+          "pType": "activities",
+          "name": "activities",
+          "type": "text"
+        },
+        {
+          "pType": "category",
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "pType": "endorsements",
+          "name": "endorsements",
+          "type": "int"
+        },
+        {
+          "pType": "content",
+          "name": "content",
+          "type": "text"
+        },
+        {
+          "pType": "publishedDate",
+          "name": "publishedDate",
+          "type": "date"
+        },
+        {
+          "pType": "likes",
+          "name": "likes",
+          "type": "int"
+        },
+        {
+          "pType": "comments",
+          "name": "comments",
+          "type": "int"
+        },
+        {
+          "pType": "shares",
+          "name": "shares",
+          "type": "int"
+        },
+        {
+          "pType": "mediaType",
+          "name": "mediaType",
+          "type": "string"
+        },
+        {
+          "pType": "mediaUrl",
+          "name": "mediaUrl",
+          "type": "string"
+        },
+        {
+          "pType": "memberCount",
+          "name": "memberCount",
+          "type": "int"
+        },
+        {
+          "pType": "position",
+          "name": "position",
+          "type": "text"
+        },
+        {
+          "pType": "connectedDate",
+          "name": "connectedDate",
+          "type": "date"
+        },
+        {
+          "pType": "strength",
+          "name": "strength",
+          "type": "string"
+        },
+        {
+          "pType": "followedDate",
+          "name": "followedDate",
+          "type": "date"
+        },
+        {
+          "pType": "level",
+          "name": "level",
+          "type": "string"
+        },
+        {
+          "pType": "yearsOfExperience",
+          "name": "yearsOfExperience",
+          "type": "int"
+        },
+        {
+          "pType": "endorsedDate",
+          "name": "endorsedDate",
+          "type": "date"
+        },
+        {
+          "pType": "likedDate",
+          "name": "likedDate",
+          "type": "date"
+        },
+        {
+          "pType": "commentDate",
+          "name": "commentDate",
+          "type": "date"
+        },
+        {
+          "pType": "commentText",
+          "name": "commentText",
+          "type": "text"
+        },
+        {
+          "pType": "joinedDate",
+          "name": "joinedDate",
+          "type": "date"
+        },
+        {
+          "pType": "role",
+          "name": "role",
+          "type": "string"
+        },
+        {
+          "pType": "recommendationDate",
+          "name": "recommendationDate",
+          "type": "date"
+        },
+        {
+          "pType": "recommendationText",
+          "name": "recommendationText",
+          "type": "text"
+        },
+        {
+          "pType": "relationshipType",
+          "name": "relationshipType",
+          "type": "string"
+        }
+      ],
+      "enumeratedTypes": [],
+      "compositeTypes": []
+    }
+  ]
+}

@@ -211,6 +211,13 @@
   margin-bottom: 10px;
 }
 
+/* Nested rule groups (for relationship expansions) */
+.queryBuilder :global(.ruleGroup .ruleGroup) {
+  margin-left: 20px;
+  border-left: 3px solid var(--highlight);
+  background: rgba(255, 107, 157, 0.05);
+}
+
 .queryBuilder :global(.ruleGroup-header) {
   display: flex;
   align-items: center;
@@ -284,6 +291,21 @@
 .queryBuilder :global(.ruleGroup-remove:hover),
 .queryBuilder :global(.rule-remove:hover) {
   background: #c82333;
+}
+
+/* Expand relationship button styling */
+.queryBuilder :global(button[title*="Expand relationship"]) {
+  background: var(--highlight) !important;
+  border-color: var(--highlight) !important;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 10px;
+}
+
+.queryBuilder :global(button[title*="Expand relationship"]:hover) {
+  background: #ff6b9d !important;
+  transform: scale(1.1);
 }
 
 /* Relationship field styling */

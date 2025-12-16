@@ -98,44 +98,7 @@ export function convertOntologyToQueryBuilderFields(ontologyData) {
     });
   }
 
-  // Add relationship pattern fields (Entity1 -[Relation]-> Entity2)
-  if (relationshipTypes && relationshipTypes.length > 0) {
-    relationshipTypes.forEach(rel => {
-      rel.ePairs.forEach(pair => {
-        const relationshipField = {
-          name: `relationship:${pair.eTypeA}-[${rel.rType}]->${pair.eTypeB}`,
-          label: `${pair.eTypeA} -[${rel.rType}]-> ${pair.eTypeB}`,
-          inputType: 'select',
-          values: [
-            { name: 'exists', label: 'Exists' },
-            { name: 'not_exists', label: 'Does Not Exist' }
-          ],
-          operators: ['='],
-          defaultOperator: '=',
-          defaultValue: 'exists'
-        };
-        fields.push(relationshipField);
-
-        // Add relationship property fields if the relationship has properties
-        if (rel.properties && rel.properties.length > 0) {
-          rel.properties
-            .filter(prop => !rel.metadata?.includes(prop))
-            .forEach(propName => {
-              const propType = propertyTypeMap[propName] || 'string';
-              const fieldName = `relationship:${pair.eTypeA}-[${rel.rType}]->${pair.eTypeB}.${propName}`;
-
-              fields.push({
-                name: fieldName,
-                label: `${pair.eTypeA} -[${rel.rType}]-> ${pair.eTypeB} > ${propName}`,
-                inputType: typeToInputType[propType] || 'text',
-                operators: typeToOperators[propType] || typeToOperators.string,
-                valueSources: ['value']
-              });
-            });
-        }
-      });
-    });
-  }
+  // Removed relationship pattern fields - using entity fields with relationship operators instead
 
   return fields;
 }

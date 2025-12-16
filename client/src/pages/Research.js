@@ -1,10 +1,11 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Resizable } from "re-resizable";
 import { connect } from "react-redux";
 import { submitQuery, storeResults, cacheQuery } from "../reducers/research";
 import { VisualQueryBuilder, Results } from "../components";
 import apiService from "../services/api";
 import styles from "../App.module.css";
+import researchStyles from "./Research.module.css";
 
 function Research({
   submitQuery,
@@ -13,6 +14,18 @@ function Research({
   lastQuery,
   cacheQuery
 }) {
+  const [ontologies, setOntologies] = useState([]);
+  const [selectedOntology, setSelectedOntology] = useState('dragons');
+
+  // Load available ontologies on mount
+  useEffect(() => {
+    apiService.getOntologies().then(data => {
+      setOntologies(data.ontologies);
+    }).catch(error => {
+      console.error("Failed to load ontologies list:", error);
+    });
+  }, []);
+
   const onSubmit = useCallback(query => {
     console.log("Visual query submitted:", query);
     submitQuery(query);
@@ -29,6 +42,20 @@ function Research({
   return (
     <div className={styles.row}>
       <div className={styles.column} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className={researchStyles.ontologySelector}>
+          <label htmlFor="research-ontology-select">Ontology: </label>
+          <select
+            id="research-ontology-select"
+            value={selectedOntology}
+            onChange={(e) => setSelectedOntology(e.target.value)}
+          >
+            {ontologies.map(ont => (
+              <option key={ont.id} value={ont.id}>
+                {ont.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <Resizable
           defaultSize={{
             height: '40%',
@@ -86,7 +113,7 @@ function Research({
           }}
           style={{ marginBottom: '10px' }}
         >
-          <VisualQueryBuilder onSubmit={onSubmit} />
+          <VisualQueryBuilder onSubmit={onSubmit} ontologyType={selectedOntology} />
         </Resizable>
         <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <Results results={results} />
