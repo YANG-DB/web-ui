@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import * as d3 from "d3";
 import cn from "classnames";
 import useD3 from "../hooks/useD3";
@@ -7,26 +7,42 @@ import apiService from "../services/api";
 import eyeOn from "../assets/eye.svg";
 import eyeOff from "../assets/eye-off.svg";
 import styles from "./Force.module.css";
-import { min } from "d3";
 
 const IMAGE_HEIGHT = 20;
 const IMAGE_WIDTH = 20;
 const NODE_RADIUS = 10;
-const ALPHA = 0.01;
+const MIN_NODE_RADIUS = 10;  // Increased from 8 to make even small nodes more visible
+const MAX_NODE_RADIUS = 30;  // Increased from 25 to make hub nodes even more prominent
+const ALPHA = 0.3;  // Increased from 0.01 for more responsive dragging
 const UNHOVERED_OPACITY = 0.7;
+const LINK_DISTANCE = 200;  // Increased from 100 to spread nodes further
+const CHARGE_STRENGTH = -800;  // Increased repulsion from -300 to push nodes apart
 
 const menuItems = ["toggleExpand", "functionTwo", "functionThree"];
 
-var arc = d3
+const arc = d3
   .arc()
   .innerRadius(20)
   .outerRadius(50);
-var createMenu = d3.pie().value(() => 1);
+const createMenu = d3.pie().value(() => 1);
 
-var color = d3
+const color = d3
   .scaleOrdinal()
   .domain([0, 1, 2, 3, 4])
   .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]);
+
+// Enhanced color scheme for different entity types
+const entityColorScale = d3
+  .scaleOrdinal()
+  .domain(["Person", "Dragon", "Horse", "Guild", "Kingdom", "Company", "Position", "School", "Skill", "Post", "Group"])
+  .range(["#FF6B9D", "#C44569", "#FFA502", "#6A89CC", "#4A69BD", "#00D2D3", "#1ABC9C", "#8E44AD", "#E74C3C", "#F39C12", "#16A085"]);
+
+// Color scale for node connectivity (from low to high connectivity)
+// Using Turbo for more vibrant, distinguishable colors
+const connectivityColorScale = d3
+  .scaleSequential()
+  .domain([0, 10])  // Will be updated dynamically based on max degree
+  .interpolator(d3.interpolateTurbo);
 
 function scale(source, target, scaleFactor) {
   let factor = scaleFactor;
@@ -67,7 +83,8 @@ export default function Force({ results, hoveredIndex }) {
     id: e.eID,
     fromQuery: true,
     expanded: false,
-    menuOpen: false
+    menuOpen: false,
+    degree: 0  // Will be calculated below
   }));
   let relationships = r.relationships.map(r => ({
     ...r,
@@ -75,16 +92,38 @@ export default function Force({ results, hoveredIndex }) {
     source: r.eID1,
     target: r.eID2
   }));
+
+  // Calculate degree (number of connections) for each node
+  const degreeMap = new Map();
+  relationships.forEach(rel => {
+    degreeMap.set(rel.source, (degreeMap.get(rel.source) || 0) + 1);
+    degreeMap.set(rel.target, (degreeMap.get(rel.target) || 0) + 1);
+  });
+  entities.forEach(e => {
+    e.degree = degreeMap.get(e.id) || 0;
+  });
+
+  // Update connectivity color scale domain based on actual max degree
+  const maxDegree = Math.max(...entities.map(e => e.degree), 1);
+  connectivityColorScale.domain([0, maxDegree]);
   const [simulation] = useState(
     d3
       .forceSimulation(entities)
       .force(
         "link",
-        d3.forceLink(relationships).id(function(d) {
-          return d.id;
-        })
+        d3.forceLink(relationships)
+          .id(function(d) {
+            return d.id;
+          })
+          .distance(LINK_DISTANCE)
       )
-      .force("collide", d3.forceCollide(75))
+      .force("charge", d3.forceManyBody().strength(CHARGE_STRENGTH))
+      .force("collide", d3.forceCollide().radius(d => {
+        // Dynamic collision radius based on node size (using square root scale)
+        const normalizedDegree = Math.sqrt(d.degree / maxDegree);
+        const baseRadius = MIN_NODE_RADIUS + normalizedDegree * (MAX_NODE_RADIUS - MIN_NODE_RADIUS);
+        return baseRadius + 15; // Increased padding from 5px to 15px for better spacing
+      }))
       .force("x", d3.forceX())
       .force("y", d3.forceY())
       .alphaDecay(0.2)
@@ -102,20 +141,20 @@ export default function Force({ results, hoveredIndex }) {
 
     // --------------------------------- Define callbacks --------------------------------- //
 
-    function dragstarted(d) {
-      if (!d3.event.active) simulation.alpha(ALPHA).restart();
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alpha(ALPHA).restart();
       d.fx = d.x;
       d.fy = d.y;
     }
 
-    function dragged(d) {
+    function dragged(event, d) {
       // setting fx/fy serves to override the x and y values provided by the simulation
-      d.fx = d3.event.x;
-      d.fy = d3.event.y;
+      d.fx = event.x;
+      d.fy = event.y;
     }
 
-    function dragended(d) {
-      if (!d3.event.active) simulation.alpha(ALPHA);
+    function dragended(event, d) {
+      if (!event.active) simulation.alpha(ALPHA);
       if (!d.menuOpen) {
         d.fx = null;
         d.fy = null;
@@ -154,7 +193,8 @@ export default function Force({ results, hoveredIndex }) {
             id: e.eID,
             fromQuery: false,
             parent: id,
-            menuOpen: false
+            menuOpen: false,
+            degree: 0
           }));
         let newRelationships = newResults.relationships
           .filter(r => !relationships.some(rn => rn.id === r.rID))
@@ -167,6 +207,23 @@ export default function Force({ results, hoveredIndex }) {
           }));
         relationships = relationships.concat(newRelationships);
         entities = entities.concat(newEntities);
+
+        // Recalculate degrees for all entities after expansion
+        const degreeMap = new Map();
+        relationships.forEach(rel => {
+          const sourceId = typeof rel.source === 'object' ? rel.source.id : rel.source;
+          const targetId = typeof rel.target === 'object' ? rel.target.id : rel.target;
+          degreeMap.set(sourceId, (degreeMap.get(sourceId) || 0) + 1);
+          degreeMap.set(targetId, (degreeMap.get(targetId) || 0) + 1);
+        });
+        entities.forEach(e => {
+          e.degree = degreeMap.get(e.id) || 0;
+        });
+
+        // Update connectivity color scale domain
+        const newMaxDegree = Math.max(...entities.map(e => e.degree), 1);
+        connectivityColorScale.domain([0, newMaxDegree]);
+
         node.expanded = true;
         restart();
       });
@@ -260,22 +317,28 @@ export default function Force({ results, hoveredIndex }) {
                 .on("end", dragended)
             );
 
-          group.append("circle").on("click", d => {
-            if (d.fromQuery) {
-              if (!d.menuOpen) {
-                openMenu(d);
-              } else {
-                closeMenu(d);
+          group
+            .append("circle")
+            .on("click", d => {
+              if (d.fromQuery) {
+                if (!d.menuOpen) {
+                  openMenu(d);
+                } else {
+                  closeMenu(d);
+                }
               }
-            }
-          });
+            })
+            .append("title")
+            .text(d => `${d.eType || 'Entity'}: ${d.id}\n${d.eTag ? `Tag: ${d.eTag}` : ''}\nConnections: ${d.degree}`);
 
           group
             .append("text")
             .text(function(d) {
               return d.id;
             })
-            .attr("class", styles.text);
+            .attr("class", styles.text)
+            .append("title")
+            .text(d => `${d.eType || 'Entity'}: ${d.id}`);
 
           return group;
         })
@@ -284,10 +347,15 @@ export default function Force({ results, hoveredIndex }) {
             .select("circle")
             .transition()
             .attr("r", d => {
+              // Calculate base radius based on degree (connectivity)
+              // Use square root scale to make differences more visible for low-degree nodes
+              const normalizedDegree = Math.sqrt(d.degree / maxDegree);
+              const baseRadius = MIN_NODE_RADIUS + normalizedDegree * (MAX_NODE_RADIUS - MIN_NODE_RADIUS);
+
               if (d.assignments.includes(hoveredIndex)) {
-                return NODE_RADIUS * 1.5;
+                return baseRadius * 1.3;
               }
-              return NODE_RADIUS;
+              return baseRadius;
             })
             .attr("opacity", d => {
               if (typeof hoveredIndex === "number") {
@@ -298,6 +366,13 @@ export default function Force({ results, hoveredIndex }) {
               }
 
               return UNHOVERED_OPACITY;
+            })
+            .attr("fill", d => {
+              // Use connectivity-based color if node has connections, otherwise use entity type color
+              if (d.degree > 0) {
+                return connectivityColorScale(d.degree);
+              }
+              return entityColorScale(d.eType || "default");
             })
             .attr("class", d => {
               return cn(
@@ -341,7 +416,7 @@ export default function Force({ results, hoveredIndex }) {
                 .innerRadius(0)
                 .outerRadius(20)
             )
-            .attr("fill", function(d, i) {
+            .attr("fill", function(_d, i) {
               return color(i);
             })
             .attr("class", styles.menuItemPath)
@@ -365,8 +440,8 @@ export default function Force({ results, hoveredIndex }) {
           menuItem
             .append("svg:image")
             .attr("width", "20")
-            .attr("x", d => 0)
-            .attr("y", d => 0)
+            .attr("x", 0)
+            .attr("y", 0)
             .attr("class", styles.menuIcon)
             .attr("width", IMAGE_WIDTH)
             .attr("height", IMAGE_HEIGHT)
@@ -407,7 +482,9 @@ export default function Force({ results, hoveredIndex }) {
             .append("path")
             .attr("class", styles.line)
             .attr("id", d => d.id)
-            .attr("marker-end", d => d.directional && "url(#arrow-end)");
+            .attr("marker-end", d => d.directional && "url(#arrow-end)")
+            .append("title")
+            .text(d => `${d.rType}: ${d.source.id} → ${d.target.id}`);
           group
             .append("text")
             .append("textPath")
@@ -416,7 +493,9 @@ export default function Force({ results, hoveredIndex }) {
             .attr("href", d => `#${d.id}`)
             .text(function(d) {
               return d.rType;
-            });
+            })
+            .append("title")
+            .text(d => `Relationship: ${d.rType}`);
           return group;
         })
         .call(selection => {
@@ -450,9 +529,9 @@ export default function Force({ results, hoveredIndex }) {
     // -------------------------------- Setup zoom handlers ------------------------------- //
 
     var zoom_handler = d3.zoom().on("zoom", zoom_actions);
-    function zoom_actions() {
-      linkWrapper.attr("transform", d3.event.transform);
-      nodeWrapper.attr("transform", d3.event.transform);
+    function zoom_actions(event) {
+      linkWrapper.attr("transform", event.transform);
+      nodeWrapper.attr("transform", event.transform);
     }
     zoom_handler(svg);
     restart();

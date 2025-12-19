@@ -7,8 +7,7 @@ import {
   linkHorizontal,
   tree,
   select,
-  event,
-  mouse
+  pointer
 } from "d3";
 import useD3 from "../hooks/useD3";
 import styles from "./AssignmentItem.module.css";
@@ -70,8 +69,8 @@ const AssignmentItem = React.memo(
         tooltip.style("display", "none");
       }
 
-      function mousemove() {
-        const [x, y] = mouse(select(`body`).node());
+      function mousemove(event) {
+        const [x, y] = pointer(event, select(`body`).node());
         tooltip.style("left", x + "px").style("top", y + "px");
       }
 

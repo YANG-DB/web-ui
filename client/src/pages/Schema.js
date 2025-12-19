@@ -142,6 +142,7 @@ export default function Schema() {
       setOntologies(data.ontologies);
     }).catch(error => {
       console.error("Failed to load ontologies list:", error);
+      alert("⚠️ Server Error: Cannot connect to backend server.\n\nPlease ensure the server is running:\n  cd /Users/liorperry/projects/web-ui\n  node server.js\n\nError: " + error.message);
     });
   }, []);
 
@@ -173,6 +174,10 @@ export default function Schema() {
       setIsLoading(false);
     }).catch(error => {
       console.error("Failed to load ontology:", error);
+      setCurrentSchema({
+        code: `# ⚠️ Error Loading Ontology\n\n# Cannot connect to backend server.\n# Please ensure the server is running:\n#   cd /Users/liorperry/projects/web-ui\n#   node server.js\n\n# Error: ${error.message}`,
+        libraries: ''
+      });
       setIsLoading(false);
     });
   }, [selectedOntology]);

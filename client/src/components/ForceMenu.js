@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Force from "./Force";
 import List from "./List";
 import styles from "./ForceMenu.module.css";

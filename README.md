@@ -127,6 +127,8 @@ A professional networking ontology for social and business data.
 
 - [Visual Query Builder Guide](docs/VISUAL_QUERY_BUILDER.md) - Complete query building documentation
 - [Schema Viewer Guide](docs/SCHEMA_VIEWER.md) - Schema management and ontology structure
+- [D3.js Graph Enhancements](docs/D3_GRAPH_ENHANCEMENTS.md) - Network visualization features and upgrades
+- [Connectivity Visualization](docs/CONNECTIVITY_VISUALIZATION.md) - Node sizing and coloring based on connections
 - [Relationship Patterns](RELATIONSHIP_PATTERNS.md) - Understanding relationship patterns
 - [GitHub Actions Setup](GITHUB_ACTIONS_SETUP.md) - CI/CD configuration
 - [Workflows Summary](WORKFLOWS_SUMMARY.md) - Automation workflows

@@ -17,12 +17,14 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
   const [fields, setFields] = useState([]);
   const [ontology, setOntology] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewLanguage, setPreviewLanguage] = useState('json');
 
   useEffect(() => {
     // Load ontology and convert to query builder fields
     setIsLoading(true);
+    setLoadError(null);
     // Clear query when ontology changes to avoid invalid field references
     setQuery(initialQuery);
 
@@ -42,8 +44,10 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
       setFields(queryFields);
       setOntology(wrappedData);
       setIsLoading(false);
+      setLoadError(null);
     }).catch(error => {
       console.error("Failed to load ontology for query builder:", error);
+      setLoadError(error.message || "Cannot connect to backend server");
       setIsLoading(false);
     });
   }, [ontologyType]);
@@ -454,10 +458,33 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
     );
   }
 
+  if (loadError) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.error}>
+          <h3>⚠️ Server Connection Error</h3>
+          <p>Cannot connect to the backend server.</p>
+          <p><strong>Error:</strong> {loadError}</p>
+          <p style={{ marginTop: '15px', fontSize: '13px' }}>
+            <strong>To fix this:</strong><br/>
+            1. Open a terminal<br/>
+            2. Navigate to: <code>/Users/liorperry/projects/web-ui</code><br/>
+            3. Run: <code>node server.js</code><br/>
+            4. Refresh this page
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (fields.length === 0) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>No schema fields available. Please check your ontology.</div>
+        <div className={styles.error}>
+          <h3>⚠️ No Schema Fields Available</h3>
+          <p>The ontology loaded but contains no queryable fields.</p>
+          <p>Please check your ontology configuration.</p>
+        </div>
       </div>
     );
   }
