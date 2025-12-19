@@ -33,64 +33,69 @@ const addIdsToQuery = (query) => {
 const templates = {
   dragons: [
     {
-      description: "Find all dragons owned by a specific person",
+      description: "Find all persons by first name",
       query: {
         combinator: "and",
         rules: [
           {
-            field: "relationship:Person-[Own]->Dragon",
-            operator: "exists",
-            value: "exists"
+            field: "Person.firstName",
+            operator: "notNull",
+            value: null
           }
         ]
       }
     },
     {
-      description: "Find persons who are members of a guild",
+      description: "Find dragons with specific color",
       query: {
         combinator: "and",
         rules: [
           {
-            field: "relationship:Person-[MemberOf]->Guild",
-            operator: "exists",
-            value: "exists"
+            field: "Dragon.color",
+            operator: "=",
+            value: ""
           }
         ]
       }
     },
     {
-      description: "Find dragons that can fire",
+      description: "Find entities with multiple attributes",
       query: {
         combinator: "and",
         rules: [
           {
-            field: "relationship:Dragon-[Fire]->Dragon",
-            operator: "exists",
-            value: "exists"
-          }
-        ]
-      }
-    },
-    {
-      description: "Find all horses owned by persons in a specific kingdom",
-      query: {
-        combinator: "and",
-        rules: [
-          {
-            field: "relationship:Person-[Own]->Horse",
-            operator: "exists",
-            value: "exists"
+            field: "Person.firstName",
+            operator: "notNull",
+            value: null
           },
           {
-            field: "relationship:Person-[RegisteredIn]->Kingdom",
-            operator: "exists",
-            value: "exists"
+            field: "Person.lastName",
+            operator: "notNull",
+            value: null
           }
         ]
       }
     },
     {
-      description: "Find persons with their owned dragons and guild membership",
+      description: "Find entities using OR condition",
+      query: {
+        combinator: "or",
+        rules: [
+          {
+            field: "Dragon.color",
+            operator: "=",
+            value: "red"
+          },
+          {
+            field: "Dragon.color",
+            operator: "=",
+            value: "blue"
+          }
+        ]
+      }
+    },
+    {
+      description: "Complex nested query example",
       query: {
         combinator: "and",
         rules: [
@@ -103,14 +108,14 @@ const templates = {
             combinator: "or",
             rules: [
               {
-                field: "relationship:Person-[Own]->Dragon",
-                operator: "exists",
-                value: "exists"
+                field: "Person.gender",
+                operator: "=",
+                value: "male"
               },
               {
-                field: "relationship:Person-[MemberOf]->Guild",
-                operator: "exists",
-                value: "exists"
+                field: "Person.gender",
+                operator: "=",
+                value: "female"
               }
             ]
           }

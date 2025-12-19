@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { QueryBuilder } from "react-querybuilder";
 import "react-querybuilder/dist/query-builder.css";
 import { convertOntologyToQueryBuilderFields, queryBuilderToGraphQLQuery } from "../helpers/ontologyToQueryBuilder";
@@ -8,9 +8,15 @@ import RelationshipValueEditor from "./RelationshipValueEditor";
 import RelationshipRuleActions from "./RelationshipRuleActions";
 import QueryTemplates from "./QueryTemplates";
 
+// ID generator for query objects
+const generateId = () => {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+};
+
 const initialQuery = {
   combinator: "and",
-  rules: []
+  rules: [],
+  id: generateId()
 };
 
 export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' }) {
@@ -22,6 +28,7 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
   const [showPreview, setShowPreview] = useState(false);
   const [previewLanguage, setPreviewLanguage] = useState('json');
   const [showTemplates, setShowTemplates] = useState(false);
+  const programmaticUpdate = useRef(false);
 
   useEffect(() => {
     console.log("Query state changed:", query);
@@ -32,7 +39,7 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
     setIsLoading(true);
     setLoadError(null);
     // Clear query when ontology changes to avoid invalid field references
-    setQuery(initialQuery);
+    setQuery({ combinator: "and", rules: [], id: generateId() });
 
     apiService.getOntology(ontologyType).then(ontologyData => {
       console.log("Loaded ontology for query builder:", ontologyData);
@@ -60,6 +67,15 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
 
   const handleQueryChange = useCallback((newQuery) => {
     console.log("handleQueryChange: Query changed:", newQuery);
+    console.log("handleQueryChange: programmaticUpdate.current =", programmaticUpdate.current);
+
+    // If this is a programmatic update from template selection, don't process it
+    if (programmaticUpdate.current) {
+      console.log("handleQueryChange: Ignoring because programmaticUpdate is true");
+      programmaticUpdate.current = false;
+      return;
+    }
+
     setQuery(newQuery);
   }, []);
 
@@ -525,12 +541,7 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
         <QueryBuilder
           key={query.id}
           fields={fields}
-          query={(() => {
-            console.log("QueryBuilder render: Passing query prop:", query);
-            console.log("QueryBuilder render: Query ID:", query.id);
-            console.log("QueryBuilder render: Number of rules:", query.rules?.length);
-            return query;
-          })()}
+          query={query}
           onQueryChange={handleQueryChange}
           controlClassnames={{
             queryBuilder: styles.queryBuilder,
@@ -577,8 +588,13 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
           onSelectTemplate={(templateQuery) => {
             console.log("VisualQueryBuilder: Received template query:", templateQuery);
             console.log("VisualQueryBuilder: Current query before update:", query);
+
+            // Set flag to indicate this is a programmatic update
+            programmaticUpdate.current = true;
             setQuery(templateQuery);
+
             console.log("VisualQueryBuilder: setQuery called with:", templateQuery);
+            console.log("VisualQueryBuilder: programmaticUpdate flag set to true");
           }}
           onClose={() => setShowTemplates(false)}
         />
