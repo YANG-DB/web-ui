@@ -121,81 +121,124 @@ const templates = {
           }
         ]
       }
+    },
+    {
+      description: "Find dragons owned by persons (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "Own",
+            value: "Dragon"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons who are members of guilds (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "MemberOf",
+            value: "Guild"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons who know someone named George (complex)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "Know",
+            value: "Person"
+          },
+          {
+            field: "Person.firstName",
+            operator: "=",
+            value: "George"
+          }
+        ]
+      }
+    },
+    {
+      description: "Multi-relationship query with nested conditions (advanced)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "OriginatedIn",
+            value: "Kingdom"
+          },
+          {
+            field: "Kingdom.funds",
+            operator: ">",
+            value: "1000"
+          },
+          {
+            combinator: "and",
+            rules: [
+              {
+                field: "Dragon",
+                operator: "Fire",
+                value: "Dragon"
+              },
+              {
+                combinator: "and",
+                rules: [
+                  {
+                    field: "Dragon",
+                    operator: "Freeze",
+                    value: "Dragon"
+                  },
+                  {
+                    field: "Dragon.name",
+                    operator: "=",
+                    value: "morgan"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
     }
   ],
   linkedin: [
     {
-      description: "Find all persons working at companies",
+      description: "Find all persons by name",
       query: {
         combinator: "and",
         rules: [
           {
-            field: "relationship:Person-[WorksAt]->Company",
-            operator: "exists",
-            value: "exists"
+            field: "Person.name",
+            operator: "notNull",
+            value: null
           }
         ]
       }
     },
     {
-      description: "Find persons with specific skills",
+      description: "Find companies with specific attributes",
       query: {
         combinator: "and",
         rules: [
           {
-            field: "relationship:Person-[HasSkill]->Skill",
-            operator: "exists",
-            value: "exists"
+            field: "Company.name",
+            operator: "=",
+            value: ""
           }
         ]
       }
     },
     {
-      description: "Find persons who studied at a school",
-      query: {
-        combinator: "and",
-        rules: [
-          {
-            field: "relationship:Person-[StudiedAt]->School",
-            operator: "exists",
-            value: "exists"
-          }
-        ]
-      }
-    },
-    {
-      description: "Find connected persons (network)",
-      query: {
-        combinator: "and",
-        rules: [
-          {
-            field: "relationship:Person-[ConnectedTo]->Person",
-            operator: "exists",
-            value: "exists"
-          }
-        ]
-      }
-    },
-    {
-      description: "Find persons who published posts and got likes",
-      query: {
-        combinator: "and",
-        rules: [
-          {
-            field: "relationship:Person-[Published]->Post",
-            operator: "exists",
-            value: "exists"
-          },
-          {
-            field: "relationship:Person-[Liked]->Post",
-            operator: "exists",
-            value: "exists"
-          }
-        ]
-      }
-    },
-    {
-      description: "Find persons with positions at companies and their skills",
+      description: "Find entities with multiple attributes",
       query: {
         combinator: "and",
         rules: [
@@ -205,17 +248,153 @@ const templates = {
             value: null
           },
           {
+            field: "Person.email",
+            operator: "contains",
+            value: "@"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find entities using OR condition",
+      query: {
+        combinator: "or",
+        rules: [
+          {
+            field: "Company.industry",
+            operator: "=",
+            value: "Technology"
+          },
+          {
+            field: "Company.industry",
+            operator: "=",
+            value: "Finance"
+          }
+        ]
+      }
+    },
+    {
+      description: "Complex nested query example",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person.name",
+            operator: "notNull",
+            value: null
+          },
+          {
+            combinator: "or",
+            rules: [
+              {
+                field: "Person.title",
+                operator: "contains",
+                value: "Engineer"
+              },
+              {
+                field: "Person.title",
+                operator: "contains",
+                value: "Developer"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons working at companies (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "WorksAt",
+            value: "Company"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons connected to other persons (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "ConnectedTo",
+            value: "Person"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find companies founded by persons (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "Founded",
+            value: "Company"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons connected to someone named John (complex)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "ConnectedTo",
+            value: "Person"
+          },
+          {
+            field: "Person.name",
+            operator: "=",
+            value: "John Smith"
+          }
+        ]
+      }
+    },
+    {
+      description: "Multi-relationship LinkedIn query (advanced)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person",
+            operator: "WorksAt",
+            value: "Company"
+          },
+          {
+            field: "Company.industry",
+            operator: "=",
+            value: "Technology"
+          },
+          {
             combinator: "and",
             rules: [
               {
-                field: "relationship:Person-[HasPosition]->Position",
-                operator: "exists",
-                value: "exists"
+                field: "Person",
+                operator: "ConnectedTo",
+                value: "Person"
               },
               {
-                field: "relationship:Person-[HasSkill]->Skill",
-                operator: "exists",
-                value: "exists"
+                combinator: "and",
+                rules: [
+                  {
+                    field: "Person",
+                    operator: "Founded",
+                    value: "Company"
+                  },
+                  {
+                    field: "Person.title",
+                    operator: "contains",
+                    value: "CEO"
+                  }
+                ]
               }
             ]
           }
