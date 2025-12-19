@@ -6,6 +6,7 @@ import apiService from "../services/api";
 import styles from "./VisualQueryBuilder.module.css";
 import RelationshipValueEditor from "./RelationshipValueEditor";
 import RelationshipRuleActions from "./RelationshipRuleActions";
+import QueryTemplates from "./QueryTemplates";
 
 const initialQuery = {
   combinator: "and",
@@ -20,6 +21,11 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
   const [loadError, setLoadError] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewLanguage, setPreviewLanguage] = useState('json');
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  useEffect(() => {
+    console.log("Query state changed:", query);
+  }, [query]);
 
   useEffect(() => {
     // Load ontology and convert to query builder fields
@@ -53,7 +59,7 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
   }, [ontologyType]);
 
   const handleQueryChange = useCallback((newQuery) => {
-    console.log("Query changed:", newQuery);
+    console.log("handleQueryChange: Query changed:", newQuery);
     setQuery(newQuery);
   }, []);
 
@@ -495,6 +501,12 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
         <h3>Visual Query Builder</h3>
         <div className={styles.actions}>
           <button
+            onClick={() => setShowTemplates(true)}
+            className={styles.templatesButton}
+          >
+            📋 Templates
+          </button>
+          <button
             onClick={() => setShowPreview(!showPreview)}
             className={styles.previewButton}
           >
@@ -511,8 +523,14 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
 
       <div className={styles.queryBuilderWrapper}>
         <QueryBuilder
+          key={query.id}
           fields={fields}
-          query={query}
+          query={(() => {
+            console.log("QueryBuilder render: Passing query prop:", query);
+            console.log("QueryBuilder render: Query ID:", query.id);
+            console.log("QueryBuilder render: Number of rules:", query.rules?.length);
+            return query;
+          })()}
           onQueryChange={handleQueryChange}
           controlClassnames={{
             queryBuilder: styles.queryBuilder,
@@ -551,6 +569,19 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
             } />
           </div>
         </div>
+      )}
+
+      {showTemplates && (
+        <QueryTemplates
+          ontologyType={ontologyType}
+          onSelectTemplate={(templateQuery) => {
+            console.log("VisualQueryBuilder: Received template query:", templateQuery);
+            console.log("VisualQueryBuilder: Current query before update:", query);
+            setQuery(templateQuery);
+            console.log("VisualQueryBuilder: setQuery called with:", templateQuery);
+          }}
+          onClose={() => setShowTemplates(false)}
+        />
       )}
     </div>
   );

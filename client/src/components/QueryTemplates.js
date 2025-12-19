@@ -1,0 +1,327 @@
+import React, { useState, useEffect } from "react";
+import { QueryBuilder } from "react-querybuilder";
+import "react-querybuilder/dist/query-builder.css";
+import styles from "./QueryTemplates.module.css";
+import apiService from "../services/api";
+import { convertOntologyToQueryBuilderFields } from "../helpers/ontologyToQueryBuilder";
+
+// Simple ID generator (compatible with react-querybuilder's expected format)
+const generateId = () => {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+};
+
+// Helper function to add IDs to query structure
+const addIdsToQuery = (query) => {
+  const processedQuery = { ...query, id: generateId() };
+
+  if (query.rules) {
+    processedQuery.rules = query.rules.map(rule => {
+      if (rule.combinator) {
+        // It's a nested group
+        return addIdsToQuery(rule);
+      } else {
+        // It's a rule
+        return { ...rule, id: generateId() };
+      }
+    });
+  }
+
+  return processedQuery;
+};
+
+// Predefined query templates for different ontologies
+const templates = {
+  dragons: [
+    {
+      description: "Find all dragons owned by a specific person",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Person-[Own]->Dragon",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons who are members of a guild",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Person-[MemberOf]->Guild",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find dragons that can fire",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Dragon-[Fire]->Dragon",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find all horses owned by persons in a specific kingdom",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Person-[Own]->Horse",
+            operator: "exists",
+            value: "exists"
+          },
+          {
+            field: "relationship:Person-[RegisteredIn]->Kingdom",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons with their owned dragons and guild membership",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person.firstName",
+            operator: "notNull",
+            value: null
+          },
+          {
+            combinator: "or",
+            rules: [
+              {
+                field: "relationship:Person-[Own]->Dragon",
+                operator: "exists",
+                value: "exists"
+              },
+              {
+                field: "relationship:Person-[MemberOf]->Guild",
+                operator: "exists",
+                value: "exists"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  linkedin: [
+    {
+      description: "Find all persons working at companies",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Person-[WorksAt]->Company",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons with specific skills",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Person-[HasSkill]->Skill",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons who studied at a school",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Person-[StudiedAt]->School",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find connected persons (network)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Person-[ConnectedTo]->Person",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons who published posts and got likes",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "relationship:Person-[Published]->Post",
+            operator: "exists",
+            value: "exists"
+          },
+          {
+            field: "relationship:Person-[Liked]->Post",
+            operator: "exists",
+            value: "exists"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find persons with positions at companies and their skills",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Person.name",
+            operator: "notNull",
+            value: null
+          },
+          {
+            combinator: "and",
+            rules: [
+              {
+                field: "relationship:Person-[HasPosition]->Position",
+                operator: "exists",
+                value: "exists"
+              },
+              {
+                field: "relationship:Person-[HasSkill]->Skill",
+                operator: "exists",
+                value: "exists"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+};
+
+export default function QueryTemplates({ ontologyType, onSelectTemplate, onClose }) {
+  const ontologyTemplates = templates[ontologyType] || [];
+  const [fields, setFields] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Load ontology to get fields for the query builder preview
+    setIsLoading(true);
+    apiService.getOntology(ontologyType).then(ontologyData => {
+      const wrappedData = { data: [ontologyData] };
+      const queryFields = convertOntologyToQueryBuilderFields(wrappedData);
+      setFields(queryFields);
+      setIsLoading(false);
+    }).catch(error => {
+      console.error("Error loading ontology for templates:", error);
+      setIsLoading(false);
+    });
+  }, [ontologyType]);
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.header}>
+          <h2>Query Templates - {ontologyType.charAt(0).toUpperCase() + ontologyType.slice(1)}</h2>
+          <button className={styles.closeButton} onClick={onClose}>×</button>
+        </div>
+
+        <div className={styles.content}>
+          {isLoading ? (
+            <div className={styles.loading}>Loading templates...</div>
+          ) : ontologyTemplates.length === 0 ? (
+            <div className={styles.noTemplates}>
+              <p>No templates available for this ontology yet.</p>
+            </div>
+          ) : (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Query Structure</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ontologyTemplates.map((template, index) => (
+                  <tr key={index}>
+                    <td className={styles.descriptionCell}>
+                      {template.description}
+                    </td>
+                    <td className={styles.queryCell}>
+                      <div className={styles.queryBuilderPreview}>
+                        <QueryBuilder
+                          fields={fields}
+                          query={addIdsToQuery(template.query)}
+                          controlElements={{
+                            addRuleAction: () => null,
+                            addGroupAction: () => null,
+                            removeRuleAction: () => null,
+                            removeGroupAction: () => null,
+                            combinatorSelector: (props) => (
+                              <span className={styles.readOnlyCombinator}>{props.value}</span>
+                            ),
+                            fieldSelector: (props) => (
+                              <span className={styles.readOnlyField}>
+                                {fields.find(f => f.name === props.value)?.label || props.value}
+                              </span>
+                            ),
+                            operatorSelector: (props) => (
+                              <span className={styles.readOnlyOperator}>{props.value}</span>
+                            ),
+                            valueEditor: (props) => (
+                              <span className={styles.readOnlyValue}>
+                                {props.value || props.fieldData?.placeholder || 'exists'}
+                              </span>
+                            )
+                          }}
+                        />
+                      </div>
+                    </td>
+                    <td className={styles.actionCell}>
+                      <button
+                        className={styles.useButton}
+                        onClick={() => {
+                          // Add unique IDs to the query before passing it to the builder
+                          const queryWithIds = addIdsToQuery(template.query);
+                          console.log("Template selected:", template.description);
+                          console.log("Original template query:", template.query);
+                          console.log("Query with IDs:", queryWithIds);
+                          onSelectTemplate(queryWithIds);
+                          onClose();
+                        }}
+                      >
+                        Use Me
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
