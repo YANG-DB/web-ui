@@ -33,6 +33,8 @@ Build complex graph queries without writing code using an intuitive drag-and-dro
 ![Query Templates](docs/images/research-template-queries.png)
 *Pre-built query templates with visual preview*
 
+![Researech Query Response Graph Results](docs/images/schema-graph-results-details.png)
+*Detailed graph visualization with entity connections*
 📖 [Full Documentation](docs/VISUAL_QUERY_BUILDER.md)
 
 ---
@@ -58,8 +60,6 @@ View and manage GraphQL schemas for different ontologies.
 ![Schema Graph](docs/images/schema-person-graph.png)
 *Visual graph representation of entity relationships*
 
-![Schema Graph Results](docs/images/schema-graph-results-details.png)
-*Detailed graph visualization with entity connections*
 
 📖 [Full Documentation](docs/SCHEMA_VIEWER.md)
 
@@ -131,20 +131,6 @@ Interactive API documentation with a Swagger-like interface for exploring and te
 
 ---
 
-### 📈 Analytics Dashboard
-
-The main dashboard provides comprehensive data visualization and exploration.
-
-**Components**:
-- **Navigation Bar**: Access Schema, Research, Analytics, Report, Monitoring, and Management sections
-- **Query Interface**: Tabbed interface for managing multiple queries
-- **Summary View**: High-level overview of entity counts and statistics
-- **History Panel**: Log of recent queries and interactions
-- **Visualizations**: Graph views, timelines, and trend charts
-
-![Dashboard Overview](docs/images/dashboard-overview.png)
-
----
 
 ## Ontology Support
 
