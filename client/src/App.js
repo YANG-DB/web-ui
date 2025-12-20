@@ -1,6 +1,6 @@
 import React from "react";
 import { Header } from "./components";
-import { Research, Schema } from "./pages";
+import { Research, Schema, Api } from "./pages";
 import {
   BrowserRouter as Router,
   Switch,
@@ -12,7 +12,8 @@ import styles from "./App.module.css";
 
 const links = {
   SCHEMA: "schema",
-  RESEARCH: "research"
+  RESEARCH: "research",
+  API: "api"
 };
 
 export default function App() {
@@ -32,6 +33,9 @@ export default function App() {
           </Route>
           <Route path={`/${links.SCHEMA}`}>
             <Schema />
+          </Route>
+          <Route path={`/${links.API}`}>
+            <Api />
           </Route>
         </Switch>
       </div>
