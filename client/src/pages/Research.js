@@ -18,6 +18,8 @@ function Research({
   const [ontologies, setOntologies] = useState([]);
   const [selectedOntology, setSelectedOntology] = useState('dragons');
   const [useMockData, setUseMockData] = useState(false);
+  const [queryBuilderCollapsed, setQueryBuilderCollapsed] = useState(false);
+  const [resultsCollapsed, setResultsCollapsed] = useState(false);
 
   // Load available ontologies on mount
   useEffect(() => {
@@ -239,68 +241,118 @@ function Research({
             <span>Use Mock Data</span>
           </label>
         </div>
-        <Resizable
-          defaultSize={{
-            height: '40%',
-            width: '100%'
-          }}
-          minHeight={200}
-          maxHeight="80%"
-          enable={{
-            top: false,
-            right: false,
-            bottom: true,
-            left: false,
-            topRight: false,
-            bottomRight: false,
-            bottomLeft: false,
-            topLeft: false
-          }}
-          handleStyles={{
-            bottom: {
-              height: '12px',
-              bottom: '-6px',
-              cursor: 'row-resize',
-              background: 'linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 60%, transparent 100%)',
-              zIndex: 10
-            }
-          }}
-          handleComponent={{
-            bottom: (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  pointerEvents: 'none'
-                }}
-              >
+
+        {!queryBuilderCollapsed && (
+          <Resizable
+            defaultSize={{
+              height: '40%',
+              width: '100%'
+            }}
+            minHeight={200}
+            maxHeight="80%"
+            enable={{
+              top: false,
+              right: false,
+              bottom: !resultsCollapsed,
+              left: false,
+              topRight: false,
+              bottomRight: false,
+              bottomLeft: false,
+              topLeft: false
+            }}
+            handleStyles={{
+              bottom: {
+                height: '12px',
+                bottom: '-6px',
+                cursor: 'row-resize',
+                background: 'linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 60%, transparent 100%)',
+                zIndex: 10
+              }
+            }}
+            handleComponent={{
+              bottom: (
                 <div
                   style={{
-                    width: '80px',
-                    height: '6px',
-                    background: '#6a6a6a',
-                    borderRadius: '3px',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-                    transition: 'all 0.2s ease'
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    pointerEvents: 'none'
                   }}
-                  className="resize-handle-bar"
-                />
-              </div>
-            )
-          }}
-          style={{ marginBottom: '10px' }}
-        >
-          <VisualQueryBuilder onSubmit={onSubmit} ontologyType={selectedOntology} />
-        </Resizable>
-        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-          <Results results={results} />
-        </div>
+                >
+                  <div
+                    style={{
+                      width: '80px',
+                      height: '6px',
+                      background: '#6a6a6a',
+                      borderRadius: '3px',
+                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    className="resize-handle-bar"
+                  />
+                </div>
+              )
+            }}
+            style={{
+              marginBottom: '10px',
+              position: 'relative',
+              flex: resultsCollapsed ? 1 : undefined
+            }}
+          >
+            <button
+              onClick={() => setQueryBuilderCollapsed(true)}
+              className={researchStyles.collapseButton}
+              title="Collapse Query Builder"
+            >
+              ▲
+            </button>
+            <VisualQueryBuilder onSubmit={onSubmit} ontologyType={selectedOntology} />
+          </Resizable>
+        )}
+
+        {queryBuilderCollapsed && (
+          <div className={researchStyles.collapsedPanel}>
+            <span>Query Builder</span>
+            <button
+              onClick={() => setQueryBuilderCollapsed(false)}
+              className={researchStyles.expandButton}
+              title="Expand Query Builder"
+            >
+              ▼
+            </button>
+          </div>
+        )}
+
+        {!resultsCollapsed && (
+          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+            <button
+              onClick={() => setResultsCollapsed(true)}
+              className={researchStyles.collapseButton}
+              title="Collapse Results"
+            >
+              ▼
+            </button>
+            <Results results={results} />
+          </div>
+        )}
+
+        {resultsCollapsed && (
+          <div className={researchStyles.collapsedPanel}>
+            <span>Results</span>
+            <button
+              onClick={() => setResultsCollapsed(false)}
+              className={researchStyles.expandButton}
+              title="Expand Results"
+            >
+              ▲
+            </button>
+          </div>
+        )}
       </div>
       {/* Aggregates/Trends panel removed */}
     </div>
