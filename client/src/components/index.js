@@ -17,6 +17,9 @@ import AssignmentItem from "./AssignmentItem";
 import Card from "./Card";
 import VisualQueryBuilder from "./VisualQueryBuilder";
 import RelationshipValueEditor from "./RelationshipValueEditor";
+import Table from "./Table";
+import EntityList from "./EntityList";
+import JsonView from "./JsonView";
 
 export {
   TextArea,
@@ -37,5 +40,8 @@ export {
   AssignmentItem,
   Card,
   VisualQueryBuilder,
-  RelationshipValueEditor
+  RelationshipValueEditor,
+  Table,
+  EntityList,
+  JsonView
 };

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Resizable } from "re-resizable";
 import cn from "classnames";
-import { HistoryItem, Force, List, ForceMenu, Card } from "../components";
+import { HistoryItem, Force, List, ForceMenu, Card, Table, EntityList, JsonView } from "../components";
 import { extractResults } from "../helpers";
 import styles from "./Results.module.css";
 import globalStyles from "../App.module.css";
@@ -10,7 +10,8 @@ let timelineHeight = 300;
 const types = {
   TABLE: "table",
   LIST: "list",
-  GRAPH: "graph"
+  GRAPH: "graph",
+  JSON: "json"
 };
 
 function isMaximisable(type) {
@@ -20,14 +21,11 @@ function isMaximisable(type) {
 function showResults(type, results, isMaximised) {
   switch (type) {
     case types.TABLE:
-      return <div></div>;
+      return <Table results={results} />;
     case types.LIST:
-      return (
-        <List
-          results={results.data.assignments}
-          pattern={results.data.pattern}
-        />
-      );
+      return <EntityList results={results} />;
+    case types.JSON:
+      return <JsonView results={results} />;
     case types.GRAPH: {
       return isMaximised ? (
         <ForceMenu results={results} />

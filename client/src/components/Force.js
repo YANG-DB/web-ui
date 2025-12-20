@@ -43,9 +43,12 @@ export default function Force({ results, hoveredIndex }) {
   const containerRef = useRef(null);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
 
+  console.log("🔄 Force component render - results:", results);
   const r = extractResults(results);
+  console.log("📊 Extracted results - entities:", r.entities.length, "relationships:", r.relationships.length);
 
   useEffect(() => {
+    console.log("🎨 Force useEffect triggered - containerRef exists:", !!containerRef.current);
     if (!containerRef.current) return;
 
     // Process entities and relationships
@@ -61,6 +64,14 @@ export default function Force({ results, hoveredIndex }) {
       source: rel.eID1,
       target: rel.eID2
     }));
+
+    console.log("🔧 Processed for Cytoscape - entities:", entities.length, "relationships:", relationships.length);
+    if (entities.length > 0) {
+      console.log("  Sample entity:", entities[0]);
+    }
+    if (relationships.length > 0) {
+      console.log("  Sample relationship:", relationships[0]);
+    }
 
     // Calculate degree (number of connections) for each node
     const degreeMap = new Map();
@@ -99,6 +110,7 @@ export default function Force({ results, hoveredIndex }) {
     ];
 
     // Initialize Cytoscape
+    console.log("🚀 Initializing Cytoscape with", elements.length, "elements");
     const cy = cytoscape({
       container: containerRef.current,
       elements: elements,
@@ -213,6 +225,9 @@ export default function Force({ results, hoveredIndex }) {
     });
 
     cyRef.current = cy;
+    console.log("✅ Cytoscape instance created and stored in ref");
+    console.log("  - Nodes count:", cy.nodes().length);
+    console.log("  - Edges count:", cy.edges().length);
 
     // Add click handler for expand/collapse
     cy.on('tap', 'node', function(evt) {
