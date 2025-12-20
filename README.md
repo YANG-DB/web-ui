@@ -27,10 +27,10 @@ Build complex graph queries without writing code using an intuitive drag-and-dro
 - **Mock Data Mode**: Test queries with generated sample data when backend is unavailable
 - **Collapsible Panels**: Minimize query builder or results to maximize workspace
 
-![Visual Query Builder](docs/images/visual-query-builder.png)
+![Visual Query Builder](docs/images/research-visual-query-builder.png)
 *Query builder with template selector and mock data toggle*
 
-![Query Templates](docs/images/query-templates.png)
+![Query Templates](docs/images/research-template-queries.png)
 *Pre-built query templates with visual preview*
 
 📖 [Full Documentation](docs/VISUAL_QUERY_BUILDER.md)
@@ -47,8 +47,19 @@ View and manage GraphQL schemas for different ontologies.
 - **Auto-Generated Types**: Entity types, relationships, and properties
 - **Schema Validation**: Real-time syntax checking
 - **Export/Import**: Share and backup schemas
+- **Graph Visualization**: Interactive entity relationship diagrams
 
-![Schema Viewer](docs/images/schema-viewer.png)
+![Schema Person View](docs/images/schema-person.png)
+*Entity type viewer showing Person attributes and relationships*
+
+![Schema Fields](docs/images/schema-fields.png)
+*Detailed field definitions for entity types*
+
+![Schema Graph](docs/images/schema-person-graph.png)
+*Visual graph representation of entity relationships*
+
+![Schema Graph Results](docs/images/schema-graph-results-details.png)
+*Detailed graph visualization with entity connections*
 
 📖 [Full Documentation](docs/SCHEMA_VIEWER.md)
 
@@ -88,17 +99,35 @@ View query results in multiple interactive formats with rich visualization optio
 - **Graph Controls**: Adjust layout parameters in real-time
 - **Maximize Graph**: Full-screen graph view with menu overlay
 
-![Graph View](docs/images/results-graph-view.png)
-*Cytoscape.js network visualization with connectivity-based node sizing*
+![Research Results](docs/images/research-results.png)
+*Complete research interface showing query builder, results visualization, and multiple view modes*
 
-![Table View](docs/images/results-table-view.png)
-*Tabular results grouped by entity type*
+---
 
-![List View](docs/images/results-list-view.png)
-*Card-based entity list with property details*
+### 📡 API Documentation
 
-![JSON View](docs/images/results-json-view.png)
-*Raw JSON data with syntax highlighting and export options*
+Interactive API documentation with a Swagger-like interface for exploring and testing endpoints.
+
+**Key Features**:
+- **Endpoint Browser**: List of all available API endpoints
+- **HTTP Method Color Coding**: Visual distinction for GET, POST, PUT, DELETE
+- **Parameter Documentation**: Detailed parameter definitions with types and requirements
+- **Request/Response Examples**: Sample JSON payloads for each endpoint
+- **Try It Out**: Interactive testing directly from the documentation
+- **Real-time Execution**: Test API calls and view responses inline
+
+**Available Endpoints**:
+- `GET /api/ontologies` - List available ontologies
+- `GET /api/ontology?type={type}` - Get ontology data
+- `POST /api/results` - Execute queries
+- `POST /api/update` - Expand results for specific nodes
+- `GET /api/schema` - List saved schemas
+- `GET /api/schema/:id` - Get specific schema
+- `POST /api/schema` - Save new schema
+- `GET /api/structure` - Get database structure
+
+![API Documentation](docs/images/api-swagger.png)
+*Swagger-like API documentation interface with interactive endpoint testing*
 
 ---
 
@@ -140,7 +169,7 @@ A professional networking ontology for social and business data.
 ## Application Architecture
 
 ### Frontend (React)
-- **Pages**: Schema, Research, Analytics, Report, Monitoring, Management
+- **Pages**: Schema, Research, API, Analytics, Report, Monitoring, Management
 - **Components**:
   - `VisualQueryBuilder` - Query building interface with templates
   - `Results` - Multi-view results display
@@ -217,6 +246,20 @@ A professional networking ontology for social and business data.
 4. Explore entity types and relationships
 5. Use actions menu to export/share
 
+### Exploring API Documentation
+
+1. Navigate to **API** tab
+2. Browse the list of available endpoints on the left
+3. Click any endpoint to view details:
+   - HTTP method and path
+   - Parameter definitions and requirements
+   - Example request body (for POST requests)
+   - Example response structure
+4. Use "Try It Out" to test endpoints:
+   - Edit the request body JSON for POST requests
+   - Click "Execute" to send the request
+   - View the response status and data inline
+
 ---
 
 ## Documentation
@@ -280,49 +323,26 @@ When adding new features:
 
 ---
 
-## Screenshots Needed
+## Screenshots
 
-To complete the documentation, please add the following screenshots to `/docs/images`:
+All screenshots are available in `/docs/images`:
 
-### Visual Query Builder
-- `visual-query-builder.png` - Overview of the query builder interface with ontology selector
-- `query-templates.png` - Query templates modal showing pre-built examples
-- `query-templates-dragons.png` - Dragons ontology templates (9 examples)
-- `query-templates-linkedin.png` - LinkedIn ontology templates (10 examples)
-- `query-entity-selection.png` - Entity selection dropdown
-- `query-relationship-operators.png` - Relationship operator selection
-- `query-property-filters.png` - Property filter interface
-- `query-expansion-before.png` - Relationship rule with "+" button
-- `query-expansion-after.png` - Expanded nested subgroup
-- `query-preview.png` - Query preview panel with syntax highlighting
-- `query-nested-groups.png` - Complex nested AND/OR groups
-- `query-multi-level.png` - Multi-level relationship chains
-- `mock-data-toggle.png` - Mock data checkbox enabled
-
-### Results Visualization
-- `results-graph-view.png` - Cytoscape.js network graph with controls
-- `results-graph-controls.png` - Edge length and node repulsion sliders
-- `results-graph-fullscreen.png` - Maximized graph view
-- `results-table-view.png` - Table view showing entity properties in columns
-- `results-list-view.png` - Card-based list view with entity details
-- `results-json-view.png` - JSON view with syntax highlighting
-- `results-json-collapsed.png` - JSON view with collapsed sections
-- `results-json-export.png` - JSON export controls (copy/download)
-- `results-view-switcher.png` - View mode buttons (table/list/graph/json)
-- `results-connectivity-gradient.png` - Nodes colored by connectivity
-
-### Panel Management
-- `panel-collapse-query.png` - Query builder collapsed, results expanded
-- `panel-collapse-results.png` - Results collapsed, query builder expanded
-- `panel-both-expanded.png` - Both panels visible with resize handle
+### Research Page
+- `research-visual-query-builder.png` - Query builder interface with ontology selector and controls
+- `research-template-queries.png` - Pre-built query templates modal
+- `research-results.png` - Complete research interface with query builder and results visualization
 
 ### Schema Viewer
-- `schema-viewer.png` - Overview of schema viewer
-- `schema-ontology-selector.png` - Ontology selector in Schema tab
-- `schema-graphql-view.png` - GraphQL schema display
-- `schema-dragons-ontology.png` - Visual graph of Dragons ontology
-- `schema-linkedin-ontology.png` - Visual graph of LinkedIn ontology
-- `schema-actions.png` - Schema actions menu
+- `schema-person.png` - Entity type viewer showing Person attributes and relationships
+- `schema-fields.png` - Detailed field definitions for entity types
+- `schema-person-graph.png` - Visual graph representation of entity relationships
+- `schema-graph-results-details.png` - Detailed graph visualization with entity connections
+
+### API Documentation
+- `api-swagger.png` - Swagger-like API documentation interface
+
+### Dashboard
+- `dashboard-overview.png` - Main analytics dashboard overview
 
 ---
 
