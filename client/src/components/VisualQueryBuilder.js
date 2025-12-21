@@ -295,7 +295,30 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
             const nested = rule.rules.map(r => processSQLRule(r)).filter(Boolean);
             return nested.length > 0 ? `(${nested.join(` ${rule.combinator.toUpperCase()} `)})` : null;
           }
+
+          // Check if this is a relationship operator
+          if (rule.operator && ontology && ontology.data && ontology.data[0]) {
+            const { relationshipTypes } = ontology.data[0];
+            if (relationshipTypes) {
+              const relationship = relationshipTypes.find(r => r.rType === rule.operator);
+              if (relationship) {
+                // This is a relationship query, not a property filter
+                const sourceEntity = rule.field;
+                const relType = rule.operator;
+                const targetEntity = rule.value;
+                return `${sourceEntity} ${relType} ${targetEntity}`;
+              }
+            }
+          }
+
+          // Handle property filters
           const [table, field] = rule.field.split('.');
+
+          // If there's no field (just entity name), skip it
+          if (!field) {
+            return null;
+          }
+
           let condition = '';
           switch (rule.operator) {
             case '=': condition = `${table}.${field} = '${rule.value}'`; break;
@@ -354,14 +377,27 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
       case 'cypher':
         // Neo4j Cypher-like conversion
         const cypherRelationships = [];
+        const cypherConditions = [];
+        const varMap = {}; // Maps entity types to variable names
+        let varCounter = 0;
 
-        const processCypherRule = (rule) => {
+        // Helper to get or create a variable name for an entity type
+        const getVarName = (entityType) => {
+          if (!varMap[entityType]) {
+            const baseVar = entityType.toLowerCase().charAt(0);
+            varMap[entityType] = varCounter === 0 ? baseVar : `${baseVar}${varCounter}`;
+            varCounter++;
+          }
+          return varMap[entityType];
+        };
+
+        const processCypherRule = (rule, depth = 0) => {
           if ('rules' in rule) {
-            const nested = rule.rules.map(r => processCypherRule(r)).filter(Boolean);
+            const nested = rule.rules.map(r => processCypherRule(r, depth + 1)).filter(Boolean);
             return nested.length > 0 ? `(${nested.join(` ${rule.combinator.toUpperCase()} `)})` : null;
           }
 
-          // Handle simple relationship operator format (e.g., operator="Own", field="Person", value="Dragon")
+          // Handle relationship operator format (e.g., operator="Own", field="Person", value="Dragon")
           if (rule.operator && ontology && ontology.data && ontology.data[0]) {
             const { relationshipTypes } = ontology.data[0];
             if (relationshipTypes) {
@@ -371,96 +407,69 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
                 const relType = rule.operator;
                 const targetEntity = rule.value;
 
+                const sourceVar = getVarName(sourceEntity);
+                const targetVar = getVarName(targetEntity);
+                const relVar = `r${cypherRelationships.length}`;
+
                 cypherRelationships.push({
-                  source: sourceEntity.toLowerCase(),
-                  relation: relType.toUpperCase(),
-                  target: targetEntity.toLowerCase(),
-                  exists: true
+                  sourceVar,
+                  sourceType: sourceEntity,
+                  relVar,
+                  relType: relType.toUpperCase(),
+                  targetVar,
+                  targetType: targetEntity
                 });
                 return null; // Handled in MATCH pattern
               }
             }
           }
 
-          // Handle new relationship operator format (old pattern style)
-          if (rule.operator && rule.operator.startsWith('-[') && rule.operator.endsWith(']->')) {
-            const relTypeMatch = rule.operator.match(/-\[(.+)\]->/);
-            if (relTypeMatch) {
-              const sourceEntity = rule.field;
-              const relType = relTypeMatch[1];
-              const targetEntity = rule.value;
-
-              cypherRelationships.push({
-                source: sourceEntity.toLowerCase(),
-                relation: relType.toUpperCase(),
-                target: targetEntity.toLowerCase(),
-                exists: true
-              });
-              return null; // Handled in MATCH pattern
-            }
-          }
-
-          // Handle relationship patterns (old format)
-          if (rule.field.startsWith('relationship:')) {
-            const relationshipPattern = rule.field.replace('relationship:', '');
-
-            if (relationshipPattern.includes('.')) {
-              // Relationship with property: Person-[MemberOf]->Guild.startDate
-              const [relPath, property] = relationshipPattern.split('.');
-              const match = relPath.match(/(.+)-\[(.+)\]->(.+)/);
-              if (match) {
-                const [, sourceEntity, relType, targetEntity] = match;
-                cypherRelationships.push({
-                  source: sourceEntity.toLowerCase(),
-                  relation: relType.toUpperCase(),
-                  target: targetEntity.toLowerCase(),
-                  property: property
-                });
-                return `r.${property} ${rule.operator} '${rule.value}'`;
-              }
-            } else {
-              // Relationship existence: Person-[MemberOf]->Guild
-              const match = relationshipPattern.match(/(.+)-\[(.+)\]->(.+)/);
-              if (match) {
-                const [, sourceEntity, relType, targetEntity] = match;
-                cypherRelationships.push({
-                  source: sourceEntity.toLowerCase(),
-                  relation: relType.toUpperCase(),
-                  target: targetEntity.toLowerCase(),
-                  exists: rule.value === 'exists'
-                });
-                return null; // Existence is handled in MATCH pattern
-              }
-            }
-          }
-
-          // Regular property
+          // Handle property filters
           const parts = rule.field.split('.');
-          const property = parts[1];
-          let condition = '';
-          switch (rule.operator) {
-            case '=': condition = `n.${property} = '${rule.value}'`; break;
-            case '!=': condition = `n.${property} <> '${rule.value}'`; break;
-            case 'contains': condition = `n.${property} CONTAINS '${rule.value}'`; break;
-            case 'beginsWith': condition = `n.${property} STARTS WITH '${rule.value}'`; break;
-            case 'endsWith': condition = `n.${property} ENDS WITH '${rule.value}'`; break;
-            case '<': case '>': case '<=': case '>=':
-              condition = `n.${property} ${rule.operator} ${rule.value}`; break;
-            case 'null': condition = `n.${property} IS NULL`; break;
-            case 'notNull': condition = `n.${property} IS NOT NULL`; break;
-            default: condition = `n.${property} ${rule.operator} '${rule.value}'`;
+          if (parts.length === 2) {
+            const [entityType, property] = parts;
+            const varName = getVarName(entityType);
+
+            let condition = '';
+            switch (rule.operator) {
+              case '=': condition = `${varName}.${property} = '${rule.value}'`; break;
+              case '!=': condition = `${varName}.${property} <> '${rule.value}'`; break;
+              case 'contains': condition = `${varName}.${property} CONTAINS '${rule.value}'`; break;
+              case 'beginsWith': condition = `${varName}.${property} STARTS WITH '${rule.value}'`; break;
+              case 'endsWith': condition = `${varName}.${property} ENDS WITH '${rule.value}'`; break;
+              case '<': case '>': case '<=': case '>=':
+                condition = `${varName}.${property} ${rule.operator} ${rule.value}`; break;
+              case 'null': condition = `${varName}.${property} IS NULL`; break;
+              case 'notNull': condition = `${varName}.${property} IS NOT NULL`; break;
+              default: condition = `${varName}.${property} ${rule.operator} '${rule.value}'`;
+            }
+            return condition;
           }
-          return condition;
+
+          return null;
         };
 
         const cypherWhere = processCypherRule(query);
 
         // Generate Cypher query with relationship patterns
         if (cypherRelationships.length > 0) {
-          const rel = cypherRelationships[0];
-          let matchPattern = `MATCH (a:${rel.source.charAt(0).toUpperCase() + rel.source.slice(1)})-[r:${rel.relation}]->(b:${rel.target.charAt(0).toUpperCase() + rel.target.slice(1)})`;
+          // Build MATCH patterns for all relationships
+          const matchPatterns = cypherRelationships.map(rel =>
+            `(${rel.sourceVar}:${rel.sourceType})-[${rel.relVar}:${rel.relType}]->(${rel.targetVar}:${rel.targetType})`
+          );
+
+          let matchClause = `MATCH ${matchPatterns.join(', ')}`;
           let whereClause = cypherWhere ? `\nWHERE ${cypherWhere}` : '';
-          content = `${matchPattern}${whereClause}\nRETURN a, r, b`;
+
+          // Return all variables
+          const returnVars = [];
+          cypherRelationships.forEach(rel => {
+            if (!returnVars.includes(rel.sourceVar)) returnVars.push(rel.sourceVar);
+            returnVars.push(rel.relVar);
+            if (!returnVars.includes(rel.targetVar)) returnVars.push(rel.targetVar);
+          });
+
+          content = `${matchClause}${whereClause}\nRETURN ${returnVars.join(', ')}`;
           return { __html: syntaxHighlight(content, 'cypher') };
         }
 

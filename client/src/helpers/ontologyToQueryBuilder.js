@@ -286,30 +286,326 @@ export function queryBuilderToGraphQLQuery(ruleGroup, ontologyData) {
 
   const whereClause = processRule(ruleGroup);
 
-  // Generate query with relationship patterns
+  // Collect property conditions for filtering
+  const propertyConditions = [];
+  const collectConditions = (rule) => {
+    if ('rules' in rule) {
+      rule.rules.forEach(r => collectConditions(r));
+    } else {
+      // Check if it's a property filter (not a relationship)
+      if (rule.field.includes('.') && rule.operator !== 'Own' && rule.operator !== 'MemberOf' &&
+          (!ontologyData?.data?.[0]?.relationshipTypes?.find(r => r.rType === rule.operator))) {
+        propertyConditions.push({
+          field: rule.field,
+          operator: rule.operator,
+          value: rule.value
+        });
+      }
+    }
+  };
+  collectConditions(ruleGroup);
+
+  // Generate query using nested relationship resolvers
   if (relationships.length > 0) {
     let query = 'query {\n';
+
+    // Build a graph of entity connections to detect disconnected components
+    const entityGraph = {};
     relationships.forEach(rel => {
-      query += `  # Pattern: ${rel.source} -[${rel.relation}]-> ${rel.target}\n`;
-      query += `  ${rel.source.toLowerCase()}s {\n`;
-      query += `    id\n`;
-      query += `    ${rel.relation.toLowerCase()} {\n`;
-      query += `      ... on ${rel.target} {\n`;
-      query += `        id\n`;
-      if (rel.property) {
-        query += `        ${rel.property}\n`;
-      }
-      query += `      }\n`;
-      query += `    }\n`;
-      query += `  }\n`;
+      if (!entityGraph[rel.source]) entityGraph[rel.source] = new Set();
+      if (!entityGraph[rel.target]) entityGraph[rel.target] = new Set();
+      entityGraph[rel.source].add(rel.target);
+      entityGraph[rel.target].add(rel.source); // Treat as undirected for connectivity
     });
+
+    // Find connected components using DFS
+    const visited = new Set();
+    const components = [];
+
+    const dfs = (entity, component) => {
+      if (visited.has(entity)) return;
+      visited.add(entity);
+      component.add(entity);
+      const neighbors = entityGraph[entity] || new Set();
+      neighbors.forEach(neighbor => dfs(neighbor, component));
+    };
+
+    Object.keys(entityGraph).forEach(entity => {
+      if (!visited.has(entity)) {
+        const component = new Set();
+        dfs(entity, component);
+        components.push(component);
+      }
+    });
+
+    // If multiple disconnected components, add a note
+    if (components.length > 1) {
+      query += `  # NOTE: This query contains ${components.length} disconnected graph patterns.\n`;
+      query += `  # Each pattern is queried independently.\n\n`;
+    }
+
+    // Process each connected component
+    components.forEach((componentEntities, compIndex) => {
+      // Find relationships in this component
+      const componentRels = relationships.filter(rel =>
+        componentEntities.has(rel.source) && componentEntities.has(rel.target)
+      );
+
+      // Determine the root entity for this component
+      const entityFrequency = {};
+      componentRels.forEach(rel => {
+        entityFrequency[rel.source] = (entityFrequency[rel.source] || 0) + 1;
+      });
+
+      // Also consider entities with property conditions as potential roots
+      propertyConditions.forEach(cond => {
+        const [entityType] = cond.field.split('.');
+        if (componentEntities.has(entityType)) {
+          entityFrequency[entityType] = (entityFrequency[entityType] || 0) + 2; // Weight property filters higher
+        }
+      });
+
+      // Find root entity (highest frequency)
+      let rootEntity = null;
+      let maxFreq = 0;
+      Object.entries(entityFrequency).forEach(([entity, freq]) => {
+        if (freq > maxFreq) {
+          maxFreq = freq;
+          rootEntity = entity;
+        }
+      });
+
+      // Fallback to first relationship source in this component
+      if (!rootEntity && componentRels.length > 0) {
+        rootEntity = componentRels[0].source;
+      }
+
+      if (!rootEntity) {
+        return;
+      }
+
+      const rootEntityLower = rootEntity.toLowerCase();
+      const rootConditions = propertyConditions.filter(cond => {
+        const [entityType] = cond.field.split('.');
+        return entityType === rootEntity;
+      });
+
+      // Detect correlated multi-relationship pattern
+      // If root entity has multiple self-referential relationships, use correlated query
+      const rootRelationships = componentRels.filter(rel => rel.source === rootEntity);
+      const selfReferentialRels = rootRelationships.filter(rel =>
+        rel.source === rel.target && rel.source === rootEntity
+      );
+
+      // Check if this is a correlated query pattern
+      const isCorrelatedPattern = selfReferentialRels.length >= 2;
+
+      if (isCorrelatedPattern) {
+        // Use the correlated multi-relationship resolver
+        const relPart = selfReferentialRels.map(r => r.relation).sort().join('And');
+        const queryName = `${rootEntityLower}sWith${relPart}`;
+
+        // Build where clause for correlated query
+        let whereClause = '';
+        if (rootConditions.length > 0) {
+          const whereFilters = rootConditions.map(cond => {
+            const [, property] = cond.field.split('.');
+            const operator = cond.operator;
+            const value = cond.value;
+
+            switch (operator) {
+              case '=': return `${property}: "${value}"`;
+              case '!=': return `${property}_not: "${value}"`;
+              case 'contains': return `${property}_contains: "${value}"`;
+              case 'beginsWith': return `${property}_starts_with: "${value}"`;
+              case 'endsWith': return `${property}_ends_with: "${value}"`;
+              case '<': return `${property}_lt: ${value}`;
+              case '>': return `${property}_gt: ${value}`;
+              case '<=': return `${property}_lte: ${value}`;
+              case '>=': return `${property}_gte: ${value}`;
+              case 'null': return `${property}: null`;
+              case 'notNull': return `${property}_not: null`;
+              default: return `${property}: "${value}"`;
+            }
+          });
+          whereClause = `where: { ${whereFilters.join(', ')} }`;
+        }
+
+        // Generate correlated query
+        const resultAlias = components.length > 1 ? `component${compIndex}` : queryName;
+        query += `  # Correlated query: ${rootEntity} with ALL relationships: ${selfReferentialRels.map(r => r.relation).join(', ')}\n`;
+        query += `  ${resultAlias}: ${queryName}(${whereClause ? whereClause + ', ' : ''}limit: 10) {\n`;
+        query += `    id\n`;
+
+        // Add root entity properties
+        if (ontologyData && ontologyData.data && ontologyData.data[0]) {
+          const rootEntityDef = ontologyData.data[0].entityTypes?.find(e => e.eType === rootEntity);
+          if (rootEntityDef && rootEntityDef.properties) {
+            rootEntityDef.properties
+              .filter(prop => !rootEntityDef.metadata?.includes(prop))
+              .slice(0, 3)
+              .forEach(prop => {
+                query += `    ${prop}\n`;
+              });
+          }
+        }
+
+        query += `  }\n`;
+        return; // Skip normal nested query generation for this component
+      }
+
+      // Build where clause for root entity
+      let whereClause = '';
+      if (rootConditions.length > 0) {
+        const whereFilters = rootConditions.map(cond => {
+          const [, property] = cond.field.split('.');
+          const operator = cond.operator;
+          const value = cond.value;
+
+          // Map operators to GraphQL filter syntax
+          switch (operator) {
+            case '=': return `${property}: "${value}"`;
+            case '!=': return `${property}_not: "${value}"`;
+            case 'contains': return `${property}_contains: "${value}"`;
+            case 'beginsWith': return `${property}_starts_with: "${value}"`;
+            case 'endsWith': return `${property}_ends_with: "${value}"`;
+            case '<': return `${property}_lt: ${value}`;
+            case '>': return `${property}_gt: ${value}`;
+            case '<=': return `${property}_lte: ${value}`;
+            case '>=': return `${property}_gte: ${value}`;
+            case 'null': return `${property}: null`;
+            case 'notNull': return `${property}_not: null`;
+            default: return `${property}: "${value}"`;
+          }
+        });
+        whereClause = `where: { ${whereFilters.join(', ')} }`;
+      }
+
+      // Start query from root entity
+      const resultAlias = components.length > 1 ? `component${compIndex}` : rootEntityLower + 's';
+      query += `  ${resultAlias}: ${rootEntityLower}s(${whereClause ? whereClause + ', ' : ''}limit: 10) {\n`;
+      query += `    id\n`;
+
+      // Add root entity properties
+      if (ontologyData && ontologyData.data && ontologyData.data[0]) {
+        const rootEntityDef = ontologyData.data[0].entityTypes?.find(e => e.eType === rootEntity);
+        if (rootEntityDef && rootEntityDef.properties) {
+          rootEntityDef.properties
+            .filter(prop => !rootEntityDef.metadata?.includes(prop))
+            .slice(0, 3)
+            .forEach(prop => {
+              query += `    ${prop}\n`;
+            });
+        }
+      }
+
+      // Group relationships by source entity (only for this component)
+      const relationshipsBySource = {};
+      componentRels.forEach(rel => {
+        if (!relationshipsBySource[rel.source]) {
+          relationshipsBySource[rel.source] = [];
+        }
+        relationshipsBySource[rel.source].push(rel);
+      });
+
+      // Add nested relationship resolvers for root entity
+      const nestedRootRels = relationshipsBySource[rootEntity] || [];
+      nestedRootRels.forEach(rel => {
+        const relFieldName = rel.relation.toLowerCase();
+        const targetConditions = propertyConditions.filter(cond => {
+          const [entityType] = cond.field.split('.');
+          return entityType === rel.target;
+        });
+
+        // Build where clause for relationship target
+        let relWhereClause = '';
+        if (targetConditions.length > 0) {
+          const filters = targetConditions.map(cond => {
+            const [, property] = cond.field.split('.');
+            switch (cond.operator) {
+              case '=': return `${property}: "${cond.value}"`;
+              case '!=': return `${property}_not: "${cond.value}"`;
+              case 'contains': return `${property}_contains: "${cond.value}"`;
+              case '>': return `${property}_gt: ${cond.value}`;
+              default: return `${property}: "${cond.value}"`;
+            }
+          });
+          relWhereClause = `filter: { ${filters.join(', ')} }`;
+        }
+
+        query += `    # Relationship: ${rel.source} -[${rel.relation}]-> ${rel.target}\n`;
+        query += `    ${relFieldName}(${relWhereClause ? relWhereClause + ', ' : ''}limit: 10) {\n`;
+        query += `      id\n`;
+
+        // Add target entity properties
+        if (ontologyData && ontologyData.data && ontologyData.data[0]) {
+          const targetEntityDef = ontologyData.data[0].entityTypes?.find(e => e.eType === rel.target);
+          if (targetEntityDef && targetEntityDef.properties) {
+            targetEntityDef.properties
+              .filter(prop => !targetEntityDef.metadata?.includes(prop))
+              .slice(0, 3)
+              .forEach(prop => {
+                query += `      ${prop}\n`;
+              });
+          }
+        }
+
+        // Recursively add nested relationships from target entity
+        const nestedRelationships = relationshipsBySource[rel.target] || [];
+        nestedRelationships.forEach(nestedRel => {
+          const nestedFieldName = nestedRel.relation.toLowerCase();
+          query += `      # Nested: ${nestedRel.source} -[${nestedRel.relation}]-> ${nestedRel.target}\n`;
+          query += `      ${nestedFieldName}(limit: 10) {\n`;
+          query += `        id\n`;
+
+          // Add nested target properties
+          if (ontologyData && ontologyData.data && ontologyData.data[0]) {
+            const nestedTargetDef = ontologyData.data[0].entityTypes?.find(e => e.eType === nestedRel.target);
+            if (nestedTargetDef && nestedTargetDef.properties) {
+              nestedTargetDef.properties
+                .filter(prop => !nestedTargetDef.metadata?.includes(prop))
+                .slice(0, 3)
+                .forEach(prop => {
+                  query += `        ${prop}\n`;
+                });
+            }
+          }
+
+          query += `      }\n`;
+        });
+
+        query += `    }\n`;
+      });
+
+      query += `  }\n`;
+    }); // End of components.forEach
+
     query += '}';
     return query;
   }
 
   // Generate a simple query structure for entity properties
-  if (whereClause) {
-    return `query {\n  ${Array.from(entityTypes).join(', ')} {\n    where: ${whereClause}\n  }\n}`;
+  if (whereClause && entityTypes.size > 0) {
+    let query = 'query {\n';
+    entityTypes.forEach(entityType => {
+      const entityLower = entityType.toLowerCase();
+      query += `  ${entityLower}s(limit: 10) {\n`;
+      query += `    id\n`;
+      // Add entity properties
+      if (ontologyData && ontologyData.data && ontologyData.data[0]) {
+        const entity = ontologyData.data[0].entityTypes?.find(e => e.eType === entityType);
+        if (entity && entity.properties) {
+          entity.properties
+            .filter(prop => !entity.metadata?.includes(prop))
+            .forEach(prop => {
+              query += `    ${prop}\n`;
+            });
+        }
+      }
+      query += `  }\n`;
+    });
+    query += '}';
+    return query;
   }
 
   return '';
