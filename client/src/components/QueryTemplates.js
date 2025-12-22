@@ -401,6 +401,168 @@ const templates = {
         ]
       }
     }
+  ],
+  flights: [
+    {
+      description: "Find all flights by flight number",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Flight.flightNum",
+            operator: "notNull",
+            value: null
+          }
+        ]
+      }
+    },
+    {
+      description: "Find flights by carrier",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Flight.carrier",
+            operator: "=",
+            value: "OpenSearch-Air"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find delayed flights",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Flight.flightDelay",
+            operator: "=",
+            value: "true"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find flights with price range",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Flight.avgTicketPrice",
+            operator: ">",
+            value: "500"
+          },
+          {
+            field: "Flight.avgTicketPrice",
+            operator: "<",
+            value: "1000"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find flights using OR condition (multiple carriers)",
+      query: {
+        combinator: "or",
+        rules: [
+          {
+            field: "Flight.carrier",
+            operator: "=",
+            value: "OpenSearch-Air"
+          },
+          {
+            field: "Flight.carrier",
+            operator: "=",
+            value: "Logstash Airways"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find flights with origin airport (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Flight",
+            operator: "OriginAirport",
+            value: "Airport"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find flights with destination airport (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Flight",
+            operator: "DestinationAirport",
+            value: "Airport"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find flights operated by carrier (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Flight",
+            operator: "OperatedBy",
+            value: "Carrier"
+          }
+        ]
+      }
+    },
+    {
+      description: "Find airports that connect to other airports (relationship)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Airport",
+            operator: "ConnectsTo",
+            value: "Airport"
+          }
+        ]
+      }
+    },
+    {
+      description: "Complex flight query with relationships and conditions (advanced)",
+      query: {
+        combinator: "and",
+        rules: [
+          {
+            field: "Flight",
+            operator: "OriginAirport",
+            value: "Airport"
+          },
+          {
+            field: "Airport.country",
+            operator: "=",
+            value: "US"
+          },
+          {
+            combinator: "and",
+            rules: [
+              {
+                field: "Flight",
+                operator: "OperatedBy",
+                value: "Carrier"
+              },
+              {
+                field: "Flight.avgTicketPrice",
+                operator: "<",
+                value: "800"
+              }
+            ]
+          }
+        ]
+      }
+    }
   ]
 };
 

@@ -1,0 +1,202 @@
+{
+  "requestId": "DRG-RES-001",
+  "elapsed": "00000002",
+  "renderElapsed": "00000015",
+  "totalElapsed": "00000017",
+  "data": [
+    {
+      "type": "Person",
+      "id": "P001",
+      "firstName": "Brandon",
+      "lastName": "Stark",
+      "gender": "male",
+      "age": 25,
+      "birthDate": "1998-05-15",
+      "height": 175
+    },
+    {
+      "type": "Person",
+      "id": "P002",
+      "firstName": "Daenerys",
+      "lastName": "Targaryen",
+      "gender": "female",
+      "age": 28,
+      "birthDate": "1995-03-20",
+      "height": 165
+    },
+    {
+      "type": "Person",
+      "id": "P003",
+      "firstName": "George",
+      "lastName": "Martin",
+      "gender": "male",
+      "age": 45,
+      "birthDate": "1978-09-10",
+      "height": 180
+    },
+    {
+      "type": "Dragon",
+      "id": "D001",
+      "name": "Drogon",
+      "color": "black",
+      "gender": "male",
+      "power": 95,
+      "birthDate": "2015-06-01"
+    },
+    {
+      "type": "Dragon",
+      "id": "D002",
+      "name": "Viserion",
+      "color": "cream",
+      "gender": "male",
+      "power": 85,
+      "birthDate": "2015-06-01"
+    },
+    {
+      "type": "Dragon",
+      "id": "D003",
+      "name": "Rhaegal",
+      "color": "green",
+      "gender": "male",
+      "power": 90,
+      "birthDate": "2015-06-01"
+    },
+    {
+      "type": "Dragon",
+      "id": "D004",
+      "name": "Balerion",
+      "color": "black",
+      "gender": "male",
+      "power": 100,
+      "birthDate": "2000-01-01"
+    },
+    {
+      "type": "Horse",
+      "id": "H001",
+      "name": "Shadow",
+      "color": "black",
+      "weight": 500,
+      "maxSpeed": 55,
+      "distance": 100
+    },
+    {
+      "type": "Horse",
+      "id": "H002",
+      "name": "Thunder",
+      "color": "brown",
+      "weight": 520,
+      "maxSpeed": 60,
+      "distance": 120
+    },
+    {
+      "type": "Kingdom",
+      "id": "K001",
+      "name": "The North",
+      "king": "Brandon Stark",
+      "queen": "",
+      "independenceDay": "2019-05-19",
+      "funds": 5000000
+    },
+    {
+      "type": "Kingdom",
+      "id": "K002",
+      "name": "The Reach",
+      "king": "Mace Tyrell",
+      "queen": "Alerie Hightower",
+      "independenceDay": "2010-01-01",
+      "funds": 8000000
+    },
+    {
+      "type": "Guild",
+      "id": "G001",
+      "name": "Nights Watch",
+      "description": "Defenders of the Wall",
+      "iconId": "icon-shield",
+      "url": "https://nightswatch.westeros",
+      "establishDate": "2005-01-01"
+    },
+    {
+      "type": "Guild",
+      "id": "G002",
+      "name": "Maesters",
+      "description": "Scholars and healers",
+      "iconId": "icon-book",
+      "url": "https://citadel.westeros",
+      "establishDate": "2000-01-01"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "R001",
+      "type": "Own",
+      "source": "P002",
+      "target": "D001"
+    },
+    {
+      "id": "R002",
+      "type": "Own",
+      "source": "P002",
+      "target": "D002"
+    },
+    {
+      "id": "R003",
+      "type": "Own",
+      "source": "P002",
+      "target": "D003"
+    },
+    {
+      "id": "R004",
+      "type": "Own",
+      "source": "P001",
+      "target": "H001"
+    },
+    {
+      "id": "R005",
+      "type": "Know",
+      "source": "P001",
+      "target": "P002"
+    },
+    {
+      "id": "R006",
+      "type": "Know",
+      "source": "P001",
+      "target": "P003"
+    },
+    {
+      "id": "R007",
+      "type": "MemberOf",
+      "source": "P001",
+      "target": "G001"
+    },
+    {
+      "id": "R008",
+      "type": "MemberOf",
+      "source": "P003",
+      "target": "G002"
+    },
+    {
+      "id": "R009",
+      "type": "OriginatedIn",
+      "source": "P001",
+      "target": "K001"
+    },
+    {
+      "id": "R010",
+      "type": "Fire",
+      "source": "D001",
+      "target": "D004"
+    },
+    {
+      "id": "R011",
+      "type": "Freeze",
+      "source": "D002",
+      "target": "D004"
+    },
+    {
+      "id": "R012",
+      "type": "RegisteredIn",
+      "source": "G001",
+      "target": "K001"
+    }
+  ]
+}

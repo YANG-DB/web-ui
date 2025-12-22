@@ -33,7 +33,8 @@ function Research({
       // Use default ontologies
       setOntologies([
         { id: 'dragons', name: 'Dragons' },
-        { id: 'linkedin', name: 'LinkedIn' }
+        { id: 'linkedin', name: 'LinkedIn' },
+        { id: 'flights', name: 'Flights' }
       ]);
     });
   }, []);
@@ -127,6 +128,41 @@ function Research({
       if (firstRule.field === 'Person' && firstRule.operator === 'WorksAt' && query.rules.length >= 2) {
         const hasIndustry = query.rules.some(r => r.field === 'Company.industry');
         if (hasIndustry) return 9;
+      }
+    } else if (ontologyType === 'flights') {
+      // Template 0: Flight.flightNum notNull
+      if (firstRule.field === 'Flight.flightNum' && firstRule.operator === 'notNull') return 0;
+
+      // Template 1: Flight.carrier =
+      if (firstRule.field === 'Flight.carrier' && firstRule.operator === '=') return 1;
+
+      // Template 2: Flight.flightDelay = true
+      if (firstRule.field === 'Flight.flightDelay' && firstRule.operator === '=') return 2;
+
+      // Template 3: Flight price range (avgTicketPrice > AND <)
+      if (query.rules.length >= 2 &&
+          firstRule.field === 'Flight.avgTicketPrice' &&
+          query.rules[1].field === 'Flight.avgTicketPrice') return 3;
+
+      // Template 4: Flight.carrier OR condition
+      if (query.combinator === 'or' && firstRule.field === 'Flight.carrier') return 4;
+
+      // Template 5: Flight OriginAirport Airport
+      if (firstRule.field === 'Flight' && firstRule.operator === 'OriginAirport') return 5;
+
+      // Template 6: Flight DestinationAirport Airport
+      if (firstRule.field === 'Flight' && firstRule.operator === 'DestinationAirport') return 6;
+
+      // Template 7: Flight OperatedBy Carrier
+      if (firstRule.field === 'Flight' && firstRule.operator === 'OperatedBy') return 7;
+
+      // Template 8: Airport ConnectsTo Airport
+      if (firstRule.field === 'Airport' && firstRule.operator === 'ConnectsTo') return 8;
+
+      // Template 9: Complex flight query with relationships
+      if (firstRule.field === 'Flight' && firstRule.operator === 'OriginAirport' && query.rules.length >= 2) {
+        const hasCountry = query.rules.some(r => r.field === 'Airport.country');
+        if (hasCountry) return 9;
       }
     }
 

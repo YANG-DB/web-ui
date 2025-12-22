@@ -1,0 +1,203 @@
+{
+  "requestId": "FR391282989268533249",
+  "elapsed": "00000001",
+  "renderElapsed": "00000014",
+  "totalElapsed": "00000015",
+  "data": [
+    {
+      "ont": "Flights",
+      "entityTypes": [
+        {
+          "eType": "Flight",
+          "name": "Flight",
+          "properties": [
+            "flightNum",
+            "carrier",
+            "timestamp",
+            "avgTicketPrice",
+            "cancelled",
+            "flightDelay",
+            "flightDelayMin",
+            "flightDelayType",
+            "distanceKilometers",
+            "distanceMiles",
+            "flightTimeHour",
+            "flightTimeMin",
+            "dayOfWeek",
+            "origin",
+            "originAirportID",
+            "originCityName",
+            "originCountry",
+            "originRegion",
+            "originWeather",
+            "dest",
+            "destAirportID",
+            "destCityName",
+            "destCountry",
+            "destRegion",
+            "destWeather",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Airport",
+          "name": "Airport",
+          "properties": [
+            "airportID",
+            "code",
+            "cityName",
+            "country",
+            "region",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Carrier",
+          "name": "Carrier",
+          "properties": [
+            "code",
+            "name",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        },
+        {
+          "eType": "Route",
+          "name": "Route",
+          "properties": [
+            "distanceKilometers",
+            "distanceMiles",
+            "avgFlightTimeMin",
+            "id",
+            "type"
+          ],
+          "metadata": ["id", "type"]
+        }
+      ],
+      "relationshipTypes": [
+        {
+          "rType": "OriginAirport",
+          "name": "OriginAirport",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Flight",
+              "eTypeB": "Airport"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "DestinationAirport",
+          "name": "DestinationAirport",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Flight",
+              "eTypeB": "Airport"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "OperatedBy",
+          "name": "OperatedBy",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Flight",
+              "eTypeB": "Carrier"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "OnRoute",
+          "name": "OnRoute",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Flight",
+              "eTypeB": "Route"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "ConnectsTo",
+          "name": "ConnectsTo",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Airport",
+              "eTypeB": "Airport"
+            }
+          ],
+          "properties": ["flightCount", "avgPrice"],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "DepartingFrom",
+          "name": "DepartingFrom",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Flight",
+              "eTypeB": "Airport"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "ArrivingAt",
+          "name": "ArrivingAt",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Flight",
+              "eTypeB": "Airport"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Serves",
+          "name": "Serves",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Carrier",
+              "eTypeB": "Airport"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        },
+        {
+          "rType": "Operates",
+          "name": "Operates",
+          "directional": true,
+          "ePairs": [
+            {
+              "eTypeA": "Carrier",
+              "eTypeB": "Route"
+            }
+          ],
+          "properties": [],
+          "metadata": ["id", "type"]
+        }
+      ]
+    }
+  ]
+}

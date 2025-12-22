@@ -7,9 +7,9 @@
     {
       "type": "Person",
       "id": "P001",
-      "firstName": "John",
-      "lastName": "Smith",
+      "name": "John Smith",
       "email": "john.smith@example.com",
+      "title": "Senior Software Engineer",
       "headline": "Software Engineer at Tech Corp",
       "location": "San Francisco, CA",
       "industry": "Technology",
@@ -19,14 +19,26 @@
     {
       "type": "Person",
       "id": "P002",
-      "firstName": "Sarah",
-      "lastName": "Johnson",
+      "name": "Sarah Johnson",
       "email": "sarah.j@example.com",
+      "title": "Product Manager",
       "headline": "Product Manager | AI & ML Enthusiast",
       "location": "New York, NY",
       "industry": "Technology",
       "connections": 800,
       "followers": 2500
+    },
+    {
+      "type": "Person",
+      "id": "P003",
+      "name": "Michael Chen",
+      "email": "mchen@example.com",
+      "title": "CEO",
+      "headline": "Founder & CEO at Innovation Labs",
+      "location": "New York, NY",
+      "industry": "Technology",
+      "connections": 5000,
+      "followers": 15000
     },
     {
       "type": "Company",
@@ -97,16 +109,39 @@
       "isCurrent": true
     },
     {
-      "type": "ConnectedTo",
+      "type": "WorksAt",
       "id": "R002",
+      "source": "P002",
+      "target": "C002",
+      "startDate": "2019-03-01",
+      "isCurrent": true
+    },
+    {
+      "type": "ConnectedTo",
+      "id": "R003",
       "source": "P001",
       "target": "P002",
       "connectedDate": "2019-05-20",
       "strength": "strong"
     },
     {
+      "type": "ConnectedTo",
+      "id": "R004",
+      "source": "P001",
+      "target": "P003",
+      "connectedDate": "2021-01-10",
+      "strength": "medium"
+    },
+    {
+      "type": "Founded",
+      "id": "R005",
+      "source": "P003",
+      "target": "C002",
+      "foundedDate": "2015-01-01"
+    },
+    {
       "type": "HasSkill",
-      "id": "R003",
+      "id": "R006",
       "source": "P001",
       "target": "S001",
       "level": "expert",
@@ -114,7 +149,7 @@
     },
     {
       "type": "HasSkill",
-      "id": "R004",
+      "id": "R007",
       "source": "P001",
       "target": "S002",
       "level": "expert",
@@ -122,7 +157,7 @@
     },
     {
       "type": "StudiedAt",
-      "id": "R005",
+      "id": "R008",
       "source": "P001",
       "target": "SCH001",
       "degree": "B.S.",
@@ -132,7 +167,7 @@
     },
     {
       "type": "Published",
-      "id": "R006",
+      "id": "R009",
       "source": "P002",
       "target": "POST001",
       "publishedDate": "2024-01-15"

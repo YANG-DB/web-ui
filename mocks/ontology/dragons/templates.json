@@ -1,0 +1,179 @@
+[
+  {
+    "description": "Find all persons by first name",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person.firstName",
+          "operator": "notNull",
+          "value": null
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find dragons with specific color",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Dragon.color",
+          "operator": "=",
+          "value": ""
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find entities with multiple attributes",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person.firstName",
+          "operator": "notNull",
+          "value": null
+        },
+        {
+          "field": "Person.lastName",
+          "operator": "notNull",
+          "value": null
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find entities using OR condition",
+    "query": {
+      "combinator": "or",
+      "rules": [
+        {
+          "field": "Dragon.color",
+          "operator": "=",
+          "value": "red"
+        },
+        {
+          "field": "Dragon.color",
+          "operator": "=",
+          "value": "blue"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Complex nested query example",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person.firstName",
+          "operator": "notNull",
+          "value": null
+        },
+        {
+          "combinator": "or",
+          "rules": [
+            {
+              "field": "Person.gender",
+              "operator": "=",
+              "value": "male"
+            },
+            {
+              "field": "Person.gender",
+              "operator": "=",
+              "value": "female"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find dragons owned by persons (relationship)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "Own",
+          "value": "Dragon"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find persons who are members of guilds (relationship)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "MemberOf",
+          "value": "Guild"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find persons who know someone named George (complex)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "Know",
+          "value": "Person"
+        },
+        {
+          "field": "Person.firstName",
+          "operator": "=",
+          "value": "George"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Multi-relationship query with nested conditions (advanced)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "OriginatedIn",
+          "value": "Kingdom"
+        },
+        {
+          "field": "Kingdom.funds",
+          "operator": ">",
+          "value": "1000"
+        },
+        {
+          "combinator": "and",
+          "rules": [
+            {
+              "field": "Dragon",
+              "operator": "Fire",
+              "value": "Dragon"
+            },
+            {
+              "combinator": "and",
+              "rules": [
+                {
+                  "field": "Dragon",
+                  "operator": "Freeze",
+                  "value": "Dragon"
+                },
+                {
+                  "field": "Dragon.name",
+                  "operator": "=",
+                  "value": "morgan"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

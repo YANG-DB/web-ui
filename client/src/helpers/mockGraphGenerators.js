@@ -655,12 +655,362 @@ export function generateLinkedInMockGraph(templateIndex = 0, nodeCount = 10) {
   };
 }
 
+// Generate mock graph data for Flights ontology
+function generateFlightsMockGraph(templateIndex = 0, nodeCount = 10) {
+  const entities = [];
+  const relationships = [];
+  let entityIdCounter = 1;
+  let relationshipIdCounter = 1;
+
+  const carriers = ['OpenSearch-Air', 'Logstash Airways', 'ES-Air', 'Kibana Airlines'];
+  const airportCodes = ['JFK', 'LAX', 'ORD', 'DFW', 'DEN', 'ATL', 'SFO', 'SEA', 'BOS', 'MIA'];
+  const cities = ['New York', 'Los Angeles', 'Chicago', 'Dallas', 'Denver', 'Atlanta', 'San Francisco', 'Seattle', 'Boston', 'Miami'];
+  const countries = ['US', 'CA', 'MX'];
+  const weatherTypes = ['Clear', 'Cloudy', 'Rain', 'Snow', 'Fog'];
+
+  switch (templateIndex) {
+    case 0: // Find all flights by flight number
+      for (let i = 0; i < nodeCount; i++) {
+        const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+        entities.push({
+          eID: `flight_${entityIdCounter++}`,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(150 + Math.random() * 500),
+          flightDelay: Math.random() > 0.8,
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 1: // Find flights by carrier
+      for (let i = 0; i < nodeCount; i++) {
+        entities.push({
+          eID: `flight_${entityIdCounter++}`,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `OS${1000 + i}`,
+          carrier: 'OpenSearch-Air',
+          avgTicketPrice: Math.floor(150 + Math.random() * 500),
+          flightDelay: Math.random() > 0.8,
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 2: // Find delayed flights
+      for (let i = 0; i < nodeCount; i++) {
+        const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+        entities.push({
+          eID: `flight_${entityIdCounter++}`,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(150 + Math.random() * 500),
+          flightDelay: true,
+          flightDelayMin: Math.floor(30 + Math.random() * 120),
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 3: // Find flights with price range (500-1000)
+      for (let i = 0; i < nodeCount; i++) {
+        const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+        entities.push({
+          eID: `flight_${entityIdCounter++}`,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(500 + Math.random() * 500),
+          flightDelay: Math.random() > 0.8,
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 4: // Find flights using OR condition (OpenSearch-Air or Logstash Airways)
+      for (let i = 0; i < nodeCount; i++) {
+        const carrier = Math.random() > 0.5 ? 'OpenSearch-Air' : 'Logstash Airways';
+        entities.push({
+          eID: `flight_${entityIdCounter++}`,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(150 + Math.random() * 500),
+          flightDelay: Math.random() > 0.8,
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 5: // Flight OriginAirport Airport relationship
+      const flightCount1 = Math.floor(nodeCount * 0.6);
+      const airportCount1 = Math.floor(nodeCount * 0.4);
+
+      const airportIds1 = [];
+      for (let i = 0; i < airportCount1; i++) {
+        const airportId = `airport_${entityIdCounter++}`;
+        airportIds1.push(airportId);
+        entities.push({
+          eID: airportId,
+          eType: 'Airport',
+          eTag: ['Airport'],
+          code: airportCodes[i % airportCodes.length],
+          cityName: cities[i % cities.length],
+          country: countries[Math.floor(Math.random() * countries.length)],
+          assignments: [0]
+        });
+      }
+
+      for (let i = 0; i < flightCount1; i++) {
+        const flightId = `flight_${entityIdCounter++}`;
+        const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+        entities.push({
+          eID: flightId,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(150 + Math.random() * 500),
+          assignments: [0]
+        });
+
+        const randomAirport = airportIds1[Math.floor(Math.random() * airportIds1.length)];
+        relationships.push({
+          rID: `rel_${relationshipIdCounter++}`,
+          eID1: flightId,
+          eID2: randomAirport,
+          rType: 'OriginAirport',
+          directional: true,
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 6: // Flight DestinationAirport Airport relationship
+      const flightCount2 = Math.floor(nodeCount * 0.6);
+      const airportCount2 = Math.floor(nodeCount * 0.4);
+
+      const airportIds2 = [];
+      for (let i = 0; i < airportCount2; i++) {
+        const airportId = `airport_${entityIdCounter++}`;
+        airportIds2.push(airportId);
+        entities.push({
+          eID: airportId,
+          eType: 'Airport',
+          eTag: ['Airport'],
+          code: airportCodes[i % airportCodes.length],
+          cityName: cities[i % cities.length],
+          country: countries[Math.floor(Math.random() * countries.length)],
+          assignments: [0]
+        });
+      }
+
+      for (let i = 0; i < flightCount2; i++) {
+        const flightId = `flight_${entityIdCounter++}`;
+        const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+        entities.push({
+          eID: flightId,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(150 + Math.random() * 500),
+          assignments: [0]
+        });
+
+        const randomAirport = airportIds2[Math.floor(Math.random() * airportIds2.length)];
+        relationships.push({
+          rID: `rel_${relationshipIdCounter++}`,
+          eID1: flightId,
+          eID2: randomAirport,
+          rType: 'DestinationAirport',
+          directional: true,
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 7: // Flight OperatedBy Carrier relationship
+      const flightCount3 = Math.floor(nodeCount * 0.7);
+      const carrierCount = Math.floor(nodeCount * 0.3);
+
+      const carrierIds = [];
+      for (let i = 0; i < carrierCount; i++) {
+        const carrierId = `carrier_${entityIdCounter++}`;
+        carrierIds.push(carrierId);
+        entities.push({
+          eID: carrierId,
+          eType: 'Carrier',
+          eTag: ['Carrier'],
+          code: carriers[i % carriers.length].substring(0, 2).toUpperCase(),
+          name: carriers[i % carriers.length],
+          assignments: [0]
+        });
+      }
+
+      for (let i = 0; i < flightCount3; i++) {
+        const flightId = `flight_${entityIdCounter++}`;
+        const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+        entities.push({
+          eID: flightId,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(150 + Math.random() * 500),
+          assignments: [0]
+        });
+
+        const randomCarrier = carrierIds[Math.floor(Math.random() * carrierIds.length)];
+        relationships.push({
+          rID: `rel_${relationshipIdCounter++}`,
+          eID1: flightId,
+          eID2: randomCarrier,
+          rType: 'OperatedBy',
+          directional: true,
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 8: // Airport ConnectsTo Airport relationship
+      const airportIds3 = [];
+      for (let i = 0; i < nodeCount; i++) {
+        const airportId = `airport_${entityIdCounter++}`;
+        airportIds3.push(airportId);
+        entities.push({
+          eID: airportId,
+          eType: 'Airport',
+          eTag: ['Airport'],
+          code: airportCodes[i % airportCodes.length],
+          cityName: cities[i % cities.length],
+          country: countries[Math.floor(Math.random() * countries.length)],
+          assignments: [0]
+        });
+      }
+
+      // Create connections between airports
+      for (let i = 0; i < nodeCount - 1; i++) {
+        relationships.push({
+          rID: `rel_${relationshipIdCounter++}`,
+          eID1: airportIds3[i],
+          eID2: airportIds3[i + 1],
+          rType: 'ConnectsTo',
+          directional: false,
+          assignments: [0]
+        });
+      }
+      break;
+
+    case 9: // Complex flight query with relationships and conditions
+      // Create US airports
+      const usAirportIds = [];
+      for (let i = 0; i < 3; i++) {
+        const airportId = `airport_${entityIdCounter++}`;
+        usAirportIds.push(airportId);
+        entities.push({
+          eID: airportId,
+          eType: 'Airport',
+          eTag: ['Airport'],
+          code: airportCodes[i % airportCodes.length],
+          cityName: cities[i % cities.length],
+          country: 'US',
+          assignments: [0]
+        });
+      }
+
+      // Create carriers
+      const carrierIds2 = [];
+      for (let i = 0; i < 2; i++) {
+        const carrierId = `carrier_${entityIdCounter++}`;
+        carrierIds2.push(carrierId);
+        entities.push({
+          eID: carrierId,
+          eType: 'Carrier',
+          eTag: ['Carrier'],
+          code: carriers[i % carriers.length].substring(0, 2).toUpperCase(),
+          name: carriers[i % carriers.length],
+          assignments: [0]
+        });
+      }
+
+      // Create flights with relationships
+      for (let i = 0; i < 5; i++) {
+        const flightId = `flight_${entityIdCounter++}`;
+        const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+        entities.push({
+          eID: flightId,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(300 + Math.random() * 400),
+          flightDelay: Math.random() > 0.5,
+          assignments: [0]
+        });
+
+        // Add OriginAirport relationship
+        const randomOrigin = usAirportIds[Math.floor(Math.random() * usAirportIds.length)];
+        relationships.push({
+          rID: `rel_${relationshipIdCounter++}`,
+          eID1: flightId,
+          eID2: randomOrigin,
+          rType: 'OriginAirport',
+          directional: true,
+          assignments: [0]
+        });
+
+        // Add OperatedBy relationship
+        const randomCarrier = carrierIds2[Math.floor(Math.random() * carrierIds2.length)];
+        relationships.push({
+          rID: `rel_${relationshipIdCounter++}`,
+          eID1: flightId,
+          eID2: randomCarrier,
+          rType: 'OperatedBy',
+          directional: true,
+          assignments: [0]
+        });
+      }
+      break;
+
+    default:
+      // Default: mixed entities
+      for (let i = 0; i < nodeCount; i++) {
+        const carrier = carriers[Math.floor(Math.random() * carriers.length)];
+        entities.push({
+          eID: `flight_${entityIdCounter++}`,
+          eType: 'Flight',
+          eTag: ['Flight'],
+          flightNum: `${carrier.substring(0, 2).toUpperCase()}${1000 + i}`,
+          carrier: carrier,
+          avgTicketPrice: Math.floor(150 + Math.random() * 500),
+          flightDelay: Math.random() > 0.8,
+          assignments: [0]
+        });
+      }
+  }
+
+  return {
+    entities,
+    relationships
+  };
+}
+
 // Wrapper function to generate mock data based on ontology type
 export function generateMockGraphData(ontologyType, templateIndex = 0, nodeCount = 10) {
   if (ontologyType === 'dragons') {
     return generateDragonsMockGraph(templateIndex, nodeCount);
   } else if (ontologyType === 'linkedin') {
     return generateLinkedInMockGraph(templateIndex, nodeCount);
+  } else if (ontologyType === 'flights') {
+    return generateFlightsMockGraph(templateIndex, nodeCount);
   }
   return { entities: [], relationships: [] };
 }

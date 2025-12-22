@@ -1,0 +1,116 @@
+# GraphQL Schema for LinkedIn Ontology
+# Professional network with persons, companies, positions, skills, and connections
+
+# ============================================================================
+# Core Entity Types
+# ============================================================================
+
+type Person {
+  id: ID!
+  type: String!
+  name: String!
+  email: String
+  title: String
+  headline: String
+  location: String
+  industry: String
+  connections: Int
+  followers: Int
+  profileUrl: String
+  imageUrl: String
+
+  # Relationship resolvers
+  currentPosition: Position
+  positions(limit: Int = 10): [Position!]!
+  companies(limit: Int = 10): [Company!]!
+  skills(limit: Int = 10): [Skill!]!
+  connections_rel(limit: Int = 10): [Person!]!
+  foundedCompanies(limit: Int = 10): [Company!]!
+  endorsedSkills(limit: Int = 10): [Skill!]!
+}
+
+type Company {
+  id: ID!
+  type: String!
+  name: String!
+  industry: String
+  size: String
+  foundedYear: Int
+  headquarters: String
+  followers: Int
+  website: String
+  description: String
+
+  # Relationship resolvers
+  employees(limit: Int = 10): [Person!]!
+  positions(limit: Int = 10): [Position!]!
+  founder: Person
+  parentCompany: Company
+  subsidiaries(limit: Int = 10): [Company!]!
+}
+
+type Position {
+  id: ID!
+  type: String!
+  title: String!
+  description: String
+  startDate: String
+  endDate: String
+  current: Boolean
+  location: String
+
+  # Relationship resolvers
+  person: Person!
+  company: Company!
+}
+
+type Skill {
+  id: ID!
+  type: String!
+  name: String!
+  category: String
+  endorsements: Int
+
+  # Relationship resolvers
+  holders(limit: Int = 10): [Person!]!
+  endorsers(limit: Int = 10): [Person!]!
+}
+
+type Education {
+  id: ID!
+  type: String!
+  school: String!
+  degree: String
+  fieldOfStudy: String
+  startYear: Int
+  endYear: Int
+
+  # Relationship resolvers
+  person: Person!
+}
+
+# ============================================================================
+# Query Type
+# ============================================================================
+
+type Query {
+  # Entity queries
+  person(id: ID!): Person
+  persons(limit: Int = 100): [Person!]!
+
+  company(id: ID!): Company
+  companies(limit: Int = 100): [Company!]!
+
+  position(id: ID!): Position
+  positions(limit: Int = 100): [Position!]!
+
+  skill(id: ID!): Skill
+  skills(limit: Int = 100): [Skill!]!
+
+  education(id: ID!): Education
+  educations(limit: Int = 100): [Education!]!
+
+  # Correlated relationship queries
+  personsWithConnectedToAndWorksAt(limit: Int = 10): [Person!]!
+  personsWithFoundedAndHasSkill(limit: Int = 10): [Person!]!
+}

@@ -1,0 +1,611 @@
+# GraphQL Schema for OpenSearch Flights Data
+# This schema enables complex relationship queries across flights, airports, carriers, and locations
+
+# ============================================================================
+# Core Flight Type
+# ============================================================================
+
+type Flight {
+  # Flight Identifiers
+  flightNum: String!
+  carrier: String!
+  timestamp: String!
+
+  # Pricing & Status
+  avgTicketPrice: Float!
+  cancelled: Boolean!
+  flightDelay: Boolean!
+  flightDelayMin: Int
+  flightDelayType: String
+
+  # Distance & Duration
+  distanceKilometers: Float!
+  distanceMiles: Float!
+  flightTimeHour: String
+  flightTimeMin: Float!
+
+  # Temporal
+  dayOfWeek: Int!
+
+  # Origin Details
+  origin: String!
+  originAirportID: String!
+  originCityName: String!
+  originCountry: String!
+  originRegion: String!
+  originWeather: String!
+  originLocation: GeoPoint!
+
+  # Destination Details
+  dest: String!
+  destAirportID: String!
+  destCityName: String!
+  destCountry: String!
+  destRegion: String!
+  destWeather: String!
+  destLocation: GeoPoint!
+
+  # ============================================================================
+  # Relationship Resolvers - Enable Graph Traversal
+  # ============================================================================
+
+  # Navigate to related entities
+  originAirport: Airport!
+  destinationAirport: Airport!
+  carrierInfo: Carrier!
+  route: Route!
+
+  # Find related flights
+  similarFlights(limit: Int = 10): [Flight!]!
+  alternativeFlights(limit: Int = 10): [Flight!]!
+  returnFlights(limit: Int = 10): [Flight!]!
+
+  # Weather-based relationships
+  flightsWithSimilarWeather(limit: Int = 10): [Flight!]!
+
+  # Delay patterns
+  relatedDelayedFlights(limit: Int = 10): [Flight!]!
+}
+
+# ============================================================================
+# Airport Entity with Relationships
+# ============================================================================
+
+type Airport {
+  airportID: String!
+  code: String!
+  cityName: String!
+  country: String!
+  region: String!
+  location: GeoPoint!
+
+  # Aggregated statistics
+  stats: AirportStats!
+
+  # Relationship resolvers
+  departingFlights(
+    limit: Int = 100
+    dateFrom: String
+    dateTo: String
+    carrierFilter: String
+  ): [Flight!]!
+
+  arrivingFlights(
+    limit: Int = 100
+    dateFrom: String
+    dateTo: String
+    carrierFilter: String
+  ): [Flight!]!
+
+  # Find connected airports
+  connectedAirports(
+    limit: Int = 50
+    minFlights: Int = 1
+  ): [AirportConnection!]!
+
+  # Popular routes from this airport
+  topRoutes(limit: Int = 10): [Route!]!
+
+  # Carriers operating from this airport
+  carriers: [Carrier!]!
+
+  # Weather patterns
+  weatherPatterns: [WeatherPattern!]!
+
+  # Nearby airports
+  nearbyAirports(radiusKm: Float = 100, limit: Int = 10): [Airport!]!
+}
+
+# ============================================================================
+# Carrier Entity with Relationships
+# ============================================================================
+
+type Carrier {
+  code: String!
+  name: String
+
+  # Statistics
+  stats: CarrierStats!
+
+  # Relationship resolvers
+  flights(
+    limit: Int = 100
+    dateFrom: String
+    dateTo: String
+    originFilter: String
+    destFilter: String
+  ): [Flight!]!
+
+  # Routes operated by this carrier
+  routes(limit: Int = 50): [Route!]!
+
+  # Airports served
+  airportsServed: [Airport!]!
+
+  # Performance metrics
+  delayPatterns: [DelayPattern!]!
+
+  # Compare with other carriers
+  competitorRoutes(competitorCode: String!): [RouteComparison!]!
+}
+
+# ============================================================================
+# Route Entity (Airport Pair)
+# ============================================================================
+
+type Route {
+  origin: Airport!
+  destination: Airport!
+
+  # Route characteristics
+  distanceKilometers: Float!
+  distanceMiles: Float!
+  avgFlightTimeMin: Float!
+
+  # Statistics for this route
+  stats: RouteStats!
+
+  # Relationship resolvers
+  flights(
+    limit: Int = 100
+    dateFrom: String
+    dateTo: String
+    carrierFilter: String
+  ): [Flight!]!
+
+  # Carriers operating this route
+  carriers: [Carrier!]!
+
+  # Pricing analysis
+  priceTrends(groupBy: TimeGrouping = DAY): [PriceTrend!]!
+
+  # Alternative routes (with layovers)
+  alternativeRoutes(maxStops: Int = 2): [MultiLegRoute!]!
+}
+
+# ============================================================================
+# Supporting Types
+# ============================================================================
+
+type GeoPoint {
+  lat: Float!
+  lon: Float!
+}
+
+type AirportStats {
+  totalDepartures: Int!
+  totalArrivals: Int!
+  avgDepartureDelay: Float!
+  avgArrivalDelay: Float!
+  cancellationRate: Float!
+  avgTicketPriceOutbound: Float!
+  avgTicketPriceInbound: Float!
+  busiestDayOfWeek: Int!
+  topWeatherCondition: String!
+}
+
+type CarrierStats {
+  totalFlights: Int!
+  avgTicketPrice: Float!
+  delayRate: Float!
+  avgDelayMinutes: Float!
+  cancellationRate: Float!
+  routeCount: Int!
+  avgDistanceKm: Float!
+}
+
+type RouteStats {
+  flightCount: Int!
+  avgPrice: Float!
+  minPrice: Float!
+  maxPrice: Float!
+  avgDelay: Float!
+  delayRate: Float!
+  cancellationRate: Float!
+  carrierCount: Int!
+  avgFlightTimeMin: Float!
+}
+
+type AirportConnection {
+  airport: Airport!
+  flightCount: Int!
+  avgPrice: Float!
+  carriers: [String!]!
+}
+
+type WeatherPattern {
+  weather: String!
+  frequency: Int!
+  avgDelay: Float!
+  delayRate: Float!
+}
+
+type DelayPattern {
+  delayType: String!
+  frequency: Int!
+  avgDelayMinutes: Float!
+  affectedRoutes: Int!
+}
+
+type PriceTrend {
+  date: String!
+  avgPrice: Float!
+  minPrice: Float!
+  maxPrice: Float!
+  flightCount: Int!
+}
+
+type MultiLegRoute {
+  legs: [Route!]!
+  totalDistance: Float!
+  totalFlightTime: Float!
+  layoverAirports: [Airport!]!
+  estimatedPrice: Float!
+}
+
+type RouteComparison {
+  route: Route!
+  thisCarrierStats: RouteStats!
+  competitorStats: RouteStats!
+  priceDifference: Float!
+  delayDifference: Float!
+}
+
+# ============================================================================
+# Enums
+# ============================================================================
+
+enum TimeGrouping {
+  HOUR
+  DAY
+  WEEK
+  MONTH
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+enum FlightSortField {
+  TIMESTAMP
+  PRICE
+  DISTANCE
+  DELAY
+}
+
+enum DelayType {
+  WEATHER_DELAY
+  CARRIER_DELAY
+  NAS_DELAY
+  SECURITY_DELAY
+  LATE_AIRCRAFT_DELAY
+}
+
+# ============================================================================
+# Input Types for Complex Filters
+# ============================================================================
+
+input FlightFilter {
+  carriers: [String!]
+  origins: [String!]
+  destinations: [String!]
+  originCountries: [String!]
+  destCountries: [String!]
+  minPrice: Float
+  maxPrice: Float
+  minDistance: Float
+  maxDistance: Float
+  cancelled: Boolean
+  delayed: Boolean
+  delayTypes: [String!]
+  weather: [String!]
+  daysOfWeek: [Int!]
+  dateFrom: String
+  dateTo: String
+}
+
+input GeoFilter {
+  centerLat: Float!
+  centerLon: Float!
+  radiusKm: Float!
+}
+
+input RouteInput {
+  origin: String!
+  destination: String!
+}
+
+# ============================================================================
+# Root Query Type
+# ============================================================================
+
+type Query {
+  # ============================================================================
+  # Direct Entity Queries
+  # ============================================================================
+
+  # Get single entities
+  flight(flightNum: String!, timestamp: String!): Flight
+  airport(code: String!): Airport
+  carrier(code: String!): Carrier
+  route(origin: String!, destination: String!): Route
+
+  # ============================================================================
+  # List Queries with Filtering
+  # ============================================================================
+
+  flights(
+    filter: FlightFilter
+    sortBy: FlightSortField = TIMESTAMP
+    sortOrder: SortOrder = DESC
+    limit: Int = 100
+    offset: Int = 0
+  ): FlightConnection!
+
+  airports(
+    countries: [String!]
+    regions: [String!]
+    geoFilter: GeoFilter
+    limit: Int = 100
+  ): [Airport!]!
+
+  carriers(limit: Int = 100): [Carrier!]!
+
+  routes(
+    origins: [String!]
+    destinations: [String!]
+    minFlightCount: Int = 1
+    limit: Int = 100
+  ): [Route!]!
+
+  # ============================================================================
+  # Analytical Queries
+  # ============================================================================
+
+  # Find cheapest flights between cities/countries
+  cheapestFlights(
+    origin: String
+    destination: String
+    originCountry: String
+    destCountry: String
+    dateFrom: String
+    dateTo: String
+    limit: Int = 10
+  ): [Flight!]!
+
+  # Find flights with least delays
+  mostReliableFlights(
+    origin: String
+    destination: String
+    carrier: String
+    limit: Int = 10
+  ): [Flight!]!
+
+  # Popular routes analysis
+  popularRoutes(
+    originCountry: String
+    destCountry: String
+    minFlightCount: Int = 10
+    limit: Int = 20
+  ): [Route!]!
+
+  # Delay analysis
+  delayAnalysis(
+    carrier: String
+    airport: String
+    dateFrom: String
+    dateTo: String
+  ): DelayAnalysisResult!
+
+  # Weather impact analysis
+  weatherImpact(
+    weather: String!
+    dateFrom: String
+    dateTo: String
+  ): WeatherImpactResult!
+
+  # Price analysis
+  priceAnalysis(
+    origin: String
+    destination: String
+    groupBy: TimeGrouping = DAY
+  ): [PriceTrend!]!
+
+  # Network analysis
+  airportNetwork(
+    centerAirport: String!
+    maxHops: Int = 3
+  ): AirportNetworkResult!
+
+  # Carrier comparison
+  compareCarriers(
+    carriers: [String!]!
+    dateFrom: String
+    dateTo: String
+  ): [CarrierComparison!]!
+
+  # ============================================================================
+  # Graph Pattern Queries - Complex Relationship Traversal
+  # ============================================================================
+
+  # Find all possible routes with layovers
+  findConnections(
+    origin: String!
+    destination: String!
+    maxStops: Int = 2
+    maxTotalDistance: Float
+    dateFrom: String
+    dateTo: String
+  ): [FlightPath!]!
+
+  # Hub analysis - find major connecting airports
+  identifyHubs(
+    minConnections: Int = 50
+    region: String
+  ): [HubAnalysis!]!
+
+  # Carrier market share on routes
+  marketShare(
+    origin: String!
+    destination: String!
+  ): [MarketShareResult!]!
+
+  # Seasonal patterns
+  seasonalPatterns(
+    route: RouteInput
+    carrier: String
+  ): [SeasonalPattern!]!
+}
+
+# ============================================================================
+# Mutation Type
+# ============================================================================
+
+type Mutation {
+  # Track flight preferences
+  addFlightAlert(
+    route: RouteInput!
+    maxPrice: Float
+    preferredCarriers: [String!]
+  ): FlightAlert!
+
+  removeFlightAlert(alertId: ID!): Boolean!
+}
+
+# ============================================================================
+# Additional Result Types
+# ============================================================================
+
+type FlightConnection {
+  flights: [Flight!]!
+  totalCount: Int!
+  hasMore: Boolean!
+}
+
+type DelayAnalysisResult {
+  totalFlights: Int!
+  delayedFlights: Int!
+  delayRate: Float!
+  avgDelayMinutes: Float!
+  delaysByType: [DelayTypeStats!]!
+  delaysByDayOfWeek: [DayDelayStats!]!
+}
+
+type DelayTypeStats {
+  delayType: String!
+  count: Int!
+  avgMinutes: Float!
+}
+
+type DayDelayStats {
+  dayOfWeek: Int!
+  delayRate: Float!
+  avgDelayMinutes: Float!
+}
+
+type WeatherImpactResult {
+  weather: String!
+  totalFlights: Int!
+  delayRate: Float!
+  avgDelayMinutes: Float!
+  cancellationRate: Float!
+  avgPriceImpact: Float!
+  affectedAirports: [Airport!]!
+}
+
+type AirportNetworkResult {
+  centerAirport: Airport!
+  reachableAirports: [ReachableAirport!]!
+  totalRoutes: Int!
+}
+
+type ReachableAirport {
+  airport: Airport!
+  hops: Int!
+  possiblePaths: Int!
+  shortestPath: [Airport!]!
+}
+
+type CarrierComparison {
+  carrier: Carrier!
+  stats: CarrierStats!
+  rank: Int!
+}
+
+type FlightPath {
+  flights: [Flight!]!
+  totalDistance: Float!
+  totalFlightTime: Float!
+  totalPrice: Float!
+  layovers: [Airport!]!
+  totalStops: Int!
+}
+
+type HubAnalysis {
+  airport: Airport!
+  connectionCount: Int!
+  carriersOperating: Int!
+  topDestinations: [Airport!]!
+  avgLayoverTime: Float!
+}
+
+type MarketShareResult {
+  carrier: Carrier!
+  flightCount: Int!
+  marketSharePercent: Float!
+  avgPrice: Float!
+  avgDelay: Float!
+}
+
+type SeasonalPattern {
+  month: Int!
+  avgPrice: Float!
+  flightCount: Int!
+  delayRate: Float!
+  demandIndex: Float!
+}
+
+type FlightAlert {
+  id: ID!
+  route: Route!
+  maxPrice: Float
+  preferredCarriers: [String!]
+  createdAt: String!
+  active: Boolean!
+}
+
+# ============================================================================
+# Subscriptions (Optional - for real-time updates)
+# ============================================================================
+
+type Subscription {
+  # Real-time flight updates
+  flightUpdated(flightNum: String): Flight
+
+  # Delay notifications
+  newFlightDelay(airport: String): Flight
+
+  # Price drop alerts
+  priceDropAlert(route: RouteInput!, maxPrice: Float!): Flight
+}

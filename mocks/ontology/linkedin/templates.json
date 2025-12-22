@@ -1,0 +1,192 @@
+[
+  {
+    "description": "Find all persons by name",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person.name",
+          "operator": "notNull",
+          "value": null
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find companies with specific attributes",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Company.name",
+          "operator": "=",
+          "value": ""
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find entities with multiple attributes",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person.name",
+          "operator": "notNull",
+          "value": null
+        },
+        {
+          "field": "Person.email",
+          "operator": "contains",
+          "value": "@"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find entities using OR condition",
+    "query": {
+      "combinator": "or",
+      "rules": [
+        {
+          "field": "Company.industry",
+          "operator": "=",
+          "value": "Technology"
+        },
+        {
+          "field": "Company.industry",
+          "operator": "=",
+          "value": "Finance"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Complex nested query example",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person.name",
+          "operator": "notNull",
+          "value": null
+        },
+        {
+          "combinator": "or",
+          "rules": [
+            {
+              "field": "Person.title",
+              "operator": "contains",
+              "value": "Engineer"
+            },
+            {
+              "field": "Person.title",
+              "operator": "contains",
+              "value": "Developer"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find persons working at companies (relationship)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "WorksAt",
+          "value": "Company"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find persons connected to other persons (relationship)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "ConnectedTo",
+          "value": "Person"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find companies founded by persons (relationship)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "Founded",
+          "value": "Company"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Find persons connected to someone named John (complex)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "ConnectedTo",
+          "value": "Person"
+        },
+        {
+          "field": "Person.name",
+          "operator": "=",
+          "value": "John Smith"
+        }
+      ]
+    }
+  },
+  {
+    "description": "Multi-relationship LinkedIn query (advanced)",
+    "query": {
+      "combinator": "and",
+      "rules": [
+        {
+          "field": "Person",
+          "operator": "WorksAt",
+          "value": "Company"
+        },
+        {
+          "field": "Company.industry",
+          "operator": "=",
+          "value": "Technology"
+        },
+        {
+          "combinator": "and",
+          "rules": [
+            {
+              "field": "Person",
+              "operator": "ConnectedTo",
+              "value": "Person"
+            },
+            {
+              "combinator": "and",
+              "rules": [
+                {
+                  "field": "Person",
+                  "operator": "Founded",
+                  "value": "Company"
+                },
+                {
+                  "field": "Person.title",
+                  "operator": "contains",
+                  "value": "CEO"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

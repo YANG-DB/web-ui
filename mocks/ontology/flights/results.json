@@ -1,0 +1,291 @@
+{
+  "requestId": "FL-RES-001",
+  "elapsed": "00000003",
+  "renderElapsed": "00000020",
+  "totalElapsed": "00000023",
+  "data": [
+    {
+      "type": "Flight",
+      "id": "F001",
+      "flightNum": "EQ0B5QV",
+      "carrier": "OpenSearch-Air",
+      "timestamp": "2025-12-09T02:56:56",
+      "avgTicketPrice": 617.43,
+      "cancelled": false,
+      "flightDelay": false,
+      "flightDelayMin": 0,
+      "flightDelayType": "No Delay",
+      "distanceKilometers": 8032.20,
+      "distanceMiles": 4990.98,
+      "flightTimeHour": 11.16,
+      "flightTimeMin": 669.35,
+      "dayOfWeek": 1,
+      "origin": "Helsinki Vantaa Airport",
+      "originAirportID": "HEL",
+      "originCityName": "Helsinki",
+      "originCountry": "FI",
+      "originRegion": "FI-ES",
+      "originWeather": "Clear",
+      "dest": "Tulsa International Airport",
+      "destAirportID": "TUL",
+      "destCityName": "Tulsa",
+      "destCountry": "US",
+      "destRegion": "US-OK",
+      "destWeather": "Damaging Wind"
+    },
+    {
+      "type": "Flight",
+      "id": "F002",
+      "flightNum": "QAO3BV2",
+      "carrier": "OpenSearch-Air",
+      "timestamp": "2025-12-09T00:55:27",
+      "avgTicketPrice": 808.39,
+      "cancelled": false,
+      "flightDelay": false,
+      "flightDelayMin": 0,
+      "flightDelayType": "No Delay",
+      "distanceKilometers": 1704.49,
+      "distanceMiles": 1059.12,
+      "flightTimeHour": 2.58,
+      "flightTimeMin": 154.95,
+      "dayOfWeek": 1,
+      "origin": "Ataturk International Airport",
+      "originAirportID": "IST",
+      "originCityName": "Istanbul",
+      "originCountry": "TR",
+      "originRegion": "TR-34",
+      "originWeather": "Sunny",
+      "dest": "Malpensa International Airport",
+      "destAirportID": "MI12",
+      "destCityName": "Milan",
+      "destCountry": "IT",
+      "destRegion": "IT-25",
+      "destWeather": "Heavy Fog"
+    },
+    {
+      "type": "Flight",
+      "id": "F003",
+      "flightNum": "RRWWG9B",
+      "carrier": "OpenSearch-Air",
+      "timestamp": "2025-12-09T01:13:54",
+      "avgTicketPrice": 952.47,
+      "cancelled": false,
+      "flightDelay": true,
+      "flightDelayMin": 270,
+      "flightDelayType": "Late Aircraft Delay",
+      "distanceKilometers": 7360.49,
+      "distanceMiles": 4573.60,
+      "flightTimeHour": 13.26,
+      "flightTimeMin": 795.75,
+      "dayOfWeek": 1,
+      "origin": "Minneapolis-St Paul International/Wold-Chamberlain Airport",
+      "originAirportID": "MSP",
+      "originCityName": "Minneapolis",
+      "originCountry": "US",
+      "originRegion": "US-MN",
+      "originWeather": "Cloudy",
+      "dest": "Turin Airport",
+      "destAirportID": "TO11",
+      "destCityName": "Torino",
+      "destCountry": "IT",
+      "destRegion": "IT-21",
+      "destWeather": "Clear"
+    },
+    {
+      "type": "Flight",
+      "id": "F004",
+      "flightNum": "X466AR5",
+      "carrier": "OpenSearch-Air",
+      "timestamp": "2025-12-09T11:06:52",
+      "avgTicketPrice": 774.68,
+      "cancelled": false,
+      "flightDelay": true,
+      "flightDelayMin": 195,
+      "flightDelayType": "Security Delay",
+      "distanceKilometers": 2696.67,
+      "distanceMiles": 1675.63,
+      "flightTimeHour": 6.06,
+      "flightTimeMin": 363.54,
+      "dayOfWeek": 1,
+      "origin": "Olenya Air Base",
+      "originAirportID": "XLMO",
+      "originCityName": "Olenegorsk",
+      "originCountry": "RU",
+      "originRegion": "RU-MUR",
+      "originWeather": "Cloudy",
+      "dest": "Zurich Airport",
+      "destAirportID": "ZRH",
+      "destCityName": "Zurich",
+      "destCountry": "CH",
+      "destRegion": "CH-ZH",
+      "destWeather": "Clear"
+    },
+    {
+      "type": "Flight",
+      "id": "F005",
+      "flightNum": "PX07NI5",
+      "carrier": "Logstash Airways",
+      "timestamp": "2025-12-09T07:12:38",
+      "avgTicketPrice": 552.63,
+      "cancelled": false,
+      "flightDelay": false,
+      "flightDelayMin": 0,
+      "flightDelayType": "No Delay",
+      "distanceKilometers": 9674.67,
+      "distanceMiles": 6011.56,
+      "flightTimeHour": 10.08,
+      "flightTimeMin": 604.67,
+      "dayOfWeek": 1,
+      "origin": "Charles de Gaulle International Airport",
+      "originAirportID": "CDG",
+      "originCityName": "Paris",
+      "originCountry": "FR",
+      "originRegion": "FR-J",
+      "originWeather": "Clear",
+      "dest": "Chubu Centrair International Airport",
+      "destAirportID": "NGO",
+      "destCityName": "Tokoname",
+      "destCountry": "JP",
+      "destRegion": "SE-BD",
+      "destWeather": "Thunder & Lightning"
+    },
+    {
+      "type": "Airport",
+      "id": "A001",
+      "airportID": "HEL",
+      "code": "HEL",
+      "cityName": "Helsinki",
+      "country": "FI",
+      "region": "FI-ES"
+    },
+    {
+      "type": "Airport",
+      "id": "A002",
+      "airportID": "TUL",
+      "code": "TUL",
+      "cityName": "Tulsa",
+      "country": "US",
+      "region": "US-OK"
+    },
+    {
+      "type": "Airport",
+      "id": "A003",
+      "airportID": "IST",
+      "code": "IST",
+      "cityName": "Istanbul",
+      "country": "TR",
+      "region": "TR-34"
+    },
+    {
+      "type": "Airport",
+      "id": "A004",
+      "airportID": "MI12",
+      "code": "MI12",
+      "cityName": "Milan",
+      "country": "IT",
+      "region": "IT-25"
+    },
+    {
+      "type": "Airport",
+      "id": "A005",
+      "airportID": "MSP",
+      "code": "MSP",
+      "cityName": "Minneapolis",
+      "country": "US",
+      "region": "US-MN"
+    },
+    {
+      "type": "Carrier",
+      "id": "C001",
+      "code": "OSA",
+      "name": "OpenSearch-Air"
+    },
+    {
+      "type": "Carrier",
+      "id": "C002",
+      "code": "LSA",
+      "name": "Logstash Airways"
+    },
+    {
+      "type": "Route",
+      "id": "R001",
+      "distanceKilometers": 8032.20,
+      "distanceMiles": 4990.98,
+      "avgFlightTimeMin": 669.35
+    }
+  ],
+  "relationships": [
+    {
+      "type": "OriginAirport",
+      "id": "REL001",
+      "source": "F001",
+      "target": "A001"
+    },
+    {
+      "type": "DestinationAirport",
+      "id": "REL002",
+      "source": "F001",
+      "target": "A002"
+    },
+    {
+      "type": "OperatedBy",
+      "id": "REL003",
+      "source": "F001",
+      "target": "C001"
+    },
+    {
+      "type": "OriginAirport",
+      "id": "REL004",
+      "source": "F002",
+      "target": "A003"
+    },
+    {
+      "type": "DestinationAirport",
+      "id": "REL005",
+      "source": "F002",
+      "target": "A004"
+    },
+    {
+      "type": "OperatedBy",
+      "id": "REL006",
+      "source": "F002",
+      "target": "C001"
+    },
+    {
+      "type": "OriginAirport",
+      "id": "REL007",
+      "source": "F003",
+      "target": "A005"
+    },
+    {
+      "type": "OperatedBy",
+      "id": "REL008",
+      "source": "F003",
+      "target": "C001"
+    },
+    {
+      "type": "OperatedBy",
+      "id": "REL009",
+      "source": "F005",
+      "target": "C002"
+    },
+    {
+      "type": "ConnectsTo",
+      "id": "REL010",
+      "source": "A001",
+      "target": "A002"
+    },
+    {
+      "type": "ConnectsTo",
+      "id": "REL011",
+      "source": "A003",
+      "target": "A004"
+    },
+    {
+      "type": "OnRoute",
+      "id": "REL012",
+      "source": "F001",
+      "target": "R001"
+    }
+  ]
+}

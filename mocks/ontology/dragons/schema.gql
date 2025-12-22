@@ -1,0 +1,113 @@
+# GraphQL Schema for Dragons Ontology
+# A fantasy world with persons, dragons, horses, kingdoms, and guilds
+
+# ============================================================================
+# Core Entity Types
+# ============================================================================
+
+type Person {
+  id: ID!
+  type: String!
+  firstName: String!
+  lastName: String!
+  gender: String
+  age: Int
+  birthDate: String
+  deathDate: String
+  height: Float
+
+  # Relationship resolvers
+  dragons(limit: Int = 10): [Dragon!]!
+  horses(limit: Int = 10): [Horse!]!
+  friends(limit: Int = 10): [Person!]!
+  kingdom: Kingdom
+  guild: Guild
+  subjects(limit: Int = 10): [Person!]!
+  registeredIn: [Guild!]!
+}
+
+type Dragon {
+  id: ID!
+  type: String!
+  name: String!
+  color: String
+  gender: String
+  power: Int
+  birthDate: String
+
+  # Relationship resolvers
+  owner: Person
+  riders(limit: Int = 10): [Person!]!
+  fires(limit: Int = 10): [Dragon!]!
+  freezes(limit: Int = 10): [Dragon!]!
+}
+
+type Horse {
+  id: ID!
+  type: String!
+  name: String!
+  color: String
+  weight: Float
+  maxSpeed: Float
+  distance: Float
+
+  # Relationship resolvers
+  owner: Person
+  riders(limit: Int = 10): [Person!]!
+}
+
+type Kingdom {
+  id: ID!
+  type: String!
+  name: String!
+  king: String
+  queen: String
+  independenceDay: String
+  funds: Float
+
+  # Relationship resolvers
+  citizens(limit: Int = 10): [Person!]!
+  monarch: Person
+  registeredGuilds(limit: Int = 10): [Guild!]!
+}
+
+type Guild {
+  id: ID!
+  type: String!
+  name: String!
+  description: String
+  iconId: String
+  url: String
+  establishDate: String
+
+  # Relationship resolvers
+  members(limit: Int = 10): [Person!]!
+  kingdom: Kingdom
+}
+
+# ============================================================================
+# Query Type
+# ============================================================================
+
+type Query {
+  # Entity queries
+  person(id: ID!): Person
+  persons(limit: Int = 100): [Person!]!
+
+  dragon(id: ID!): Dragon
+  dragons(limit: Int = 100): [Dragon!]!
+
+  horse(id: ID!): Horse
+  horses(limit: Int = 100): [Horse!]!
+
+  kingdom(id: ID!): Kingdom
+  kingdoms(limit: Int = 100): [Kingdom!]!
+
+  guild(id: ID!): Guild
+  guilds(limit: Int = 100): [Guild!]!
+
+  # Correlated relationship queries
+  personsWithKnowAndOriginatedIn(limit: Int = 10): [Person!]!
+  personsWithOwnAndMemberOf(limit: Int = 10): [Person!]!
+  dragonsWithFireAndFreeze(limit: Int = 10): [Dragon!]!
+}
