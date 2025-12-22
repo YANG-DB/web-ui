@@ -21,8 +21,9 @@ Build complex graph queries without writing code using an intuitive drag-and-dro
 - **Query Templates**: Pre-built query examples for common patterns (9 Dragons, 10 LinkedIn templates)
 - **Relationship-Based Querying**: Select entities and traverse relationships visually
 - **Nested Query Patterns**: Build multi-level relationship queries with visual nesting
-- **Query Preview**: View generated queries in JSON, GraphQL, or Cypher format
-- **Property Filtering**: Add conditions on entity properties
+- **Variable Scoping**: Cypher-like variable system that distinguishes between different instances of the same entity type (e.g., `Person(p1)` vs `Person(p2)`)
+- **Query Preview**: View generated queries in JSON, GraphQL, or Cypher format with proper variable scoping
+- **Property Filtering**: Add conditions on entity properties with automatic variable inference
 - **Relationship Expansion**: Click "+" to explore relationship targets
 - **Mock Data Mode**: Test queries with generated sample data when backend is unavailable
 - **Collapsible Panels**: Minimize query builder or results to maximize workspace
@@ -261,6 +262,9 @@ A professional networking ontology for social and business data.
 - [Mock Data Generators](docs/MOCK_DATA.md) - Client-side data generation for testing
 - [Connectivity Visualization](docs/CONNECTIVITY_VISUALIZATION.md) - Node sizing and coloring based on connections
 - [Relationship Patterns](RELATIONSHIP_PATTERNS.md) - Understanding relationship patterns
+- [Variable Scoping System](docs/VARIABLE_SCOPING_SUMMARY.md) - Cypher-like variable scoping for query builder
+  - [Implementation Design](docs/VARIABLE_SCOPING_DESIGN.md) - Complete architectural design
+  - [Testing Guide](docs/VARIABLE_SCOPING_TESTING.md) - Testing instructions and examples
 
 ### Development
 - [GitHub Actions Setup](GITHUB_ACTIONS_SETUP.md) - CI/CD configuration

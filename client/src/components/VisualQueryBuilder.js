@@ -405,7 +405,22 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
               if (relationship) {
                 const sourceEntity = rule.field;
                 const relType = rule.operator;
-                const targetEntity = rule.value;
+                let targetEntity = rule.value;
+
+                // If rule.value doesn't look like an entity type (e.g., it's "1" or empty),
+                // look up the valid target entities from the relationship definition
+                const { entityTypes } = ontology.data[0];
+                if (!targetEntity || !entityTypes?.some(e => e.eType === targetEntity)) {
+                  // Find valid target entities for this source entity
+                  const validTargets = relationship.ePairs
+                    .filter(pair => pair.eTypeA === sourceEntity)
+                    .map(pair => pair.eTypeB);
+
+                  if (validTargets.length > 0) {
+                    targetEntity = validTargets[0];
+                    console.log(`[Cypher] Inferred target entity type: ${targetEntity} (rule.value was: ${rule.value})`);
+                  }
+                }
 
                 const sourceVar = getVarName(sourceEntity);
                 const targetVar = getVarName(targetEntity);
