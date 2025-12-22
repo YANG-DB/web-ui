@@ -354,23 +354,31 @@ export function queryBuilderToGraphQLQuery(ruleGroup, ontologyData) {
       // Determine the root entity for this component
       const entityFrequency = {};
       componentRels.forEach(rel => {
-        entityFrequency[rel.source] = (entityFrequency[rel.source] || 0) + 1;
+        // Strongly prefer relationship sources (they're the starting point)
+        entityFrequency[rel.source] = (entityFrequency[rel.source] || 0) + 3;
+        // Relationship targets get lower weight
+        entityFrequency[rel.target] = (entityFrequency[rel.target] || 0) + 1;
       });
 
-      // Also consider entities with property conditions as potential roots
+      // Property conditions add weight but don't override relationship sources
       propertyConditions.forEach(cond => {
         const [entityType] = cond.field.split('.');
         if (componentEntities.has(entityType)) {
-          entityFrequency[entityType] = (entityFrequency[entityType] || 0) + 2; // Weight property filters higher
+          entityFrequency[entityType] = (entityFrequency[entityType] || 0) + 2;
         }
       });
 
-      // Find root entity (highest frequency)
+      // Find root entity (highest frequency, prefer relationship sources in case of tie)
       let rootEntity = null;
       let maxFreq = 0;
+      const relationshipSources = new Set(componentRels.map(r => r.source));
+
       Object.entries(entityFrequency).forEach(([entity, freq]) => {
         if (freq > maxFreq) {
           maxFreq = freq;
+          rootEntity = entity;
+        } else if (freq === maxFreq && relationshipSources.has(entity)) {
+          // Tiebreaker: prefer entities that are relationship sources
           rootEntity = entity;
         }
       });
