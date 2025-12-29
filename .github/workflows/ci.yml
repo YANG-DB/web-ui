@@ -35,7 +35,7 @@ jobs:
         run: yarn test
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: matrix.node-version == '20.x'
         with:
           file: ./coverage/coverage-final.json
@@ -80,7 +80,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload client coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: matrix.node-version == '20.x'
         with:
           file: ./client/coverage/coverage-final.json
