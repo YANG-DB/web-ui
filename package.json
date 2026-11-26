@@ -1,6 +1,6 @@
 {
   "name": "web-ui-mock-server",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "scripts": {
     "postinstall": "cd client && yarn install",
     "client:dev": "cd client && yarn start:dev",
@@ -19,6 +19,8 @@
     "nodemon": "^2.0.2"
   },
   "devDependencies": {
-    "concurrently": "^4.0.1"
+    "concurrently": "^4.0.1",
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4"
   }
 }

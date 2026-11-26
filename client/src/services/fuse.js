@@ -28,7 +28,7 @@ async function readBody(response) {
   }
 }
 
-async function request(path, { method = "GET", params, form } = {}) {
+async function request(path, { method = "GET", params, form, json } = {}) {
   let url = `${fuseBaseUrl()}${path}`;
   if (params) {
     const qs = new URLSearchParams(dropEmpty(params)).toString();
@@ -40,6 +40,9 @@ async function request(path, { method = "GET", params, form } = {}) {
     // Fuse reads run parameters as request parameters, not as a JSON body.
     init.headers["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8";
     init.body = new URLSearchParams(dropEmpty(form)).toString();
+  } else if (json !== undefined) {
+    init.headers["Content-Type"] = "application/json";
+    init.body = JSON.stringify(json);
   }
 
   let response;
@@ -64,6 +67,16 @@ function dropEmpty(obj) {
     }
   });
   return out;
+}
+
+// Fuse 0.9.1 fails when two queries are created at the same time ("failed building the
+// cursor request ... zip file closed", returned inside a 200). Query runs therefore go
+// through this queue, one at a time. See "Fuse-side asks" in docs/UX_AND_FUSE_PLAN.md.
+let queue = Promise.resolve();
+export function serialized(task) {
+  const run = queue.then(task, task);
+  queue = run.catch(() => null);
+  return run;
 }
 
 function runParams(text, { ontology, pageSize = DEFAULT_PAGE_SIZE, cursorType } = {}) {
@@ -99,10 +112,18 @@ const fuse = {
   // Runs a query in any language Fuse registers (cypher, graphQL, sparql, ...).
   // An unknown language fails with a FuseError listing the available ones.
   async runLanguage(lang, text, opts) {
-    const body = await request(`/query/${encodeURIComponent(lang)}/run`, {
-      method: "POST",
-      form: runParams(text, opts)
-    });
+    const body = await serialized(() =>
+      request(`/query/${encodeURIComponent(lang)}/run`, { method: "POST", form: runParams(text, opts) })
+    );
+    return unwrapRunResponse(body);
+  },
+
+  // Runs a V1 query (the JSON query language Fuse runs natively, see helpers/queryToV1).
+  // `query` is {name, ont, elements}; pageSize and cursorType go in the query string.
+  async runV1(query, { pageSize = DEFAULT_PAGE_SIZE, cursorType } = {}) {
+    const body = await serialized(() =>
+      request("/query/v1/run", { method: "POST", params: { pageSize, cursorType }, json: query })
+    );
     return unwrapRunResponse(body);
   },
 
@@ -115,9 +136,9 @@ const fuse = {
   },
 
   async getNeighbors(ontology, type, id) {
-    const body = await request("/query/graph/api/getNeighbors", {
-      params: { ontology, type, id }
-    });
+    const body = await serialized(() =>
+      request("/query/graph/api/getNeighbors", { params: { ontology, type, id } })
+    );
     return unwrapRunResponse(body);
   },
 

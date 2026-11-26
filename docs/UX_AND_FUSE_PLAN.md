@@ -86,31 +86,76 @@ CORS is already open on Fuse (`Access-Control-Allow-Origin: *`, OPTIONS answered
   documented response in yang-db `docs/tutorial/sample/dragons/query-the-data.md`. Keep `extractResults` unchanged.
   *Done:* also `unwrapPageResponse` (for `nextPageData`) and `unwrapContent` (strips the envelope). Both accept the
   response with or without the `{requestId, data}` envelope, because `getNeighbors` returns it without.
-- [ ] **A4. Error handling.** `callApi` assumes errors look like `{message}`. Fuse errors carry `errorCode` and
+- [x] **A4. Error handling.** `callApi` assumes errors look like `{message}`. Fuse errors carry `errorCode` and
   `errorDescription`, sometimes inside `data.error` with a 200 status. Normalize both into one `FuseError` and
   show `errorDescription` to the user in the results panel, not only in the console.
   *Half done:* `helpers/fuseError.js` (`FuseError`, `toFuseError`, `findFuseError`) normalizes every shape seen
-  live (enveloped 500, bare 404 for an unknown language, errors inside a 200), and `fuse.js` throws it. Showing it
-  in the results panel lands with A5, when the Research page first calls Fuse.
-- [ ] **A5. Backend switch.** Replace the "USE MOCK DATA" checkbox with a backend selector: *Fuse* or *Mock*.
+  live (enveloped 500, bare 404 for an unknown language, errors inside a 200), and `fuse.js` throws it.
+  *Done (UI):* the Research page shows `Query failed: <errorDescription>` in the results panel (`RunStatus`).
+- [x] **A5. Backend switch.** Replace the "USE MOCK DATA" checkbox with a backend selector: *Fuse* or *Mock*.
   Show a connection dot driven by `health()`, and fall back to Mock with a visible notice when Fuse is down.
-- [ ] **A6. Ontologies from Fuse.** In Fuse mode, load the ontology list and the selected ontology from the catalog.
+  *Done, with three options:* Fuse, Mock server (`server.js`, as before) and Generated sample (the old "USE MOCK
+  DATA" checkbox). The dot polls `health()` every 15 s. Fuse is picked at start-up when it answers.
+- [x] **A6. Ontologies from Fuse.** In Fuse mode, load the ontology list and the selected ontology from the catalog.
   Map ids case-insensitively, so `dragons` finds `Dragons`. Templates stay in `mocks/ontology/*/templates.json`,
   since Fuse has no templates endpoint; hide templates for ontologies that have none.
-- [ ] **A7. Submit the builder's query to Fuse.** Send the builder's Cypher to `/fuse/query/cypher/run`.
+  *Done:* `resolveOntologyId` in `helpers/normalizeFuseResult.js`; the builder and the template picker take a
+  `loadOntology` prop. Templates live in `constants/queryTemplates.js` (they were inline in `QueryTemplates.js`; the
+  mock server's `templates.json` files are a separate copy). The picker already says "No templates available".
+- [x] **A7. Submit the builder's query to Fuse.** Send the builder's Cypher to `/fuse/query/cypher/run`.
   First run every template's Cypher against a Fuse loaded with the Dragons sample and record pass or fail in
   this file. Fix the generator where it emits syntax Fuse rejects. Known Fuse Cypher limits (yang-db
   `docs/revival/KNOWN_ISSUES.md`): no node-label union `(n:A|B)`, use `WHERE n:A OR n:B`; no cyclic patterns;
   `(n:A:B)` means "any of" rather than "all of".
-- [ ] **A8. Paging.** Request a sensible `pageSize` (100 for the graph view). Show "N results, load more" when
+  *Done:* generator extracted to `helpers/queryToCypher.js` (shared model in `helpers/analyzeQuery.js`, snapshot
+  tests for every template of all three ontologies). Fixed: relationship types were upper-cased (`OWN`, rejected);
+  property-only queries produced `MATCH (n) WHERE p.x ...`, which Fuse runs while ignoring the unbound filter
+  (1000 unrelated rows); `Person Know Person` reused one variable (a cycle); quotes in values were not escaped.
+  Template values changed to ones in the data (`BLACK`, `RED`/`BLUE`, `MALE`/`FEMALE`, `Christiana`), and template 8
+  is now a connected pattern (the old one, two disconnected chains, got "UnionPlanSearcher - No valid plan").
+
+  Results against Fuse 0.9.1 with the Dragons sample (`yarn test:fuse`, page size 100):
+
+  | # | Template | Before | Cypher | V1 |
+  |---|---|---|---|---|
+  | 0 | Find all persons by first name | unrelated rows (`MATCH (n)`, filter ignored) | 100 | 100 |
+  | 1 | Find dragons with specific color | unrelated rows (`MATCH (n)`) | 100 (121 total) | 100 |
+  | 2 | Find entities with multiple attributes | unrelated rows (`MATCH (n)`) | 100 | 100 |
+  | 3 | Find entities using OR condition | unrelated rows (`MATCH (n)`) | 100 | 100 |
+  | 4 | Complex nested query example | unrelated rows (`MATCH (n)`) | 100 | 100 |
+  | 5 | Find dragons owned by persons | rejected (`OWN`) | 96 | 96 |
+  | 6 | Find persons who are members of guilds | rejected (`MEMBEROF`) | 83 | 83 |
+  | 7 | Find persons who know someone named Christiana | rejected; no George in the data | 10 | 10 |
+  | 8 | Black dragon owners with a horse from a funded kingdom | no valid plan | 100 | 100 |
+- [x] **A8. Paging.** Request a sensible `pageSize` (100 for the graph view). Show "N results, load more" when
   `actualPageSize == requestedPageSize`, using `nextPage`. Merge new assignments into the existing result.
+  *Done:* `appendFuseResult`; verified live (121 black dragons: 100, then 21 and the button goes away).
 - [ ] **A9. Expand node.** Wire the existing `updateResult(nodeId)` path to `getNeighbors` in Fuse mode. If the route
   turns out broken, record it under **Fuse-side asks** and fall back to running
   `MATCH (n:<Type>)-[r]-(m) WHERE id(n) = '<id>' RETURN *` through `runCypher`, if Fuse supports that form.
-- [ ] **A10. Query cleanup.** Call `deleteQuery` for a result the user discards or replaces, so stored queries don't
+  *Half done:* `fuse.getNeighbors` works and is covered live; its result normalizes (the node's own id is
+  `Dragon_100`). Not yet wired to the graph's expand action: `Force.js` still calls the mock `updateResult`, and the
+  entity's raw `id` and `eType` are now on each node for this.
+- [x] **A10. Query cleanup.** Call `deleteQuery` for a result the user discards or replaces, so stored queries don't
   pile up on the server.
-- [ ] **A11. Integration check.** Add a script or test, skipped unless `FUSE_URL` is set, that runs health, ontology
+  *Done:* the previous query is deleted when a run replaces it or the backend changes.
+- [x] **A11. Integration check.** Add a script or test, skipped unless `FUSE_URL` is set, that runs health, ontology
   load and one template against a live Fuse. Document how to start Fuse with yang-db's Docker setup.
+  *Done, wider:* `client/src/integration/fuse.integration.test.js` (`yarn test:fuse`) covers every `fuse.js` call,
+  every Dragons template in Cypher and V1, and the Dragons tutorial's queries and counts. `scripts/fuse-up.sh` starts
+  OpenSearch and Fuse with plain `docker run` (no yang-db checkout) and loads the data; CI's `fuse-integration` job
+  uses it. Tutorial: `docs/tutorials/DRAGONS.md`.
+
+### A12. V1 as a second query language (asked for on 2026-11-26)
+
+- [x] `helpers/queryToV1.js` turns the builder's query into a V1 query (Start, ETyped, Rel, EProp, EPropGroup with
+  `all`/`some`, Quant1 for branches). Numbers are typed from the ontology. contains / begins with / ends with go out
+  as `like` with `*` wildcards, which Fuse supports where its Cypher does not.
+- [x] What V1 cannot express is refused with a clear message, not sent: an OR across conditions on different
+  entities, disconnected patterns, cycles.
+- [x] `fuse.runV1(query, {pageSize})` posts the JSON to `/fuse/query/v1/run`. The Research page has a
+  **Language** selector (Cypher / V1) in Fuse mode, and the preview shows "V1 (Fuse)".
+- [ ] Next: a raw V1 JSON editor next to the Cypher editor of B5.
 
 ### Fuse-side asks (for the yang-db repo, not this one)
 
@@ -126,6 +171,16 @@ Record anything you hit here with the request, the response and the expected beh
   sparql`.
 - A "flat" run option (return only the first page's data) would let simple clients skip the unwrapping in A3.
 - Ontology ids are case-sensitive.
+- **Concurrent runs fail.** Two `POST /fuse/query/cypher/run` (or `v1/run`) at the same moment: one answers 200 with
+  `data.error = {errorCode: "Query", errorDescription: "failed building the cursor request forwardPaths:
+  java.lang.IllegalStateException: zip file closed"}`. Expected: both succeed. Worked around: `fuse.js` sends runs
+  one at a time (`serialized`).
+- **`CONTAINS` is not supported** in Cypher (`contains not supported constraint`) nor as V1 op `contains`. V1 `like`
+  with wildcards works, so web-ui uses that. Expected: `CONTAINS` maps to the same.
+- **`STARTS WITH` / `ENDS WITH`** (Cypher) and V1 `starts with` / `ends with` on `Person.firstName` (a `text` field)
+  return 0 rows where `like 'C*'` matches. Expected: the same rows as `like`.
+- Errors inside a 200 (above) make clients check `data.error`, `cursorResourceInfos[].error` and
+  `pageResourceInfos[].error` on every success. Expected: a non-2xx status.
 - No authentication. Fine for local use, a blocker before any shared deployment.
 
 ## Part B: query UX
@@ -167,7 +222,8 @@ References to study before designing (stars as of 2026-11-26):
   words, e.g. "Person, originated in, Kingdom where funds > 1000"), with an Edit button. The results take the rest.
 - [ ] **History.** Keep the last 20 runs in the store and in `localStorage`. Show them as a list (query summary,
   time, result count) that re-opens a result or reloads the query into the builder. Reuse `HistoryItem`.
-- [ ] **Empty and loading states.** Show a clear "Run a query or pick a template" empty state, a spinner with an
+- [ ] **Empty and loading states.** *Partly done:* spinner with an elapsed timer and the A4 error message are in;
+  an empty result no longer crashes the page. Still missing: the "Run a query or pick a template" empty state. Show a clear "Run a query or pick a template" empty state, a spinner with an
   elapsed timer while running, and the error message from A4 on failure.
 
 ### B4. Path builder
@@ -203,9 +259,14 @@ References to study before designing (stars as of 2026-11-26):
 ## Status
 
 - 2026-11-26: Housekeeping done (`core.fileMode=false`, ~950 `._*` files deleted, `._*` added to `.gitignore`).
-- 2026-11-26: A1, A2, A3 done and the A4 helpers done, on branch `fuse/a1-a4-client`. Tested against Fuse 0.9.1
-  (`ghcr.io/yang-db/yang.db:0.9.1`) with the Dragons sample loaded. Nothing in the UI calls Fuse yet.
-- Note: root `npm test` passes its 20 tests but fails the coverage gate on `server.js` (50% branches, 67% functions,
-  against 70%). That predates this work.
+- 2026-11-26: A1-A3 and the A4 helpers in PR #46 (`fuse/a1-a4-client`).
+- 2026-11-26: A4 (UI), A5, A6, A7, A8, A10, A11 and A12 (V1) done on `fuse/ui-v1-ci-release`, stacked on #46.
+  CI rewritten (server, client, live Fuse job), Release workflow publishes from `vX.Y.Z` tags, version 0.2.0,
+  Dragons tutorial. Fixed on the way: empty results crashed the page, re-running during a layout animation crashed
+  it, the root tests could not run in CI (`jest`/`supertest` undeclared), and the server coverage gate now passes
+  (96% statements, 82% branches).
+- Definition of done, Part A: a new user can pick a template, run it against Fuse, page through results and see
+  errors, without touching mock mode. Still missing: readable names and types (B1), a properties panel (B2) and
+  expand neighbors in the graph (A9).
 
-**Next step:** A5 (backend selector and health dot) together with the UI half of A4, then A6.
+**Next step:** B1 (graph readability), then A9's UI half with the B2 details panel.

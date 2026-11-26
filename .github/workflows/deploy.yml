@@ -1,87 +1,98 @@
-name: Deploy
+name: Release
 
+# A version tag (vX.Y.Z) publishes a GitHub release with the deployment package and the
+# matching CHANGELOG.md section as notes. Pushes to master build the same package as an
+# artifact. See docs/RELEASING.md.
 on:
   push:
-    branches: [ main, master ]
+    branches: [master]
     tags:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  deploy:
-    name: Deploy Application
+  package:
+    name: Test, build and package
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'yarn'
+          node-version: 22.x
+          cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            client/yarn.lock
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          yarn install --frozen-lockfile --ignore-scripts
+          cd client && yarn install --frozen-lockfile
 
-      - name: Install client dependencies
-        run: cd client && yarn install --frozen-lockfile
-
-      - name: Run tests
+      - name: Server tests
         run: yarn test
 
+      - name: Client tests
+        working-directory: client
+        run: yarn test --watchAll=false
+        env:
+          CI: true
+
       - name: Build client
-        run: cd client && yarn build
+        working-directory: client
+        run: yarn build
         env:
           CI: false
 
+      - name: Check the tag matches package versions
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for f in package.json client/package.json; do
+            v="$(node -p "require('./$f').version")"
+            if [ "$v" != "$tag" ]; then
+              echo "::error file=$f::version $v does not match tag v$tag"
+              exit 1
+            fi
+          done
+
       - name: Create deployment package
         run: |
-          mkdir -p deployment
-          cp -r client/build deployment/client
-          cp server.js deployment/
-          cp package.json deployment/
-          cp -r mocks deployment/
-          cd deployment && tar -czf ../deployment.tar.gz .
+          name="web-ui-${GITHUB_REF_NAME//\//-}"
+          mkdir -p "dist/$name"
+          cp -r client/build "dist/$name/client"
+          cp -r server.js package.json yarn.lock mocks scripts README.md CHANGELOG.md LICENSE "dist/$name/"
+          tar -czf "$name.tar.gz" -C dist "$name"
+          echo "PACKAGE=$name.tar.gz" >> "$GITHUB_ENV"
 
-      - name: Upload deployment artifact
+      - name: Upload package
         uses: actions/upload-artifact@v4
         with:
           name: deployment-package
-          path: deployment.tar.gz
+          path: ${{ env.PACKAGE }}
           retention-days: 90
 
-      - name: Create Release
+      - name: Release notes from CHANGELOG.md
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v1
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error file=CHANGELOG.md::no section for $version"
+            exit 1
+          fi
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
         with:
-          files: deployment.tar.gz
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Example: Deploy to server via SSH
-      # Uncomment and configure as needed
-      # - name: Deploy to Production Server
-      #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      #   uses: appleboy/scp-action@master
-      #   with:
-      #     host: ${{ secrets.DEPLOY_HOST }}
-      #     username: ${{ secrets.DEPLOY_USER }}
-      #     key: ${{ secrets.DEPLOY_KEY }}
-      #     source: "deployment.tar.gz"
-      #     target: "/var/www/app"
-
-      # - name: Restart Application
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.DEPLOY_HOST }}
-      #     username: ${{ secrets.DEPLOY_USER }}
-      #     key: ${{ secrets.DEPLOY_KEY }}
-      #     script: |
-      #       cd /var/www/app
-      #       tar -xzf deployment.tar.gz
-      #       yarn install --production
-      #       pm2 restart web-ui-server
+          files: ${{ env.PACKAGE }}
+          body_path: release-notes.md
