@@ -4,6 +4,7 @@ import extractResults from "../helpers/extractResults";
 import { buildTypeColors, displayName, typeBadge, nodeSize, countByType } from "../helpers/graphStyle";
 import apiService from "../services/api";
 import GraphLegend from "./GraphLegend";
+import DetailsPanel from "./DetailsPanel";
 import styles from "./Force.module.css";
 
 const LINK_DISTANCE = 200;
@@ -93,7 +94,9 @@ const STYLE = [
       color: "#d6ecff",
       "text-background-color": "#0b0e1a",
       "text-background-opacity": 0.75,
-      "text-background-padding": 2
+      "text-background-padding": 2,
+      // Widens the click/tap target of thin edges (Cytoscape hit-tests width + overlay padding).
+      "overlay-padding": 6
     }
   },
   {
@@ -105,7 +108,12 @@ const STYLE = [
       "target-arrow-color": "#7fc8ff"
     }
   },
+  {
+    selector: "edge:selected",
+    style: { "min-zoomed-font-size": 0, width: 3, "line-color": "#ffffff", "target-arrow-color": "#ffffff" }
+  },
   { selector: ".type-hidden", style: { display: "none" } },
+  { selector: ".element-hidden", style: { display: "none" } },
   { selector: ".highlighted", style: { opacity: 1, "z-index": 999, "border-width": 4, width: 3 } },
   { selector: ".dimmed", style: { opacity: 0.2 } }
 ];
@@ -136,8 +144,43 @@ function edgeData(rel, parent) {
     label: rel.rType,
     rType: rel.rType,
     directional: rel.directional,
+    properties: rel.properties || [],
     parent: parent || undefined,
     assignments: rel.assignments || []
+  };
+}
+
+// What the details panel shows for the element with this id, or null when it is gone or
+// hidden.
+function describe(cy, id, expanded) {
+  if (!cy || !id) return null;
+  const ele = cy.getElementById(id);
+  if (!ele.length || !ele.visible()) return null;
+  const data = ele.data();
+  if (ele.isNode()) {
+    return {
+      kind: "node",
+      id,
+      type: data.eType,
+      name: data.label,
+      color: data.color,
+      rawId: data.rawId,
+      degree: ele.connectedEdges().length,
+      expanded: expanded.has(id),
+      properties: data.properties
+    };
+  }
+  const source = ele.source().data();
+  const target = ele.target().data();
+  return {
+    kind: "edge",
+    id,
+    type: data.rType,
+    name: `${source.label} ${data.directional ? "→" : "–"} ${target.label}`,
+    source: { id: source.id, name: source.label },
+    target: { id: target.id, name: target.label },
+    directional: data.directional,
+    properties: data.properties
   };
 }
 
@@ -160,6 +203,13 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
   const [legendItems, setLegendItems] = useState([]);
   const [hiddenTypes, setHiddenTypes] = useState(new Set());
   const [expandError, setExpandError] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [expandingId, setExpandingId] = useState(null);
+  const [hiddenCount, setHiddenCount] = useState(0);
+  // Bumped when the graph changes in ways React does not see (expand, collapse), so the
+  // details panel re-reads it.
+  const [graphVersion, setGraphVersion] = useState(0);
+  const expandRef = useRef(null);
 
   const cyRef = useRef(null);
   const containerRef = useRef(null);
@@ -227,6 +277,9 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
     cyRef.current = cy;
     setHiddenTypes(new Set());
     setExpandError(null);
+    setSelectedId(null);
+    setExpandingId(null);
+    setHiddenCount(0);
     refreshLegend(cy);
 
     // Nodes start without positions ('preset' above), so a force layout spreads them first.
@@ -243,20 +296,22 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
       evt.target.connectedEdges().filter(e => !touchesSelected(e)).removeClass("show-label")
     );
 
-    // Double-tap expands a node's neighbors (a single tap selects it).
-    cy.on("dbltap", "node", evt => {
-      const node = evt.target;
+    // Expands a node's neighbors, or removes them when already expanded. Used by double-tap
+    // and by the details panel.
+    const expand = node => {
       const nodeId = node.id();
 
       if (expandedRef.current.has(nodeId)) {
         cy.remove(cy.elements().filter(el => el.data("parent") === nodeId));
         expandedRef.current.delete(nodeId);
         refreshLegend(cy);
-        return;
+        setGraphVersion(v => v + 1);
+        return Promise.resolve();
       }
 
       setExpandError(null);
-      Promise.resolve(latest.current.onExpandNode(node.data()))
+      setExpandingId(nodeId);
+      return Promise.resolve(latest.current.onExpandNode(node.data()))
         .then(expansion => {
           if (cy.destroyed() || !expansion) return;
           const found = extractResults(expansion);
@@ -286,8 +341,23 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
         })
         .catch(error => {
           if (!cy.destroyed()) setExpandError(`Could not expand ${node.data("label")}: ${error.message}`);
+        })
+        .finally(() => {
+          if (!cy.destroyed()) {
+            setExpandingId(null);
+            setGraphVersion(v => v + 1);
+          }
         });
+    };
+    expandRef.current = expand;
+
+    // A tap selects a node or edge and opens its details; a tap on the background closes them.
+    cy.on("tap", "node, edge", evt => setSelectedId(evt.target.id()));
+    cy.on("tap", evt => {
+      if (evt.target === cy) setSelectedId(null);
     });
+    // Double-tap expands a node's neighbors.
+    cy.on("dbltap", "node", evt => expand(evt.target));
 
     return () => {
       activeLayouts.forEach(layout => layout.stop());
@@ -319,6 +389,52 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
       highlighted.addClass("highlighted").removeClass("dimmed");
     }
   }, [hoveredIndex]);
+
+  // The graph narrows when the panel opens; Cytoscape has to re-measure its container.
+  const panelOpen = selectedId !== null;
+  useEffect(() => {
+    if (cyRef.current) cyRef.current.resize();
+  }, [panelOpen]);
+
+  const details = describe(cyRef.current, selectedId, expandedRef.current);
+  // graphVersion is read so a re-render after expand/collapse refreshes the panel.
+  void graphVersion;
+
+  const closeDetails = useCallback(() => {
+    if (cyRef.current) cyRef.current.elements(":selected").unselect();
+    setSelectedId(null);
+  }, []);
+
+  const selectNode = useCallback(id => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    const node = cy.getElementById(id);
+    if (!node.length) return;
+    cy.elements(":selected").unselect();
+    node.select();
+    cy.animate({ center: { eles: node } }, { duration: 300 });
+    setSelectedId(id);
+  }, []);
+
+  const expandSelected = () => {
+    const cy = cyRef.current;
+    if (cy && selectedId && expandRef.current) expandRef.current(cy.getElementById(selectedId));
+  };
+
+  const hideSelected = () => {
+    const cy = cyRef.current;
+    if (!cy || !selectedId) return;
+    cy.getElementById(selectedId).unselect().addClass("element-hidden");
+    setHiddenCount(cy.elements(".element-hidden").length);
+    setSelectedId(null);
+  };
+
+  const showHidden = () => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    cy.elements(".element-hidden").removeClass("element-hidden");
+    setHiddenCount(0);
+  };
 
   const relayout = useCallback(
     (name, extra) => {
@@ -362,6 +478,7 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
 
   return (
     <div className={styles.forceContainer}>
+      <div className={styles.graphArea}>
       <div className={styles.toolbar}>
         <label className={styles.toolbarLabel}>
           Layout
@@ -374,6 +491,11 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
         <button type="button" onClick={fit} className={styles.toolbarButton} title="Fit the graph to the view">
           Fit
         </button>
+        {hiddenCount > 0 && (
+          <button type="button" onClick={showHidden} className={styles.toolbarButton} title="Show the elements you hid">
+            Show hidden ({hiddenCount})
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setShowSettings(s => !s)}
@@ -415,9 +537,21 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
         )}
       </div>
       <GraphLegend items={legendItems} hidden={hiddenTypes} onToggle={toggleType} />
-      {expandError && <div className={styles.graphError} role="alert">{expandError}</div>}
-      <div className={styles.hint}>Tap a node to show its edges · double-tap to expand · scroll to zoom</div>
+      {expandError && !(details && details.kind === "node") && (
+        <div className={styles.graphError} role="alert">{expandError}</div>
+      )}
+      <div className={styles.hint}>Tap a node or edge for details · double-tap to expand · scroll to zoom</div>
       <div ref={containerRef} className={styles.cytoscape}></div>
+      </div>
+      <DetailsPanel
+        details={details}
+        expanding={details !== null && expandingId === details.id}
+        error={details && details.kind === "node" ? expandError : null}
+        onClose={closeDetails}
+        onExpand={expandSelected}
+        onHide={hideSelected}
+        onSelectNode={selectNode}
+      />
     </div>
   );
 }
