@@ -168,3 +168,16 @@ test("two runs started together reach Fuse one after the other", async () => {
   await Promise.all([fuse.runCypher("a", { ontology: "Dragons" }), fuse.runV1({ elements: [] })]);
   expect(maxInFlight).toBe(1);
 });
+
+test("getV1Schema returns the published schema, or null when the endpoint is missing", async () => {
+  const schema = { $schema: "https://json-schema.org/draft/2020-12/schema", title: "YangDB V1 query" };
+  fetch.mockReturnValueOnce(reply(200, schema));
+  expect(await fuse.getV1Schema()).toEqual(schema);
+  expect(fetch.mock.calls[0][0]).toBe("/fuse/query/v1/schema");
+
+  fetch.mockReturnValueOnce(reply(404, "<html>Not Found</html>"));
+  expect(await fuse.getV1Schema()).toBeNull();
+
+  fetch.mockReturnValueOnce(reply(500, { errorCode: "E", errorDescription: "boom" }));
+  await expect(fuse.getV1Schema()).rejects.toThrow("boom");
+});
