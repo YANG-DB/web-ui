@@ -17,8 +17,11 @@ export class V1UnsupportedError extends Error {
   }
 }
 
-// builder operator -> V1 constraint op (yang-db ConstraintOp). Values tested against
-// Fuse 0.9.1: `contains` is not supported there, `like` with wildcards is.
+// builder operator -> V1 constraint op. Every op used here is allowed by the V1 query
+// schema (yang-db docs/spec/v1/query.schema.json) and was run against Fuse 0.9.1:
+// `contains` is not supported there, `like` with wildcards is. No negative text op works
+// on 0.9.1 (`not contains`, `not match` are "not supported"; there is no `not like`), so
+// "does not contain" falls through to V1UnsupportedError.
 function constraintFor(operator, value, toExpr) {
   const text = value == null ? "" : String(value);
   const list = () =>
@@ -45,8 +48,6 @@ function constraintFor(operator, value, toExpr) {
       return { op: "like", expr: `${text}*` };
     case "endsWith":
       return { op: "like", expr: `*${text}` };
-    case "doesNotContain":
-      return { op: "not like", expr: `*${text}*` };
     case "null":
       return { op: "empty" };
     case "notNull":

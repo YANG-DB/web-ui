@@ -76,7 +76,7 @@ describe("queryToV1", () => {
     expect(con("!=", "x").op).toBe("ne");
     expect(con("beginsWith", "Ch").expr).toBe("Ch*");
     expect(con("endsWith", "na").expr).toBe("*na");
-    expect(con("doesNotContain", "x")).toEqual({ type: "Constraint", op: "not like", expr: "*x*" });
+    expect(() => con("doesNotContain", "x")).toThrow(/doesNotContain/);
     expect(con("in", "A, B")).toEqual({ type: "Constraint", op: "in set", expr: ["A", "B"] });
     expect(con("notIn", ["A"]).op).toBe("not in set");
     expect(con("<", "5").op).toBe("lt");
