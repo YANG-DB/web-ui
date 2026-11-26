@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef, useMemo } from "react";
 import { Resizable } from "re-resizable";
 import { connect } from "react-redux";
 import { submitQuery, storeResults, cacheQuery } from "../reducers/research";
@@ -410,6 +410,19 @@ function Research({
     });
   }, [run, results, storeResults]);
 
+  // Double-tapping a graph node expands its neighbors. With Fuse this is getNeighbors;
+  // otherwise the graph falls back to the mock server's /api/update.
+  const expandNode = useMemo(() => {
+    if (backend !== 'fuse') return undefined;
+    const ontology = resolveOntologyId(fuseOntologyIds, selectedOntology) || selectedOntology;
+    return node =>
+      fuse.getNeighbors(ontology, node.eType, node.rawId).then(result => {
+        // getNeighbors stores a query like any run; it is not needed once merged in.
+        fuse.deleteQuery(result.queryId).catch(() => null);
+        return normalizeFuseResult(result.page);
+      });
+  }, [backend, fuseOntologyIds, selectedOntology]);
+
   const changeBackend = useCallback(next => {
     forgetQuery();
     setRun({ running: false });
@@ -575,7 +588,7 @@ function Research({
               ▼
             </button>
             <RunStatus run={run} elapsed={elapsed} onLoadMore={loadMore} />
-            <Results results={results} />
+            <Results results={results} onExpandNode={expandNode} />
           </div>
         )}
 

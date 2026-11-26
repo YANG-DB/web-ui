@@ -18,7 +18,7 @@ function isMaximisable(type) {
   return type === types.GRAPH;
 }
 
-function showResults(type, results, isMaximised) {
+function showResults(type, results, isMaximised, onExpandNode) {
   switch (type) {
     case types.TABLE:
       return <Table results={results} />;
@@ -28,9 +28,9 @@ function showResults(type, results, isMaximised) {
       return <JsonView results={results} />;
     case types.GRAPH: {
       return isMaximised ? (
-        <ForceMenu results={results} />
+        <ForceMenu results={results} onExpandNode={onExpandNode} />
       ) : (
-        <Force results={results} hoveredIndex={null} />
+        <Force results={results} hoveredIndex={null} onExpandNode={onExpandNode} />
       );
     }
     default:
@@ -38,7 +38,7 @@ function showResults(type, results, isMaximised) {
   }
 }
 
-export default function Results({ results }) {
+export default function Results({ results, onExpandNode }) {
   const [resultType, setResultType] = useState(types.GRAPH);
   const [maximised, setMaximised] = useState(false);
   const resizeRef = useRef(null);
@@ -91,7 +91,7 @@ export default function Results({ results }) {
                 ></button>
               )}
               {results ? (
-                showResults(resultType, results, maximised)
+                showResults(resultType, results, maximised, onExpandNode)
               ) : (
                 <div></div>
               )}
