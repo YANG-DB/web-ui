@@ -127,6 +127,17 @@ const fuse = {
     return unwrapRunResponse(body);
   },
 
+  // The V1 query JSON Schema the server publishes (yang-db #197). Resolves null when this
+  // Fuse has no such endpoint (0.9.1 and earlier answer 404).
+  async getV1Schema() {
+    try {
+      return unwrapContent(await request("/query/v1/schema"));
+    } catch (error) {
+      if (error instanceof FuseError && error.status === 404) return null;
+      throw error;
+    }
+  },
+
   async nextPage(queryId, cursorId, pageSize = DEFAULT_PAGE_SIZE) {
     const body = await request(
       `/query/${encodeURIComponent(queryId)}/cursor/${encodeURIComponent(cursorId)}/nextPageData`,

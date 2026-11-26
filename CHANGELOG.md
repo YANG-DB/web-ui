@@ -12,6 +12,15 @@ from `vX.Y.Z` tags (see [docs/RELEASING.md](docs/RELEASING.md)).
 - Edge labels appear on hover, on the selected node's edges, or when zoomed in, instead of always.
 - Layout menu (Force, Breadth-first, Concentric, Grid) and a Fit button; the Force settings moved into a popover.
 - Double-tapping a node expands its neighbors through Fuse `getNeighbors` in Fuse mode (a single tap selects).
+- **Details panel.** Tapping a node or edge opens a right-hand panel with its type, name, id, relationship count and
+  every property, with **Expand neighbors** / **Collapse neighbors** and **Hide** (and **Show hidden** in the graph
+  toolbar). A relationship's ends link to their nodes. Esc or a background tap closes it.
+- `fuse.getV1Schema()`, for the V1 query schema Fuse now publishes at `GET /fuse/query/v1/schema` (yang-db #197). The
+  live suite checks it against the vendored copy and validates every template against it.
+
+### Changed
+- The vendored V1 schema is the version Fuse serves (adds `RelUntyped` and `WhereByConstraint`).
+- Edges are easier to click (wider hit area, same drawn width).
 
 ### Fixed
 - In Fuse mode, tapping a node added unrelated nodes from the mock server's `/api/update`.

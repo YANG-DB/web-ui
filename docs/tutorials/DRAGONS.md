@@ -103,10 +103,17 @@ JSON buttons above the graph show the same result in other forms.
 - **The name is under the node**: its `name`, or `title`, or first and last name. A node with none of these shows its
   id, like `Dragon_17` (some dragons in the sample have no name).
 - **Size is connectivity**: the more relationships a node has in this result, the bigger it is.
-- **Edge labels** (`Own`, `Know`) appear when you zoom in, hover an edge, or tap a node, which also outlines it.
+- **Tap a node or an edge** to open its details on the right: type, name, id, how many relationships it has in the
+  graph, and every property. A relationship shows its two ends as links. **Expand neighbors** and **Hide** act on
+  the selected node; **Show hidden** in the graph toolbar brings hidden ones back. Esc or a tap on the background
+  closes the panel.
+- **Edge labels** (`Own`, `Know`) appear when you zoom in, hover an edge, or select one of its nodes.
   Zoomed out to fit 161 nodes, names and labels hide so the shape stays readable; scroll to zoom in.
 - **Double-tap a node** to bring in its neighbors from Fuse; double-tap it again to remove them. Double-tapping a
-  dragon from this result adds the kingdom it originated in and the dragons it fired on or that fired on it.
+  dragon from this result adds the kingdom it originated in and the dragons it fired on or that fired on it. The
+  details panel's **Expand neighbors** button does the same.
+
+![Details of a person](../images/research-details-panel.png)
 - **Layout** switches between Force, Breadth-first, Concentric and Grid. **Fit** brings everything back into view,
   and **⚙** holds the Force layout's edge length and repulsion.
 
@@ -218,6 +225,7 @@ and `data.resourceId` is the query id for the follow-up calls:
 | A node's neighbors | `GET /fuse/query/graph/api/getNeighbors?ontology=Dragons&type=Dragon&id=100` |
 | Free the stored query | `DELETE /fuse/query/<queryId>` |
 | Languages Fuse knows | `POST /fuse/query/nope/run` (the 404 lists them: cypher, graphQL, sparkQL, sparql) |
+| The V1 query JSON Schema | `GET /fuse/query/v1/schema` (Fuse builds after yang-db #197; 0.9.1 answers 404) |
 
 web-ui deletes the stored query each time a new run replaces it.
 

@@ -17,6 +17,8 @@ import queryToV1 from "../helpers/queryToV1";
 import normalizeFuseResult, { resolveOntologyId } from "../helpers/normalizeFuseResult";
 import extractResults from "../helpers/extractResults";
 import templates from "../constants/queryTemplates";
+import Ajv2020 from "ajv8/dist/2020";
+import vendoredSchema from "../spec/v1/query.schema.json";
 
 const FUSE_URL = process.env.FUSE_URL;
 const describeLive = FUSE_URL ? describe : describe.skip;
@@ -187,6 +189,26 @@ describeLive("Fuse API (live)", () => {
       const next = await fuse.nextPage(first.queryId, first.cursorId, 100);
       expect(next.actualPageSize).toBe(21);
       expect(next.hasMore).toBe(false);
+    });
+  });
+
+  // yang-db #197: Fuse publishes the V1 query schema. Older servers (the 0.9.1 image) have no
+  // endpoint, and this check is skipped there.
+  test("the published V1 schema matches the vendored copy and every template validates against it", async () => {
+    const published = await fuse.getV1Schema();
+    if (!published) {
+      console.log("GET /fuse/query/v1/schema is not available on this Fuse; schema check skipped");
+      return;
+    }
+    expect(published.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
+    // If this fails, refresh client/src/spec/v1/query.schema.json (see its README).
+    expect(published).toEqual(vendoredSchema);
+
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(published);
+    templates.dragons.forEach((template, i) => {
+      const query = queryToV1(template.query, ontology, { ont: "Dragons" });
+      const ok = validate(query);
+      expect({ template: i, errors: ok ? [] : validate.errors.map(e => `${e.instancePath} ${e.message}`) }).toEqual({ template: i, errors: [] });
     });
   });
 
