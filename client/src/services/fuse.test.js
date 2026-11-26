@@ -1,4 +1,4 @@
-import fuse, { fuseBaseUrl } from "./fuse";
+import fuse, { fuseBaseUrl, serialized } from "./fuse";
 import { FuseError } from "../helpers/fuseError";
 
 function reply(status, body) {
@@ -121,4 +121,50 @@ test("deleteQuery sends DELETE and skips empty ids", async () => {
 
   expect(await fuse.deleteQuery(null)).toBe(false);
   expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+test("runV1 posts the query as JSON with pageSize in the query string", async () => {
+  fetch.mockReturnValue(reply(200, runBody));
+  const query = { name: "q", ont: "Dragons", elements: [{ eNum: 0, type: "Start", next: 1 }] };
+  const result = await fuse.runV1(query, { pageSize: 2 });
+
+  const [url, init] = fetch.mock.calls[0];
+  expect(url).toBe("/fuse/query/v1/run?pageSize=2");
+  expect(init.method).toBe("POST");
+  expect(init.headers["Content-Type"]).toBe("application/json");
+  expect(JSON.parse(init.body)).toEqual(query);
+  expect(result.queryId).toBe("q1");
+});
+
+test("query runs are serialized, and a failure does not block the queue", async () => {
+  const order = [];
+  let release;
+  const first = serialized(
+    () => new Promise(resolve => { release = resolve; }).then(() => order.push("first"))
+  );
+  const failing = serialized(() => { order.push("second"); throw new Error("boom"); });
+  const third = serialized(() => order.push("third"));
+
+  await Promise.resolve();
+  expect(order).toEqual([]);
+  release();
+  await first;
+  await expect(failing).rejects.toThrow("boom");
+  await third;
+  expect(order).toEqual(["first", "second", "third"]);
+});
+
+test("two runs started together reach Fuse one after the other", async () => {
+  let inFlight = 0;
+  let maxInFlight = 0;
+  fetch.mockImplementation(() => {
+    inFlight++;
+    maxInFlight = Math.max(maxInFlight, inFlight);
+    return new Promise(resolve => setTimeout(resolve, 5)).then(() => {
+      inFlight--;
+      return reply(200, runBody);
+    });
+  });
+  await Promise.all([fuse.runCypher("a", { ontology: "Dragons" }), fuse.runV1({ elements: [] })]);
+  expect(maxInFlight).toBe(1);
 });

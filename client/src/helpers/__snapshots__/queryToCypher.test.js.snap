@@ -1,0 +1,166 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`every template dragons #0: Find all persons by first name 1`] = `
+"MATCH (p:Person)
+WHERE p.firstName IS NOT NULL
+RETURN p"
+`;
+
+exports[`every template dragons #1: Find dragons with specific color 1`] = `
+"MATCH (d:Dragon)
+WHERE d.color = 'BLACK'
+RETURN d"
+`;
+
+exports[`every template dragons #2: Find entities with multiple attributes 1`] = `
+"MATCH (p:Person)
+WHERE (p.firstName IS NOT NULL AND p.lastName IS NOT NULL)
+RETURN p"
+`;
+
+exports[`every template dragons #3: Find entities using OR condition 1`] = `
+"MATCH (d:Dragon)
+WHERE (d.color = 'RED' OR d.color = 'BLUE')
+RETURN d"
+`;
+
+exports[`every template dragons #4: Complex nested query example 1`] = `
+"MATCH (p:Person)
+WHERE (p.firstName IS NOT NULL AND (p.gender = 'MALE' OR p.gender = 'FEMALE'))
+RETURN p"
+`;
+
+exports[`every template dragons #5: Find dragons owned by persons (relationship) 1`] = `
+"MATCH (p:Person)-[r0:Own]->(d:Dragon)
+RETURN p, r0, d"
+`;
+
+exports[`every template dragons #6: Find persons who are members of guilds (relationship) 1`] = `
+"MATCH (p:Person)-[r0:MemberOf]->(g:Guild)
+RETURN p, r0, g"
+`;
+
+exports[`every template dragons #7: Find persons who know someone named Christiana (complex) 1`] = `
+"MATCH (p:Person)-[r0:Know]->(p1:Person)
+WHERE p1.firstName = 'Christiana'
+RETURN p, r0, p1"
+`;
+
+exports[`every template dragons #8: Persons with a black dragon that fired on a dragon, and a horse from a funded kingdom (advanced) 1`] = `
+"MATCH (p:Person)-[r0:Own]->(d:Dragon), (d:Dragon)-[r1:Fire]->(d1:Dragon), (p:Person)-[r2:Own]->(h:Horse), (h:Horse)-[r3:OriginatedIn]->(k:Kingdom)
+WHERE (d.color = 'BLACK' AND k.funds > 0)
+RETURN p, r0, d, r1, d1, r2, h, r3, k"
+`;
+
+exports[`every template flights #0: Find all flights by flight number 1`] = `
+"MATCH (f:Flight)
+WHERE f.flightNum IS NOT NULL
+RETURN f"
+`;
+
+exports[`every template flights #1: Find flights by carrier 1`] = `
+"MATCH (f:Flight)
+WHERE f.carrier = 'OpenSearch-Air'
+RETURN f"
+`;
+
+exports[`every template flights #2: Find delayed flights 1`] = `
+"MATCH (f:Flight)
+WHERE f.flightDelay = 'true'
+RETURN f"
+`;
+
+exports[`every template flights #3: Find flights with price range 1`] = `
+"MATCH (f:Flight)
+WHERE (f.avgTicketPrice > 500 AND f.avgTicketPrice < 1000)
+RETURN f"
+`;
+
+exports[`every template flights #4: Find flights using OR condition (multiple carriers) 1`] = `
+"MATCH (f:Flight)
+WHERE (f.carrier = 'OpenSearch-Air' OR f.carrier = 'Logstash Airways')
+RETURN f"
+`;
+
+exports[`every template flights #5: Find flights with origin airport (relationship) 1`] = `
+"MATCH (f:Flight)-[r0:OriginAirport]->(a:Airport)
+RETURN f, r0, a"
+`;
+
+exports[`every template flights #6: Find flights with destination airport (relationship) 1`] = `
+"MATCH (f:Flight)-[r0:DestinationAirport]->(a:Airport)
+RETURN f, r0, a"
+`;
+
+exports[`every template flights #7: Find flights operated by carrier (relationship) 1`] = `
+"MATCH (f:Flight)-[r0:OperatedBy]->(c:Carrier)
+RETURN f, r0, c"
+`;
+
+exports[`every template flights #8: Find airports that connect to other airports (relationship) 1`] = `
+"MATCH (a:Airport)-[r0:ConnectsTo]->(a1:Airport)
+RETURN a, r0, a1"
+`;
+
+exports[`every template flights #9: Complex flight query with relationships and conditions (advanced) 1`] = `
+"MATCH (f:Flight)-[r0:OriginAirport]->(a:Airport), (f:Flight)-[r1:OperatedBy]->(c:Carrier)
+WHERE (a.country = 'US' AND f.avgTicketPrice < 800)
+RETURN f, r0, a, r1, c"
+`;
+
+exports[`every template linkedin #0: Find all persons by name 1`] = `
+"MATCH (p:Person)
+WHERE p.name IS NOT NULL
+RETURN p"
+`;
+
+exports[`every template linkedin #1: Find companies with specific attributes 1`] = `
+"MATCH (c:Company)
+WHERE c.name = ''
+RETURN c"
+`;
+
+exports[`every template linkedin #2: Find entities with multiple attributes 1`] = `
+"MATCH (p:Person)
+WHERE (p.name IS NOT NULL AND p.email CONTAINS '@')
+RETURN p"
+`;
+
+exports[`every template linkedin #3: Find entities using OR condition 1`] = `
+"MATCH (c:Company)
+WHERE (c.industry = 'Technology' OR c.industry = 'Finance')
+RETURN c"
+`;
+
+exports[`every template linkedin #4: Complex nested query example 1`] = `
+"MATCH (p:Person)
+WHERE (p.name IS NOT NULL AND (p.title CONTAINS 'Engineer' OR p.title CONTAINS 'Developer'))
+RETURN p"
+`;
+
+exports[`every template linkedin #5: Find persons working at companies (relationship) 1`] = `
+"MATCH (p:Person)-[r0:WorksAt]->(c:Company)
+RETURN p, r0, c"
+`;
+
+exports[`every template linkedin #6: Find persons connected to other persons (relationship) 1`] = `
+"MATCH (p:Person)-[r0:ConnectedTo]->(p1:Person)
+RETURN p, r0, p1"
+`;
+
+exports[`every template linkedin #7: Find companies founded by persons (relationship) 1`] = `
+"MATCH (n)
+RETURN n"
+`;
+
+exports[`every template linkedin #8: Find persons connected to someone named John (complex) 1`] = `
+"MATCH (p:Person)-[r0:ConnectedTo]->(p1:Person)
+WHERE p1.name = 'John Smith'
+RETURN p, r0, p1"
+`;
+
+exports[`every template linkedin #9: Multi-relationship LinkedIn query (advanced) 1`] = `
+"MATCH (p:Person)-[r0:WorksAt]->(c:Company), (p:Person)-[r1:ConnectedTo]->(p1:Person)
+WHERE (c.industry = 'Technology' AND p1.title CONTAINS 'CEO')
+RETURN p, r0, c, r1, p1"
+`;

@@ -46,14 +46,17 @@ function makeRelationships(relationships, i, existing) {
       });
 }
 
+// Starts from empty lists, so a result with no assignments (a query with no matches)
+// renders as an empty graph instead of crashing the views.
 export default function extract(results) {
-  return results.data.assignments.reduce((acc, curr, i) => {
-    acc.entities = makeEntities(curr.entities, i, acc.entities);
+  const assignments = (results && results.data && results.data.assignments) || [];
+  return assignments.reduce((acc, curr, i) => {
+    acc.entities = makeEntities(curr.entities || [], i, acc.entities);
     acc.relationships = makeRelationships(
-      curr.relationships,
+      curr.relationships || [],
       i,
       acc.relationships
     );
     return acc;
-  }, {});
+  }, { entities: [], relationships: [] });
 }
