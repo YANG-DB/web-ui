@@ -8,6 +8,27 @@ Run `yarn` to install dependencies, followed by `yarn start`.
 
 The application will be available at `http://localhost:3000`
 
+### Backends
+
+The CRA dev server proxies two backends (see `client/src/setupProxy.js`):
+
+| Path | Goes to | Override |
+|---|---|---|
+| `/api` | Mock Express server (`server.js`, port 5001), started by `yarn start` | `MOCK_PROXY_TARGET` |
+| `/fuse` | YangDB (Fuse), `http://localhost:8888` | `FUSE_PROXY_TARGET` |
+
+The Fuse client (`client/src/services/fuse.js`) calls `/fuse` by default. Set `REACT_APP_FUSE_URL`
+(for example `http://localhost:8888/fuse`) to call Fuse directly instead; CORS is open on Fuse.
+
+To run Fuse locally with the Dragons sample, from a [yang-db](https://github.com/YANG-DB/yang-db) checkout:
+
+```bash
+cd docker
+YANGDB_IMAGE=ghcr.io/yang-db/yang.db YANGDB_TAG=0.9.1 docker compose -f docker-compose-os.yml up -d opensearch fuse
+curl http://localhost:8888/fuse/health                    # "Alive And Well..."
+curl -X POST http://localhost:8888/fuse/dragons/tutorial/load   # loads the Dragons ontology and data
+```
+
 ## Features Overview
 
 The YangDB user interface provides a comprehensive platform for graph database interaction, visual query building, and schema management.
