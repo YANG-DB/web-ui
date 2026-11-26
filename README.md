@@ -1,12 +1,23 @@
 # web-ui
 
-User interface for graph database interaction and ontology management
+[![CI](https://github.com/YANG-DB/web-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/YANG-DB/web-ui/actions/workflows/ci.yml)
+
+User interface for graph database interaction and ontology management, for
+[YangDB (Fuse)](https://github.com/YANG-DB/yang-db).
+
+**New here? Follow the [Dragons tutorial](docs/tutorials/DRAGONS.md)**: from Docker to graph answers in about 15 minutes.
 
 ## Quick Start
 
-Run `yarn` to install dependencies, followed by `yarn start`.
+```bash
+yarn                  # install (root and client)
+scripts/fuse-up.sh    # optional: start Fuse in Docker with the Dragons sample
+yarn start            # mock server on 5001, app on http://localhost:3000
+```
 
-The application will be available at `http://localhost:3000`
+On the **Research** page, the app uses Fuse when it answers (green dot next to **Backend**), and mock data otherwise.
+
+![Research page with results from Fuse](docs/images/research-fuse-results.png)
 
 ### Backends
 
@@ -20,14 +31,13 @@ The CRA dev server proxies two backends (see `client/src/setupProxy.js`):
 The Fuse client (`client/src/services/fuse.js`) calls `/fuse` by default. Set `REACT_APP_FUSE_URL`
 (for example `http://localhost:8888/fuse`) to call Fuse directly instead; CORS is open on Fuse.
 
-To run Fuse locally with the Dragons sample, from a [yang-db](https://github.com/YANG-DB/yang-db) checkout:
+To run Fuse locally with the Dragons sample, run `scripts/fuse-up.sh` (Docker: OpenSearch 2.19.7 and
+`ghcr.io/yang-db/yang.db:0.9.1`, then loads the data); `scripts/fuse-down.sh` removes them. From a
+[yang-db](https://github.com/YANG-DB/yang-db) checkout, its `docker/docker-compose-os.yml` works too; load the data with
+`curl -X POST http://localhost:8888/fuse/dragons/tutorial/load`.
 
-```bash
-cd docker
-YANGDB_IMAGE=ghcr.io/yang-db/yang.db YANGDB_TAG=0.9.1 docker compose -f docker-compose-os.yml up -d opensearch fuse
-curl http://localhost:8888/fuse/health                    # "Alive And Well..."
-curl -X POST http://localhost:8888/fuse/dragons/tutorial/load   # loads the Dragons ontology and data
-```
+On the Research page, **Backend** picks Fuse, the mock server or generated sample data, and **Language** picks how
+queries go to Fuse: Cypher, or V1 (Fuse's native JSON query language, which also supports text matching).
 
 ## Features Overview
 
@@ -273,6 +283,7 @@ A professional networking ontology for social and business data.
 ## Documentation
 
 ### User Guides
+- [Dragons tutorial](docs/tutorials/DRAGONS.md) - Run Fuse, load the Dragons sample, query it in Cypher and V1
 - [Visual Query Builder Guide](docs/VISUAL_QUERY_BUILDER.md) - Complete query building documentation
 - [Schema Viewer Guide](docs/SCHEMA_VIEWER.md) - Schema management and ontology structure
 - [Results Visualization Guide](docs/RESULTS_VISUALIZATION.md) - Using graph, table, list, and JSON views
@@ -316,10 +327,20 @@ web-ui/
 
 ### Available Scripts
 
-- `yarn start` - Start development server
+Root:
+- `yarn start` - Start the mock server and the development app
+- `yarn test` - Mock server tests (with a 70% coverage gate)
+- `scripts/fuse-up.sh` / `scripts/fuse-down.sh` - Start / remove Fuse and OpenSearch in Docker
+
+In `client/`:
+- `yarn test` - Unit tests (watch mode; `--watchAll=false` for one run)
+- `yarn test:fuse` - Live checks against Fuse (`FUSE_URL`, default `http://localhost:8888`)
 - `yarn build` - Build for production
-- `yarn test` - Run test suite
 - `yarn lint` - Lint code
+
+CI (`.github/workflows/ci.yml`) runs all three test suites on every pull request; the Fuse suite runs against a fresh
+Fuse started by `scripts/fuse-up.sh`. Releases: see [docs/RELEASING.md](docs/RELEASING.md) and
+[CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -339,6 +360,9 @@ When adding new features:
 All screenshots are available in `/docs/images`:
 
 ### Research Page
+- `research-fuse-results.png` - Results from Fuse: backend selector, connection dot, language, result count
+- `research-fuse-v1.png` - V1 query preview and its result
+- `research-fuse-error.png` - A Fuse error shown in the results panel
 - `research-visual-query-builder.png` - Query builder interface with ontology selector and controls
 - `research-template-queries.png` - Pre-built query templates modal
 - `research-results.png` - Complete research interface with query builder and results visualization
