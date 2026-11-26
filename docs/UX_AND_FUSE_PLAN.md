@@ -159,7 +159,9 @@ CORS is already open on Fuse (`Access-Control-Allow-Origin: *`, OPTIONS answered
   vendored from yang-db PR #196 until it merges; `helpers/queryToV1.schema.test.js`, Ajv 8 as the `ajv8` alias so
   CRA's top-level Ajv 6 stays). This found `not like`, which is not a V1 op; "does not contain" is now refused, since
   no negative text op runs on Fuse 0.9.1.
-- [ ] Re-sync the vendored schema when yang-db PR #196 merges (steps in `client/src/spec/v1/README.md`).
+- [x] Re-synced: yang-db #196 and #197 merged and Fuse serves the schema at `GET /fuse/query/v1/schema`. The vendored
+  copy is the served one; `fuse.getV1Schema()` reads it and `yarn test:fuse` checks the two match (skipped on 0.9.1,
+  which has no endpoint).
 - [ ] Next: a raw V1 JSON editor next to the Cypher editor of B5.
 
 ### Fuse-side asks (for the yang-db repo, not this one)
@@ -187,6 +189,10 @@ Record anything you hit here with the request, the response and the expected beh
 - Errors inside a 200 (above) make clients check `data.error`, `cursorResourceInfos[].error` and
   `pageResourceInfos[].error` on every success. Expected: a non-2xx status.
 - No authentication. Fine for local use, a blocker before any shared deployment.
+- **#197 is not on yang-db `main`** (2026-11-26). It was stacked on #196 and merged into `spec/v1-json-schema` 10
+  seconds after that branch merged into `main`, so `main` lacks `GET /fuse/query/v1/schema`, the schema's
+  `RelUntyped`/`WhereByConstraint` additions and `docs/spec/v1/rules.md`. Fix: a PR from `spec/v1-json-schema` to
+  `main`. Until a release includes it, CI (0.9.1 image) skips the published-schema check.
 
 ## Part B: query UX
 
@@ -223,8 +229,13 @@ References to study before designing (stars as of 2026-11-26):
 
 ### B2. Inspect results
 
-- [ ] **Details side panel.** Clicking a node or edge opens a right-hand panel with type, id and all properties,
+- [x] **Details side panel.** Clicking a node or edge opens a right-hand panel with type, id and all properties,
   plus "Expand neighbors" (A9) and "Hide".
+  *Done:* `components/DetailsPanel.js`, `helpers/elementDetails.js`. Nodes: type, name, id, relationship count,
+  properties in Fuse's order, Expand / Collapse neighbors, Hide (with "Show hidden (N)" in the graph toolbar). Edges:
+  type, ends as links that select the node, direction, properties, Hide. Focus moves to the panel; Esc and a
+  background tap close it. The graph narrows instead of being covered. Edges got a wider hit area
+  (`overlay-padding`) because 1px edges were hard to click.
 - [ ] **Graph and table together.** An optional table under the graph lists visible nodes, with selection synced
   both ways and a filter per column.
 
@@ -278,8 +289,13 @@ References to study before designing (stars as of 2026-11-26):
   it, the root tests could not run in CI (`jest`/`supertest` undeclared), and the server coverage gate now passes
   (96% statements, 82% branches).
 - Definition of done, Part A: a new user can pick a template, run it against Fuse, page through results and see
-  errors, without touching mock mode. Readable names and types (B1) and expand neighbors (A9) are in; still missing: a properties panel (B2).
+  errors, without touching mock mode. With B1, A9 and the B2 details panel in, every
+  point of the **Definition of done** is met: pick a template, run it on Fuse, read names and types at a glance, open
+  a node's properties, expand its neighbors and load more, without mock mode; every template's result is recorded;
+  the README shows the new UI.
 
 - 2026-11-26: B1 done on `feat/b1-graph-readability` (stacked on #49), plus A9's UI half.
 
-**Next step:** B2, the details side panel (type, id, properties, Expand and Hide), then the graph and table view.
+- 2026-11-26: B2 details panel done on `feat/b2-details-panel` (stacked on #50), with the V1 schema re-sync.
+
+**Next step:** B2's second item, the graph and table together (selection synced both ways, a filter per column).
