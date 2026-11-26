@@ -103,12 +103,15 @@ View query results in multiple interactive formats with rich visualization optio
 
 **View Modes**:
 - **Graph View**: Interactive network visualization using Cytoscape.js
+  - Colour per entity type, with the type inside the node and its name below it
+  - Legend with a count per type; click a type to hide or show it
   - Node size based on connectivity
-  - Color gradient showing relationship density
-  - Click to expand/collapse nodes
-  - Adjustable edge length and node repulsion
-  - Center view button for easy navigation
+  - Edge labels on hover, on the selected node's edges, or when zoomed in
+  - Double-tap a node to expand its neighbors (from Fuse, or the mock server)
+  - Layouts: Force, Breadth-first, Concentric, Grid, plus Fit; edge length and repulsion in the ⚙ popover
   - Full-screen mode for detailed exploration
+
+![Readable graph: names, types, legend](docs/images/research-graph-readable.png)
 - **Table View**: Tabular display grouped by entity type
   - Columns for all entity properties
   - Sortable and filterable data
@@ -363,6 +366,7 @@ All screenshots are available in `/docs/images`:
 - `research-fuse-results.png` - Results from Fuse: backend selector, connection dot, language, result count
 - `research-fuse-v1.png` - V1 query preview and its result
 - `research-fuse-error.png` - A Fuse error shown in the results panel
+- `research-graph-readable.png` - Graph with type colours, names, type badges, edge labels and the legend
 - `research-visual-query-builder.png` - Query builder interface with ontology selector and controls
 - `research-template-queries.png` - Pre-built query templates modal
 - `research-results.png` - Complete research interface with query builder and results visualization

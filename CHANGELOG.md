@@ -5,6 +5,17 @@ from `vX.Y.Z` tags (see [docs/RELEASING.md](docs/RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+- **Readable result graph.** Nodes are coloured by entity type, with the type written inside the node and its name
+  (name, title, or first and last name) below it. A legend shows each type's count and hides or shows a type on
+  click. Connectivity is shown by node size only.
+- Edge labels appear on hover, on the selected node's edges, or when zoomed in, instead of always.
+- Layout menu (Force, Breadth-first, Concentric, Grid) and a Fit button; the Force settings moved into a popover.
+- Double-tapping a node expands its neighbors through Fuse `getNeighbors` in Fuse mode (a single tap selects).
+
+### Fixed
+- In Fuse mode, tapping a node added unrelated nodes from the mock server's `/api/update`.
+
 ## [0.2.0] - 2026-11-26
 
 The UI now talks to a running YangDB (Fuse) server directly. Mock mode remains for demos and tests.
