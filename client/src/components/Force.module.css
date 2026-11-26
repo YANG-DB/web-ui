@@ -102,28 +102,6 @@
   background: radial-gradient(circle at center, #1a1a2e 0%, #16213e 100%);
 }
 
-.controls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(26, 26, 46, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 16px;
-  z-index: 10;
-  min-width: 240px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.controlGroup {
-  margin-bottom: 16px;
-}
-
-.controlGroup:last-child {
-  margin-bottom: 0;
-}
-
 .controlLabel {
   display: flex;
   flex-direction: column;
@@ -189,26 +167,145 @@
   transform: scale(0.95);
 }
 
-.centerButton {
-  width: 100%;
-  padding: 10px 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
+/* Graph toolbar: layout, fit, settings */
+.toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(16, 19, 34, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.toolbarLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c9d1e8;
+  font-size: 12px;
+}
+
+.toolbarSelect,
+.toolbarButton {
+  background: #1f2440;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.centerButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+.toolbarButton:hover,
+.toolbarSelect:hover {
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
-.centerButton:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+.toolbarSelect:focus-visible,
+.toolbarButton:focus-visible,
+.legendChip:focus-visible {
+  outline: 2px solid #7fc8ff;
+  outline-offset: 2px;
+}
+
+.settings {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  background: rgba(16, 19, 34, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.settingsNote {
+  margin: 0;
+  color: #9aa4c2;
+  font-size: 12px;
+}
+
+.slider:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Legend: one chip per entity type */
+.legend {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.legendChip {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
+  background: rgba(16, 19, 34, 0.92);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.legendChip[data-hidden="true"] {
+  opacity: 0.45;
+}
+
+.legendChip[data-hidden="true"] .legendType {
+  text-decoration: line-through;
+}
+
+.legendSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.legendCount {
+  color: #9aa4c2;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  position: absolute;
+  top: 16px;
+  left: 14px;
+  z-index: 9;
+  color: #8a93b0;
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.graphError {
+  position: absolute;
+  top: 40px;
+  left: 12px;
+  z-index: 11;
+  max-width: 60%;
+  padding: 6px 10px;
+  background: rgba(239, 83, 80, 0.18);
+  border-left: 3px solid #ef5350;
+  color: #ffb4b2;
+  font-size: 12px;
 }

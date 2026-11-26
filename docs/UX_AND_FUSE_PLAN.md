@@ -130,12 +130,12 @@ CORS is already open on Fuse (`Access-Control-Allow-Origin: *`, OPTIONS answered
 - [x] **A8. Paging.** Request a sensible `pageSize` (100 for the graph view). Show "N results, load more" when
   `actualPageSize == requestedPageSize`, using `nextPage`. Merge new assignments into the existing result.
   *Done:* `appendFuseResult`; verified live (121 black dragons: 100, then 21 and the button goes away).
-- [ ] **A9. Expand node.** Wire the existing `updateResult(nodeId)` path to `getNeighbors` in Fuse mode. If the route
+- [x] **A9. Expand node.** Wire the existing `updateResult(nodeId)` path to `getNeighbors` in Fuse mode. If the route
   turns out broken, record it under **Fuse-side asks** and fall back to running
   `MATCH (n:<Type>)-[r]-(m) WHERE id(n) = '<id>' RETURN *` through `runCypher`, if Fuse supports that form.
-  *Half done:* `fuse.getNeighbors` works and is covered live; its result normalizes (the node's own id is
-  `Dragon_100`). Not yet wired to the graph's expand action: `Force.js` still calls the mock `updateResult`, and the
-  entity's raw `id` and `eType` are now on each node for this.
+  *Done:* double-tapping a node calls `getNeighbors` in Fuse mode (`onExpandNode`, passed from the Research page
+  through `Results`), merges the new nodes and edges, and deletes the stored query; double-tap again removes them.
+  A single tap now selects. In mock modes the graph still uses `/api/update`.
 - [x] **A10. Query cleanup.** Call `deleteQuery` for a result the user discards or replaces, so stored queries don't
   pile up on the server.
   *Done:* the previous query is deleted when a run replaces it or the backend changes.
@@ -202,16 +202,23 @@ References to study before designing (stars as of 2026-11-26):
 
 ### B1. Graph readability (do first: cheapest, biggest visual change)
 
-- [ ] **Color by entity type.** In `Force.js`, use `entityColors[eType]` always. Show connectivity through node size
+- [x] **Color by entity type.** In `Force.js`, use `entityColors[eType]` always. Show connectivity through node size
   only, which already happens. Generate colors for types missing from the map from a fixed palette, so other
   ontologies (Flights, LinkedIn and those loaded from Fuse) get distinct colors too.
-- [ ] **Readable labels.** Label a node with its first present display property (`name`, `title`, `firstName`
+  *Done:* `helpers/graphStyle.js` (`buildTypeColors`): known types keep a fixed colour, others take unused palette
+  colours, so no two types in one result share one. Dragon moved from red to green: next to Person's pink it was
+  hard to tell apart.
+- [x] **Readable labels.** Label a node with its first present display property (`name`, `title`, `firstName`
   plus `lastName`, then the first string property), and fall back to `eID`. Show the type above the name in
   smaller text.
-- [ ] **Legend.** One chip per entity type with color and count. Clicking a chip hides or shows that type.
-- [ ] **Quieter edges.** Hide edge labels by default. Show them on hover, on the selected node's edges, or above a
+  *Done:* `displayName`; enum-like values (`BLUE`, `MALE`) are skipped, since they describe rather than name. The
+  type is drawn inside the node as a small SVG badge (Cytoscape cannot mix font sizes in one label), with the name
+  below. Names hide when zoomed far out (`min-zoomed-font-size`).
+- [x] **Legend.** One chip per entity type with color and count. Clicking a chip hides or shows that type.
+- [x] **Quieter edges.** Hide edge labels by default. Show them on hover, on the selected node's edges, or above a
   zoom threshold.
-- [ ] **Layout control.** Replace the always-visible "Edge Length / Node Repulsion" panel with a layout dropdown
+  *Done:* all three; the zoom threshold uses `min-zoomed-font-size` (labels from about 1.5x).
+- [x] **Layout control.** Replace the always-visible "Edge Length / Node Repulsion" panel with a layout dropdown
   (force, breadth-first, concentric, grid) plus "Fit". Move the sliders into a settings popover.
 
 ### B2. Inspect results
@@ -271,7 +278,8 @@ References to study before designing (stars as of 2026-11-26):
   it, the root tests could not run in CI (`jest`/`supertest` undeclared), and the server coverage gate now passes
   (96% statements, 82% branches).
 - Definition of done, Part A: a new user can pick a template, run it against Fuse, page through results and see
-  errors, without touching mock mode. Still missing: readable names and types (B1), a properties panel (B2) and
-  expand neighbors in the graph (A9).
+  errors, without touching mock mode. Readable names and types (B1) and expand neighbors (A9) are in; still missing: a properties panel (B2).
 
-**Next step:** B1 (graph readability), then A9's UI half with the B2 details panel.
+- 2026-11-26: B1 done on `feat/b1-graph-readability` (stacked on #49), plus A9's UI half.
+
+**Next step:** B2, the details side panel (type, id, properties, Expand and Hide), then the graph and table view.

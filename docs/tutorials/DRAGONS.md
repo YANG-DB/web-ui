@@ -93,6 +93,23 @@ The status line reads **96 results (Cypher)** and the graph shows people linked 
 Each result is one *assignment*: one person, one dragon and the `Own` relationship between them. The table, list and
 JSON buttons above the graph show the same result in other forms.
 
+### Reading the graph
+
+![Who knows someone named Christiana](../images/research-graph-readable.png)
+
+- **Colour is the entity type**, and the type is written inside each node. The legend at the bottom lists every type
+  with its count: here **Dragon 65** and **Person 96** (65 dragons have the 96 owners). Click a chip to hide or show
+  that type.
+- **The name is under the node**: its `name`, or `title`, or first and last name. A node with none of these shows its
+  id, like `Dragon_17` (some dragons in the sample have no name).
+- **Size is connectivity**: the more relationships a node has in this result, the bigger it is.
+- **Edge labels** (`Own`, `Know`) appear when you zoom in, hover an edge, or tap a node, which also outlines it.
+  Zoomed out to fit 161 nodes, names and labels hide so the shape stays readable; scroll to zoom in.
+- **Double-tap a node** to bring in its neighbors from Fuse; double-tap it again to remove them. Double-tapping a
+  dragon from this result adds the kingdom it originated in and the dragons it fired on or that fired on it.
+- **Layout** switches between Force, Breadth-first, Concentric and Grid. **Fit** brings everything back into view,
+  and **⚙** holds the Force layout's edge length and repulsion.
+
 Every template returns results from the sample:
 
 | # | Template | Rows (Cypher and V1) |

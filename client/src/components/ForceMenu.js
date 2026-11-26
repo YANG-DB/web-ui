@@ -3,7 +3,7 @@ import Force from "./Force";
 import List from "./List";
 import styles from "./ForceMenu.module.css";
 
-export default function ForceMenu({ results }) {
+export default function ForceMenu({ results, onExpandNode }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const onHover = useCallback(index => {
     setHoveredIndex(index);
@@ -19,7 +19,7 @@ export default function ForceMenu({ results }) {
           hoveredIndex={hoveredIndex}
         />
       </div>
-      <Force results={results} hoveredIndex={hoveredIndex} />
+      <Force results={results} hoveredIndex={hoveredIndex} onExpandNode={onExpandNode} />
     </div>
   );
 }
