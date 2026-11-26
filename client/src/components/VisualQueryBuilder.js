@@ -3,6 +3,8 @@ import { QueryBuilder } from "react-querybuilder";
 import "react-querybuilder/dist/query-builder.css";
 import { convertOntologyToQueryBuilderFields, queryBuilderToGraphQLQuery } from "../helpers/ontologyToQueryBuilder";
 import apiService from "../services/api";
+import queryToCypher from "../helpers/queryToCypher";
+import queryToV1 from "../helpers/queryToV1";
 import styles from "./VisualQueryBuilder.module.css";
 import RelationshipValueEditor from "./RelationshipValueEditor";
 import RelationshipRuleActions from "./RelationshipRuleActions";
@@ -19,7 +21,14 @@ const initialQuery = {
   id: generateId()
 };
 
-export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' }) {
+const defaultLoadOntology = type => apiService.getOntology(type);
+
+export default function VisualQueryBuilder({
+  onSubmit,
+  ontologyType = 'dragons',
+  loadOntology = defaultLoadOntology,
+  backendLabel = 'mock server'
+}) {
   const [query, setQuery] = useState(initialQuery);
   const [fields, setFields] = useState([]);
   const [ontology, setOntology] = useState(null);
@@ -41,7 +50,7 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
     // Clear query when ontology changes to avoid invalid field references
     setQuery({ combinator: "and", rules: [], id: generateId() });
 
-    apiService.getOntology(ontologyType).then(ontologyData => {
+    loadOntology(ontologyType).then(ontologyData => {
       console.log("Loaded ontology for query builder:", ontologyData);
 
       // Wrap the data since getOntology returns data[0]
@@ -63,7 +72,7 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
       setLoadError(error.message || "Cannot connect to backend server");
       setIsLoading(false);
     });
-  }, [ontologyType]);
+  }, [ontologyType, loadOntology]);
 
   const handleQueryChange = useCallback((newQuery) => {
     console.log("handleQueryChange: Query changed:", newQuery);
@@ -200,9 +209,8 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
     console.log("Generated GraphQL query:", graphqlQuery);
 
     if (onSubmit) {
-      // For now, pass the query builder object
-      // You may need to convert this to your custom format
-      onSubmit(query);
+      // The ontology lets the caller generate Cypher or V1 (helpers/queryToCypher, queryToV1)
+      onSubmit(query, { ontology });
     }
   }, [query, ontology, onSubmit]);
 
@@ -375,121 +383,18 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
         return { __html: syntaxHighlight(content, 'graphql') };
 
       case 'cypher':
-        // Neo4j Cypher-like conversion
-        const cypherRelationships = [];
-        const cypherConditions = [];
-        const varMap = {}; // Maps entity types to variable names
-        let varCounter = 0;
-
-        // Helper to get or create a variable name for an entity type
-        const getVarName = (entityType) => {
-          if (!varMap[entityType]) {
-            const baseVar = entityType.toLowerCase().charAt(0);
-            varMap[entityType] = varCounter === 0 ? baseVar : `${baseVar}${varCounter}`;
-            varCounter++;
-          }
-          return varMap[entityType];
-        };
-
-        const processCypherRule = (rule, depth = 0) => {
-          if ('rules' in rule) {
-            const nested = rule.rules.map(r => processCypherRule(r, depth + 1)).filter(Boolean);
-            return nested.length > 0 ? `(${nested.join(` ${rule.combinator.toUpperCase()} `)})` : null;
-          }
-
-          // Handle relationship operator format (e.g., operator="Own", field="Person", value="Dragon")
-          if (rule.operator && ontology && ontology.data && ontology.data[0]) {
-            const { relationshipTypes } = ontology.data[0];
-            if (relationshipTypes) {
-              const relationship = relationshipTypes.find(r => r.rType === rule.operator);
-              if (relationship) {
-                const sourceEntity = rule.field;
-                const relType = rule.operator;
-                let targetEntity = rule.value;
-
-                // If rule.value doesn't look like an entity type (e.g., it's "1" or empty),
-                // look up the valid target entities from the relationship definition
-                const { entityTypes } = ontology.data[0];
-                if (!targetEntity || !entityTypes?.some(e => e.eType === targetEntity)) {
-                  // Find valid target entities for this source entity
-                  const validTargets = relationship.ePairs
-                    .filter(pair => pair.eTypeA === sourceEntity)
-                    .map(pair => pair.eTypeB);
-
-                  if (validTargets.length > 0) {
-                    targetEntity = validTargets[0];
-                    console.log(`[Cypher] Inferred target entity type: ${targetEntity} (rule.value was: ${rule.value})`);
-                  }
-                }
-
-                const sourceVar = getVarName(sourceEntity);
-                const targetVar = getVarName(targetEntity);
-                const relVar = `r${cypherRelationships.length}`;
-
-                cypherRelationships.push({
-                  sourceVar,
-                  sourceType: sourceEntity,
-                  relVar,
-                  relType: relType.toUpperCase(),
-                  targetVar,
-                  targetType: targetEntity
-                });
-                return null; // Handled in MATCH pattern
-              }
-            }
-          }
-
-          // Handle property filters
-          const parts = rule.field.split('.');
-          if (parts.length === 2) {
-            const [entityType, property] = parts;
-            const varName = getVarName(entityType);
-
-            let condition = '';
-            switch (rule.operator) {
-              case '=': condition = `${varName}.${property} = '${rule.value}'`; break;
-              case '!=': condition = `${varName}.${property} <> '${rule.value}'`; break;
-              case 'contains': condition = `${varName}.${property} CONTAINS '${rule.value}'`; break;
-              case 'beginsWith': condition = `${varName}.${property} STARTS WITH '${rule.value}'`; break;
-              case 'endsWith': condition = `${varName}.${property} ENDS WITH '${rule.value}'`; break;
-              case '<': case '>': case '<=': case '>=':
-                condition = `${varName}.${property} ${rule.operator} ${rule.value}`; break;
-              case 'null': condition = `${varName}.${property} IS NULL`; break;
-              case 'notNull': condition = `${varName}.${property} IS NOT NULL`; break;
-              default: condition = `${varName}.${property} ${rule.operator} '${rule.value}'`;
-            }
-            return condition;
-          }
-
-          return null;
-        };
-
-        const cypherWhere = processCypherRule(query);
-
-        // Generate Cypher query with relationship patterns
-        if (cypherRelationships.length > 0) {
-          // Build MATCH patterns for all relationships
-          const matchPatterns = cypherRelationships.map(rel =>
-            `(${rel.sourceVar}:${rel.sourceType})-[${rel.relVar}:${rel.relType}]->(${rel.targetVar}:${rel.targetType})`
-          );
-
-          let matchClause = `MATCH ${matchPatterns.join(', ')}`;
-          let whereClause = cypherWhere ? `\nWHERE ${cypherWhere}` : '';
-
-          // Return all variables
-          const returnVars = [];
-          cypherRelationships.forEach(rel => {
-            if (!returnVars.includes(rel.sourceVar)) returnVars.push(rel.sourceVar);
-            returnVars.push(rel.relVar);
-            if (!returnVars.includes(rel.targetVar)) returnVars.push(rel.targetVar);
-          });
-
-          content = `${matchClause}${whereClause}\nRETURN ${returnVars.join(', ')}`;
-          return { __html: syntaxHighlight(content, 'cypher') };
-        }
-
-        content = `MATCH (n)\nWHERE ${cypherWhere || 'TRUE'}\nRETURN n`;
+        // The Cypher sent to Fuse (helpers/queryToCypher)
+        content = queryToCypher(query, ontology);
         return { __html: syntaxHighlight(content, 'cypher') };
+
+      case 'v1':
+        // The V1 query sent to Fuse (helpers/queryToV1)
+        try {
+          content = JSON.stringify(queryToV1(query, ontology), null, 2);
+        } catch (error) {
+          content = `// ${error.message}`;
+        }
+        return { __html: syntaxHighlight(content, 'json') };
 
       default:
         return JSON.stringify(query, null, 2);
@@ -508,15 +413,12 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
     return (
       <div className={styles.container}>
         <div className={styles.error}>
-          <h3>⚠️ Server Connection Error</h3>
-          <p>Cannot connect to the backend server.</p>
+          <h3>⚠️ Cannot load the ontology</h3>
+          <p>The {backendLabel} did not return the <strong>{ontologyType}</strong> ontology.</p>
           <p><strong>Error:</strong> {loadError}</p>
           <p style={{ marginTop: '15px', fontSize: '13px' }}>
-            <strong>To fix this:</strong><br/>
-            1. Open a terminal<br/>
-            2. Navigate to: <code>/Users/liorperry/projects/web-ui</code><br/>
-            3. Run: <code>node server.js</code><br/>
-            4. Refresh this page
+            For the mock server, run <code>yarn server</code> in the project root. For Fuse, see
+            the Backends section of the README.
           </p>
         </div>
       </div>
@@ -593,7 +495,8 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
               <option value="graphql">GraphQL</option>
               <option value="sql">SQL</option>
               <option value="mongodb">MongoDB</option>
-              <option value="cypher">Cypher (Neo4j)</option>
+              <option value="cypher">Cypher (Fuse)</option>
+              <option value="v1">V1 (Fuse)</option>
             </select>
           </div>
           <div className={styles.previewContent}>
@@ -609,6 +512,7 @@ export default function VisualQueryBuilder({ onSubmit, ontologyType = 'dragons' 
       {showTemplates && (
         <QueryTemplates
           ontologyType={ontologyType}
+          loadOntology={loadOntology}
           onSelectTemplate={(templateQuery) => {
             console.log("VisualQueryBuilder: Received template query:", templateQuery);
             console.log("VisualQueryBuilder: Current query before update:", query);

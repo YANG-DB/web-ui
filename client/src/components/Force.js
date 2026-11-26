@@ -36,10 +36,23 @@ function getConnectivityColor(degree, maxDegree) {
   return connectivityColors[Math.min(index, connectivityColors.length - 1)];
 }
 
+// Runs a layout and keeps it in `active` until it stops, so it can be stopped early.
+function runTrackedLayout(active, cy, options) {
+  const layout = cy.layout(options);
+  active.add(layout);
+  layout.one('layoutstop', () => active.delete(layout));
+  layout.run();
+  return layout;
+}
+
 export default function Force({ results, hoveredIndex }) {
   const [linkDistance, setLinkDistance] = useState(LINK_DISTANCE);
   const [chargeStrength, setChargeStrength] = useState(CHARGE_STRENGTH);
   const cyRef = useRef(null);
+  // Layouts still animating. They must be stopped before the graph is destroyed, or their
+  // next animation frame touches the destroyed graph ("reading 'notify'" of null).
+  const layoutsRef = useRef(new Set());
+
   const containerRef = useRef(null);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
 
@@ -111,6 +124,7 @@ export default function Force({ results, hoveredIndex }) {
 
     // Initialize Cytoscape
     console.log("🚀 Initializing Cytoscape with", elements.length, "elements");
+    const activeLayouts = layoutsRef.current;
     const cy = cytoscape({
       container: containerRef.current,
       elements: elements,
@@ -209,8 +223,14 @@ export default function Force({ results, hoveredIndex }) {
           }
         }
       ],
-      layout: {
+      // The real layout runs below through runLayout, so it can be stopped on cleanup.
+      layout: { name: 'preset' }
+    });
+
+    runTrackedLayout(layoutsRef.current, cy, {
         name: 'cose',
+        // Nodes start without positions ('preset' above), so spread them first.
+        randomize: true,
         animate: true,
         animationDuration: 1000,
         idealEdgeLength: linkDistance,
@@ -221,7 +241,6 @@ export default function Force({ results, hoveredIndex }) {
         initialTemp: 200,
         coolingFactor: 0.95,
         minTemp: 1.0
-      }
     });
 
     cyRef.current = cy;
@@ -288,7 +307,7 @@ export default function Force({ results, hoveredIndex }) {
             cy.add([...newEntities, ...newRelationships]);
 
             // Re-run layout for new nodes
-            cy.layout({
+            runTrackedLayout(layoutsRef.current, cy, {
               name: 'cose',
               animate: true,
               animationDuration: 500,
@@ -296,7 +315,7 @@ export default function Force({ results, hoveredIndex }) {
               nodeRepulsion: chargeStrength * 10,
               fit: false,
               randomize: false
-            }).run();
+            });
 
             setExpandedNodes(prev => new Set([...prev, nodeId]));
           });
@@ -306,6 +325,8 @@ export default function Force({ results, hoveredIndex }) {
 
     // Cleanup
     return () => {
+      activeLayouts.forEach(layout => layout.stop());
+      activeLayouts.clear();
       if (cyRef.current) {
         cyRef.current.destroy();
       }
@@ -387,7 +408,7 @@ export default function Force({ results, hoveredIndex }) {
     setLinkDistance(newDistance);
 
     if (cyRef.current) {
-      cyRef.current.layout({
+      runTrackedLayout(layoutsRef.current, cyRef.current, {
         name: 'cose',
         animate: true,
         animationDuration: 500,
@@ -395,7 +416,7 @@ export default function Force({ results, hoveredIndex }) {
         nodeRepulsion: chargeStrength * 10,
         fit: false,
         randomize: false
-      }).run();
+      });
     }
   };
 
@@ -404,7 +425,7 @@ export default function Force({ results, hoveredIndex }) {
     setChargeStrength(newStrength);
 
     if (cyRef.current) {
-      cyRef.current.layout({
+      runTrackedLayout(layoutsRef.current, cyRef.current, {
         name: 'cose',
         animate: true,
         animationDuration: 500,
@@ -412,7 +433,7 @@ export default function Force({ results, hoveredIndex }) {
         nodeRepulsion: newStrength * 10,
         fit: false,
         randomize: false
-      }).run();
+      });
     }
   };
 
