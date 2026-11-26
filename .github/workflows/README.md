@@ -4,38 +4,27 @@ This directory contains the CI/CD workflows for the web-ui project.
 
 ## Workflows
 
-### 1. CI/CD Pipeline (`ci.yml`)
+### 1. CI (`ci.yml`)
 
-**Trigger:** Push to main/master/develop, Pull Requests
-
-**Jobs:**
-- **test-server**: Runs server API tests on Node.js 18.x and 20.x
-- **test-client**: Runs client tests on Node.js 18.x and 20.x
-- **build-client**: Builds the React application
-- **lint**: Runs ESLint on the codebase
-- **security-scan**: Performs npm audit for security vulnerabilities
-- **summary**: Displays overall pipeline status
-
-**Features:**
-- ✅ Multi-version Node.js testing (18.x, 20.x)
-- ✅ Test coverage reporting
-- ✅ Artifact archiving (30 days for test results, 7 days for builds)
-- ✅ Codecov integration for coverage tracking
-- ✅ Security vulnerability scanning
-
-### 2. Deploy (`deploy.yml`)
-
-**Trigger:** Push to main/master, Version tags (v*), Manual dispatch
+**Trigger:** pull requests, pushes to `master`, manual dispatch
 
 **Jobs:**
-- **deploy**: Builds and packages the application for deployment
+- **test-server**: mock server tests (`yarn test`, 70% coverage gate) on Node.js 20.x and 22.x
+- **test-client**: client unit tests with coverage, then the production build (uploaded as `client-build`)
+- **fuse-integration**: starts OpenSearch and Fuse with `scripts/fuse-up.sh`, loads the Dragons sample and runs
+  `yarn test:fuse` in `client/`: every Fuse call the UI makes, every Dragons template in Cypher and V1, and the
+  queries of the Dragons tutorial. Fuse logs are printed on failure.
 
-**Features:**
-- ✅ Production build creation
-- ✅ Deployment package generation
-- ✅ GitHub Release creation for version tags
-- ✅ Artifact retention (90 days)
-- 🔧 SSH deployment templates (commented out, ready to configure)
+### 2. Release (`deploy.yml`)
+
+**Trigger:** `vX.Y.Z` tags, pushes to `master`, manual dispatch
+
+**Jobs:**
+- **package**: server and client tests, build, and the deployment package `web-ui-<ref>.tar.gz` (artifact,
+  90 days). On a tag it also checks that both `package.json` versions match the tag and publishes a GitHub release
+  with the package and the matching `CHANGELOG.md` section as notes.
+
+See [docs/RELEASING.md](../../docs/RELEASING.md).
 
 ### 3. Pull Request Checks (`pr-checks.yml`)
 
