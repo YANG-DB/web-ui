@@ -155,6 +155,11 @@ CORS is already open on Fuse (`Access-Control-Allow-Origin: *`, OPTIONS answered
   entities, disconnected patterns, cycles.
 - [x] `fuse.runV1(query, {pageSize})` posts the JSON to `/fuse/query/v1/run`. The Research page has a
   **Language** selector (Cypher / V1) in Fuse mode, and the preview shows "V1 (Fuse)".
+- [x] Generated V1 is validated against yang-db's V1 query JSON Schema (`client/src/spec/v1/query.schema.json`,
+  vendored from yang-db PR #196 until it merges; `helpers/queryToV1.schema.test.js`, Ajv 8 as the `ajv8` alias so
+  CRA's top-level Ajv 6 stays). This found `not like`, which is not a V1 op; "does not contain" is now refused, since
+  no negative text op runs on Fuse 0.9.1.
+- [ ] Re-sync the vendored schema when yang-db PR #196 merges (steps in `client/src/spec/v1/README.md`).
 - [ ] Next: a raw V1 JSON editor next to the Cypher editor of B5.
 
 ### Fuse-side asks (for the yang-db repo, not this one)
