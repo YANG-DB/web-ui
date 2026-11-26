@@ -26,6 +26,8 @@ The UI now talks to a running YangDB (Fuse) server directly. Mock mode remains f
   (`FUSE_PROXY_TARGET`, default `http://localhost:8888`).
 - `scripts/fuse-up.sh` and `scripts/fuse-down.sh`: start OpenSearch and Fuse in Docker and load the Dragons sample.
 - [Dragons tutorial](docs/tutorials/DRAGONS.md), from Docker to answers.
+- Every generated V1 query is validated against yang-db's V1 query JSON Schema (vendored in
+  `client/src/spec/v1/`).
 - Live integration suite (`yarn test:fuse` in `client/`): every Fuse call, every Dragons template in Cypher and V1,
   and the tutorial's queries. CI runs it against a fresh Fuse on every pull request.
 
@@ -44,6 +46,8 @@ The UI now talks to a running YangDB (Fuse) server directly. Mock mode remains f
 - Re-running a query while the graph layout was still animating crashed the page.
 - The query preview overflowed onto the results panel.
 - Root `yarn test` failed in CI because `jest` and `supertest` were not declared.
+- V1 "does not contain" produced `not like`, which is not a V1 operator; it is now refused (Fuse 0.9.1 runs no
+  negative text operator).
 
 ### Known limitations (Fuse 0.9.1)
 - Cypher `CONTAINS` is not supported, and `STARTS WITH` / V1 `starts with` return no rows. Use V1, which web-ui
