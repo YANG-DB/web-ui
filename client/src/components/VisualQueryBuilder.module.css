@@ -16,6 +16,8 @@
   align-items: center;
   margin-bottom: 15px;
   padding-bottom: 10px;
+  /* Room for the Research page's collapse button (top right), which covered "Run Query" */
+  padding-right: 44px;
   border-bottom: 1px solid var(--dark-four);
 }
 
