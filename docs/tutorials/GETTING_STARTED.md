@@ -9,7 +9,7 @@ It takes about **20 minutes**, most of it waiting for downloads the first time.
 **Contents**
 
 1. [What you are building](#1-what-you-are-building)
-2. [Install the two tools you need](#2-install-the-two-tools-you-need)
+2. [Install the tools you need](#2-install-the-tools-you-need)
 3. [Download web-ui](#3-download-web-ui)
 4. [Start everything with one command](#4-start-everything-with-one-command)
 5. [Open web-ui](#5-open-web-ui)
@@ -29,7 +29,8 @@ It takes about **20 minutes**, most of it waiting for downloads the first time.
 
 ## 1. What you are building
 
-Four programs run on your computer, each in its own Docker *container*:
+Four programs run on your computer, each in its own Docker *container* (a fifth, a small mock server for demos, runs
+alongside them). Docker Compose starts them all with one command:
 
 ```mermaid
 flowchart LR
@@ -52,6 +53,7 @@ flowchart LR
 | **YangDB / Fuse** | The graph database. *Fuse* is the name of its server. |
 | **OpenSearch** | The storage engine Fuse keeps its data in. You never use it directly. |
 | **Docker** | A tool that runs programs in ready-made boxes (*containers*), so you don't have to install them one by one. |
+| **Docker Compose** | A separate tool that works with Docker. It reads a list of containers from a file (`docker-compose.yml`) and starts, stops or removes them all together. Docker on its own runs one container at a time. |
 | **Terminal** | The window where you type commands. On a Mac: **Terminal**. On Windows: **PowerShell**. |
 
 **The Dragons world** is a small made-up world that comes with YangDB:
@@ -78,9 +80,18 @@ flowchart LR
 
 ---
 
-## 2. Install the two tools you need
+## 2. Install the tools you need
 
-### Docker Desktop
+You need three tools: **Docker**, **Docker Compose** and **Git**.
+
+Docker and Docker Compose are two different tools. **Docker** runs containers. **Docker Compose** starts a whole
+group of containers described in one file: web-ui's `docker-compose.yml` lists the five that make up this setup.
+Every `docker compose ...` command in this guide is Docker Compose.
+
+### Docker and Docker Compose
+
+**Mac and Windows: install Docker Desktop.** It contains both Docker and Docker Compose, so there is nothing extra to
+install.
 
 1. Download it from **https://www.docker.com/products/docker-desktop/** and install it like any other app.
    - **Windows:** the installer may ask to enable *WSL 2*. Say yes and restart if asked.
@@ -88,12 +99,25 @@ flowchart LR
 3. Give Docker enough memory: in Docker Desktop open **Settings → Resources** and set **Memory** to at least
    **4 GB**. Click **Apply & restart**. (OpenSearch needs the room.)
 
+**Linux: install Docker Engine, then the Compose plugin.** Docker Engine alone does not include Compose.
+
+1. Install Docker Engine for your distribution: **https://docs.docker.com/engine/install/**.
+2. Install Docker Compose as a plugin. On Ubuntu or Debian (with Docker's package repository, set up in step 1):
+   ```bash
+   sudo apt-get update
+   sudo apt-get install docker-compose-plugin
+   ```
+   On Fedora, RHEL or CentOS: `sudo dnf install docker-compose-plugin`. Other systems:
+   **https://docs.docker.com/compose/install/linux/**.
+3. To run `docker` without `sudo`, follow **https://docs.docker.com/engine/install/linux-postinstall/** (then log
+   out and back in).
+
 ### Git
 
 - **Mac:** open Terminal and type `git --version`. If it isn't installed, macOS offers to install it; accept.
 - **Windows:** download from **https://git-scm.com/download/win** and install with the default options.
 
-### Check that both work
+### Check that all three work
 
 Open a terminal (Mac: press `Cmd+Space`, type **Terminal**, press Enter. Windows: press the Windows key, type
 **PowerShell**, press Enter) and type each line, pressing Enter after each:
@@ -113,6 +137,19 @@ git version 2.50.1
 ```
 
 If one says *command not found*, that tool isn't installed yet: go back to its step.
+
+**If `docker compose version` fails** (for example *'compose' is not a docker command*), Docker is installed but
+Docker Compose isn't, or you have the older stand-alone program, spelled with a hyphen. Try:
+
+```bash
+docker-compose --version
+```
+
+- It says **version 2** or later (for example `Docker Compose version v2.40.0`): that works. Type `docker-compose`
+  (with a hyphen) wherever this guide says `docker compose`, for example `docker-compose up -d`.
+- It says **version 1** (for example `docker-compose version 1.29.2`) or *command not found*: install Docker Compose
+  version 2 as described [above](#docker-and-docker-compose). Version 1 is no longer supported and can't read
+  web-ui's `docker-compose.yml`.
 
 ---
 
@@ -394,10 +431,12 @@ If Docker Desktop is closed, the containers stop too. Open Docker Desktop, then 
 
 | What you see | What to do |
 |---|---|
-| `docker: command not found` | Docker Desktop isn't installed, or isn't running. Install it ([section 2](#2-install-the-two-tools-you-need)) and open it. |
+| `docker: command not found` | Docker isn't installed, or Docker Desktop isn't running. Install it ([section 2](#2-install-the-tools-you-need)) and open it. |
+| `'compose' is not a docker command`, or `unknown shorthand flag: 'd' in -d` | Docker Compose isn't installed. See [Check that all three work](#check-that-all-three-work). |
+| `docker-compose: command not found` | You typed the hyphen spelling, which is only for the older stand-alone program. Type `docker compose` (with a space) instead. |
 | `Cannot connect to the Docker daemon` | Docker Desktop isn't running. Open it and wait for the green status. |
 | `port is already allocated` | Another program uses that port. Use other ports, as in [section 4](#4-start-everything-with-one-command). |
-| `docker compose up` waits a long time at *opensearch Waiting* and then fails | Docker has too little memory. Set it to 4 GB or more ([section 2](#2-install-the-two-tools-you-need)), then `docker compose down` and `docker compose up -d`. |
+| `docker compose up` waits a long time at *opensearch Waiting* and then fails | Docker has too little memory. Set it to 4 GB or more ([section 2](#2-install-the-tools-you-need)), then `docker compose down` and `docker compose up -d`. |
 | `dragons-loader` says **Exited (1)** | The data didn't load. Type `docker compose up -d dragons-loader` to run it again, then `docker compose logs dragons-loader`. |
 | http://localhost:3000 doesn't open | Wait a minute after `up` finishes, then reload. Check `docker compose ps`: `ui` should be *Up*. |
 | The dot next to Backend is **red** and you see a yellow notice about mock data | web-ui can't reach Fuse. Check `docker compose ps`: `fuse` should be *healthy*. Then pick **Fuse** in **Backend** again, or reload the page. |

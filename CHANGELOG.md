@@ -5,6 +5,11 @@ from `vX.Y.Z` tags (see [docs/RELEASING.md](docs/RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+- Getting started and the README say that Docker Compose is a separate tool from Docker: Docker Desktop includes
+  it, Linux needs the `docker-compose-plugin` package, and the stand-alone `docker-compose` v2 works with the hyphen
+  spelling (v1 doesn't). Troubleshooting covers the errors you get without it.
+
 ## [0.2.0] - 2026-11-26
 
 The UI now talks to a running YangDB (Fuse) server directly, and everything (graph, data and UI) starts with one

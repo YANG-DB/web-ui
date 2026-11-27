@@ -10,7 +10,10 @@ screenshots, from installing Docker to your first graph queries. No experience n
 
 ## Quick Start
 
-**With Docker only** (nothing else to install): the graph, the Dragons sample data and web-ui in one command.
+**With Docker only**: the graph, the Dragons sample data and web-ui in one command. Needs Docker and **Docker
+Compose v2**, a separate tool: Docker Desktop (Mac, Windows) includes it; on Linux install the
+`docker-compose-plugin` package. With the older stand-alone `docker-compose` (v2), type `docker-compose` instead of
+`docker compose`.
 
 ```bash
 git clone https://github.com/YANG-DB/web-ui.git && cd web-ui
