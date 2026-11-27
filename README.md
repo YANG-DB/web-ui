@@ -11,8 +11,9 @@ screenshots, from installing Docker to your first graph queries. No experience n
 ## Quick Start
 
 **With Docker only**: the graph, the Dragons sample data and web-ui in one command. Needs Docker and **Docker
-Compose v2**, a separate tool: Docker Desktop (Mac, Windows) includes it; on Linux install the
-`docker-compose-plugin` package. With the older stand-alone `docker-compose` (v2), type `docker-compose` instead of
+Compose v2**, a separate tool. Mac: `brew install colima docker docker-compose`, then `colima start --memory 6` (see
+[Getting started](docs/tutorials/GETTING_STARTED.md#docker-and-docker-compose)). Windows: Docker Desktop includes
+it. Linux: install the `docker-compose-plugin` package. With the older stand-alone `docker-compose` (v2), type `docker-compose` instead of
 `docker compose`.
 
 ```bash
