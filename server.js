@@ -41,7 +41,8 @@ const ontologyResults = {
 const ontology = dragonsOntology;
 
 const app = express();
-const port = process.env.PORT || 5001;
+// MOCK_PORT, not PORT: `yarn start` runs this next to the CRA dev server, which reads PORT.
+const port = process.env.MOCK_PORT || 5001;
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");

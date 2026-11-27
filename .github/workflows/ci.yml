@@ -112,3 +112,50 @@ jobs:
       - name: Stop Fuse
         if: always()
         run: scripts/fuse-down.sh
+
+  compose:
+    name: Docker Compose (graph + data + UI in one command)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: docker compose up
+        run: docker compose up -d --build
+
+      - name: Wait for the Dragons data to load
+        run: |
+          # exits with the loader's own exit status
+          docker compose wait dragons-loader
+          docker compose logs dragons-loader
+
+      - name: The UI answers and forwards /fuse and /api
+        run: |
+          curl -sf http://localhost:3000/ | grep -q '<div id="root">'
+          curl -sf http://localhost:3000/research | grep -q '<div id="root">'
+          curl -sf http://localhost:3000/api | grep -q '<div id="root">'
+          curl -sf http://localhost:3000/fuse/health | grep -q 'Alive'
+          curl -sf http://localhost:3000/api/ontologies | grep -q 'dragons'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: yarn
+          cache-dependency-path: client/yarn.lock
+
+      # The live suite, through the UI container's nginx
+      - name: Fuse checks through the UI
+        working-directory: client
+        run: |
+          yarn install --frozen-lockfile
+          yarn test:fuse
+        env:
+          CI: true
+          FUSE_URL: http://localhost:3000
+
+      - name: Logs
+        if: failure()
+        run: docker compose logs --tail 200
+
+      - name: docker compose down
+        if: always()
+        run: docker compose down -v

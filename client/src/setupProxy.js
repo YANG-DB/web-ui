@@ -9,9 +9,10 @@ const FUSE_TARGET = process.env.FUSE_PROXY_TARGET || "http://localhost:8888";
 
 module.exports = function(app) {
   app.use(
-    createProxyMiddleware("/api", { target: MOCK_TARGET, changeOrigin: true, logLevel: "warn" })
+    // "/api/", not "/api": the app's own API page is at /api and must not go to the mock server.
+    createProxyMiddleware("/api/", { target: MOCK_TARGET, changeOrigin: true, logLevel: "warn" })
   );
   app.use(
-    createProxyMiddleware("/fuse", { target: FUSE_TARGET, changeOrigin: true, logLevel: "warn" })
+    createProxyMiddleware("/fuse/", { target: FUSE_TARGET, changeOrigin: true, logLevel: "warn" })
   );
 };

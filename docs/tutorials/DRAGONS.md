@@ -1,5 +1,9 @@
 # Tutorial: the Dragons graph, from Docker to answers
 
+> **New to all this?** [Getting started](GETTING_STARTED.md) covers the same ground step by step, with screenshots,
+> using a single `docker compose up`. This page is the developer's version: running from source, HTTP calls and the
+> automated checks.
+
 This walks through one complete use case: start a YangDB (Fuse) graph server, load the Dragons sample world into it,
 and question it from web-ui, first with templates and then with your own queries, in Cypher and in V1. It ends with
 the same queries over plain HTTP and the automated checks that keep all of this working.
@@ -25,6 +29,8 @@ yarn            # installs the mock server and, through postinstall, the client
 ```bash
 scripts/fuse-up.sh
 ```
+
+(Or `docker compose up -d fuse dragons-loader`, which does the same with the repository's compose file.)
 
 The script:
 

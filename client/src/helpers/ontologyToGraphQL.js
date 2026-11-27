@@ -225,9 +225,14 @@ export function convertOntologyToGraphQL(ontologyData) {
         schema += `type ${rel.rType}Relationship {\n`;
         schema += `  type: String!\n`;
 
-        // Add relationship properties if they exist
+        // Add relationship properties if they exist. Skip names already emitted: Fuse's
+        // Dragons ontology has a HasProfession property called "type", which would be a
+        // duplicate field (an invalid schema the editor refuses to show).
+        const emitted = new Set(['type']);
         if (rel.properties && rel.properties.length > 0) {
           rel.properties.forEach(propName => {
+            if (emitted.has(propName)) return;
+            emitted.add(propName);
             const propType = propertyTypeMap[propName] || 'String';
             schema += `  ${propName}: ${propType}\n`;
           });
