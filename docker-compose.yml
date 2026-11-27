@@ -1,0 +1,87 @@
+# Everything in one command: the graph (OpenSearch + YangDB/Fuse), the Dragons sample data,
+# and web-ui.
+#
+#   docker compose up -d        # first run downloads images and builds the UI (a few minutes)
+#   open http://localhost:3000  # web-ui
+#   docker compose down         # stop and remove everything (the data goes too)
+#
+# See docs/tutorials/GETTING_STARTED.md. Host ports can be changed: UI_PORT, FUSE_PORT, OS_PORT.
+
+name: web-ui
+
+services:
+  # The storage engine. Single node, security plugin off: for local use only.
+  opensearch:
+    image: ${OS_IMAGE:-opensearchproject/opensearch:2.19.7}
+    environment:
+      - cluster.name=Dragons
+      - node.name=opensearch
+      - discovery.type=single-node
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - DISABLE_SECURITY_PLUGIN=true
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "${OS_PORT:-9200}:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+
+  # The graph engine. Its built-in config points at host "opensearch", cluster "Dragons".
+  fuse:
+    image: ${FUSE_IMAGE:-ghcr.io/yang-db/yang.db:0.9.1}
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    ports:
+      - "${FUSE_PORT:-8888}:8888"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8888/fuse/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 10s
+
+  # Runs once: loads the Dragons ontology and data into Fuse, then exits. If the data is
+  # already there (for example after `docker compose start`), it leaves it alone.
+  # The check asks OpenSearch, not Fuse: a Fuse query about Dragons made before the data
+  # exists leaves Fuse planning later Dragon queries wrongly (0 rows) until it restarts.
+  dragons-loader:
+    image: ${FUSE_IMAGE:-ghcr.io/yang-db/yang.db:0.9.1}
+    depends_on:
+      fuse:
+        condition: service_healthy
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        if curl -sf http://opensearch:9200/dragon/_count | grep -q '"count":[1-9]'; then
+          echo "Dragons data already loaded"
+        elif curl -sf -X POST http://fuse:8888/fuse/dragons/tutorial/load | grep -q '"ok":true'; then
+          echo "Dragons data loaded"
+        else
+          echo "Loading the Dragons data failed"
+          exit 1
+        fi
+    restart: "no"
+
+  # The mock backend (Mock server option and the API page).
+  mock:
+    build:
+      context: .
+      dockerfile: docker/mock.Dockerfile
+
+  # web-ui, served by nginx, which forwards /fuse to fuse and /api to mock.
+  ui:
+    build:
+      context: .
+      dockerfile: docker/ui.Dockerfile
+    depends_on:
+      - fuse
+      - mock
+    ports:
+      - "${UI_PORT:-3000}:80"
