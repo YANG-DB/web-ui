@@ -13,6 +13,11 @@ scripts) and uses the matching `CHANGELOG.md` section as its notes.
    - In `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, add a new empty `## [Unreleased]`
      above it, and update the compare links at the bottom.
    - Check the Dragons tutorial against a live Fuse: `scripts/fuse-up.sh`, then `cd client && yarn test:fuse`.
+   - Pick the Fuse version the release supports (normally the latest [yang-db release](https://github.com/YANG-DB/yang-db/releases)):
+     set it as the default `FUSE_IMAGE` in `docker-compose.yml` and `scripts/fuse-up.sh`, and record it in the
+     section's **Works with** table and in the README's **Compatibility** table.
+   - Links in the section use absolute URLs pinned to the tag (`https://github.com/YANG-DB/web-ui/blob/vX.Y.Z/...`),
+     because the section becomes the release page.
 3. **Merge the release PR**, then tag the merge commit and push the tag:
    ```bash
    git checkout master && git pull
@@ -34,8 +39,12 @@ web-ui-vX.Y.Z/
 ├── package.json, yarn.lock
 ├── mocks/             mock data
 ├── scripts/           fuse-up.sh / fuse-down.sh
+├── docs/              tutorials (Getting started, Dragons) and screenshots
 ├── README.md, CHANGELOG.md, LICENSE
 ```
+
+To run everything in Docker instead, use the source code (a clone, or the release's "Source code" archive) and
+`docker compose up -d`.
 
 Serve `client/` from any static web server. In production the app calls Fuse at `REACT_APP_FUSE_URL`, which is read
 at **build time** (default `/fuse`, so put Fuse behind the same origin under `/fuse`, or rebuild with

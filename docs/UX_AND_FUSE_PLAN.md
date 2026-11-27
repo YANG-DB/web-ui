@@ -316,4 +316,8 @@ References to study before designing (stars as of 2026-11-26):
   `docs/tutorials/GETTING_STARTED.md` on `docs/beginner-tutorial` (stacked on #52). The Schema page now reads from
   Fuse.
 
+- 2026-11-26: The stacked PRs #47 and #49-#53 were merged into their base branches, not `master`. Release PR
+  `release/0.2.0` brings all of it to `master` as **web-ui 0.2.0**, which supports **Fuse 0.9.1** (the latest
+  yang-db release; OpenSearch 2.19.7). The release notes link both tutorials.
+
 **Next step:** B3, results get the space: collapse the builder to a one-line summary of the query after a run.

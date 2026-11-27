@@ -31,6 +31,14 @@ On the **Research** page, the app uses Fuse when it answers (green dot next to *
 
 ![Research page with results from Fuse](docs/images/research-fuse-results.png)
 
+### Compatibility
+
+| web-ui | YangDB Fuse | OpenSearch |
+|---|---|---|
+| [0.2.0](https://github.com/YANG-DB/web-ui/releases/tag/v0.2.0) | [0.9.1](https://github.com/YANG-DB/yang-db/releases/tag/v0.9.1) | 2.19.7 |
+
+`docker-compose.yml` and `scripts/fuse-up.sh` start that Fuse version. Set `FUSE_IMAGE` to try another one.
+
 ### Backends
 
 The CRA dev server proxies two backends (see `client/src/setupProxy.js`):

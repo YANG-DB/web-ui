@@ -65,7 +65,7 @@ jobs:
           name="web-ui-${GITHUB_REF_NAME//\//-}"
           mkdir -p "dist/$name"
           cp -r client/build "dist/$name/client"
-          cp -r server.js package.json yarn.lock mocks scripts README.md CHANGELOG.md LICENSE "dist/$name/"
+          cp -r server.js package.json yarn.lock mocks scripts docs README.md CHANGELOG.md LICENSE "dist/$name/"
           tar -czf "$name.tar.gz" -C dist "$name"
           echo "PACKAGE=$name.tar.gz" >> "$GITHUB_ENV"
 

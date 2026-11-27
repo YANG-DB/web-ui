@@ -5,46 +5,40 @@ from `vX.Y.Z` tags (see [docs/RELEASING.md](docs/RELEASING.md)).
 
 ## [Unreleased]
 
-### Added
-- **Everything in Docker.** `docker compose up -d` starts OpenSearch, Fuse, a one-time Dragons loader, the mock
-  server and web-ui (built into an nginx image that forwards `/fuse` and `/api`) on http://localhost:3000. Host ports
-  are configurable (`UI_PORT`, `FUSE_PORT`, `OS_PORT`). CI runs the live Fuse suite through it.
-- **[Getting started](docs/tutorials/GETTING_STARTED.md)**: a beginner's guide with annotated screenshots, from
-  installing Docker to building queries.
-- The Schema page reads the ontology from Fuse when Fuse is up (labelled "From Fuse"), otherwise from the mock
-  server.
-- **Readable result graph.** Nodes are coloured by entity type, with the type written inside the node and its name
-  (name, title, or first and last name) below it. A legend shows each type's count and hides or shows a type on
-  click. Connectivity is shown by node size only.
-- Edge labels appear on hover, on the selected node's edges, or when zoomed in, instead of always.
-- Layout menu (Force, Breadth-first, Concentric, Grid) and a Fit button; the Force settings moved into a popover.
-- Double-tapping a node expands its neighbors through Fuse `getNeighbors` in Fuse mode (a single tap selects).
-- **Details panel.** Tapping a node or edge opens a right-hand panel with its type, name, id, relationship count and
-  every property, with **Expand neighbors** / **Collapse neighbors** and **Hide** (and **Show hidden** in the graph
-  toolbar). A relationship's ends link to their nodes. Esc or a background tap closes it.
-- `fuse.getV1Schema()`, for the V1 query schema Fuse now publishes at `GET /fuse/query/v1/schema` (yang-db #197). The
-  live suite checks it against the vendored copy and validates every template against it.
-
-- **Graph and table together.** A **Table** toggle shows the visible nodes under the graph (type, name, id,
-  relationships, every property) with a filter per column: text, or numeric comparisons such as `> 2`. Clicking a
-  row selects and centres the node; selecting a node in the graph highlights and scrolls to its row.
-
-### Changed
-- The vendored V1 schema is the version Fuse serves (adds `RelUntyped` and `WhereByConstraint`).
-- Edges are easier to click (wider hit area, same drawn width).
-
-### Fixed
-- The GraphQL schema generated for Fuse's Dragons ontology was invalid (`HasProfessionRelationship.type` twice),
-  so the Schema page refused to show it.
-- Opening `/api` (the API page) directly went to the mock server instead of the app, in the dev proxy too.
-- `PORT` set for the dev server also moved the mock server (it now reads `MOCK_PORT`).
-- The query builder's "Run Query" button was partly covered by the panel's collapse button.
-- In Fuse mode, tapping a node added unrelated nodes from the mock server's `/api/update`.
-- The bottom of the results (graph legend, table) was cut off by the height of the status line above it.
-
 ## [0.2.0] - 2026-11-26
 
-The UI now talks to a running YangDB (Fuse) server directly. Mock mode remains for demos and tests.
+The UI now talks to a running YangDB (Fuse) server directly, and everything (graph, data and UI) starts with one
+`docker compose up`. Mock mode remains for demos and tests.
+
+### Works with
+
+| | |
+|---|---|
+| YangDB Fuse | **[0.9.1](https://github.com/YANG-DB/yang-db/releases/tag/v0.9.1)** (`ghcr.io/yang-db/yang.db:0.9.1`, the default in `docker-compose.yml` and `scripts/fuse-up.sh`) |
+| OpenSearch | **2.19.7**, as required by Fuse 0.9.1 |
+| Sample data | Dragons ontology, loaded by `docker compose up` or `POST /fuse/dragons/tutorial/load` |
+
+The live suite (`yarn test:fuse`, 24 tests) passes against Fuse 0.9.1. The V1 schema endpoint
+(`GET /fuse/query/v1/schema`, yang-db #197) is not in 0.9.1 yet: web-ui uses its vendored copy of the schema and the
+check that compares the two is skipped. Another Fuse image can be used with `FUSE_IMAGE=...`.
+
+### Start here
+
+- **New to all of this? [Getting started](https://github.com/YANG-DB/web-ui/blob/v0.2.0/docs/tutorials/GETTING_STARTED.md)**: a step-by-step guide with
+  screenshots. Install Docker, run `docker compose up -d`, open http://localhost:3000, look at the Dragons schema, run
+  a template, read the graph, the details panel and the table, build your own query, search text with V1, and load
+  more results. Ends with a troubleshooting table.
+- **Developers: the [Dragons tutorial](https://github.com/YANG-DB/web-ui/blob/v0.2.0/docs/tutorials/DRAGONS.md)**: the same use case from the command line, the
+  Fuse REST calls the UI makes, Cypher and V1 side by side, and running the live tests.
+
+```bash
+git clone https://github.com/YANG-DB/web-ui.git && cd web-ui
+docker compose up -d          # OpenSearch 2.19.7 + Fuse 0.9.1 + Dragons data + web-ui
+open http://localhost:3000
+```
+
+The attached `web-ui-v0.2.0.tar.gz` holds the production build of the client, the mock server, the Fuse scripts and
+the docs, for serving web-ui without Docker (see [Releasing](https://github.com/YANG-DB/web-ui/blob/v0.2.0/docs/RELEASING.md#what-is-in-the-package)).
 
 ### Added
 - **Fuse backend.** The Research page detects Fuse at start-up and uses it, with a connection dot. A **Backend**
@@ -62,11 +56,32 @@ The UI now talks to a running YangDB (Fuse) server directly. Mock mode remains f
 - Dev proxy for both backends (`client/src/setupProxy.js`): `/api` goes to the mock server, `/fuse` to Fuse
   (`FUSE_PROXY_TARGET`, default `http://localhost:8888`).
 - `scripts/fuse-up.sh` and `scripts/fuse-down.sh`: start OpenSearch and Fuse in Docker and load the Dragons sample.
-- [Dragons tutorial](docs/tutorials/DRAGONS.md), from Docker to answers.
+- [Dragons tutorial](https://github.com/YANG-DB/web-ui/blob/v0.2.0/docs/tutorials/DRAGONS.md), from Docker to answers.
 - Every generated V1 query is validated against yang-db's V1 query JSON Schema (vendored in
   `client/src/spec/v1/`).
 - Live integration suite (`yarn test:fuse` in `client/`): every Fuse call, every Dragons template in Cypher and V1,
   and the tutorial's queries. CI runs it against a fresh Fuse on every pull request.
+- **Everything in Docker.** `docker compose up -d` starts OpenSearch, Fuse, a one-time Dragons loader, the mock
+  server and web-ui (built into an nginx image that forwards `/fuse` and `/api`) on http://localhost:3000. Host ports
+  are configurable (`UI_PORT`, `FUSE_PORT`, `OS_PORT`). CI runs the live Fuse suite through it.
+- **[Getting started](https://github.com/YANG-DB/web-ui/blob/v0.2.0/docs/tutorials/GETTING_STARTED.md)**: a beginner's guide with annotated screenshots, from
+  installing Docker to building queries.
+- The Schema page reads the ontology from Fuse when Fuse is up (labelled "From Fuse"), otherwise from the mock
+  server.
+- **Readable result graph.** Nodes are coloured by entity type, with the type written inside the node and its name
+  (name, title, or first and last name) below it. A legend shows each type's count and hides or shows a type on
+  click. Connectivity is shown by node size only.
+- Edge labels appear on hover, on the selected node's edges, or when zoomed in, instead of always.
+- Layout menu (Force, Breadth-first, Concentric, Grid) and a Fit button; the Force settings moved into a popover.
+- Double-tapping a node expands its neighbors through Fuse `getNeighbors` in Fuse mode (a single tap selects).
+- **Details panel.** Tapping a node or edge opens a right-hand panel with its type, name, id, relationship count and
+  every property, with **Expand neighbors** / **Collapse neighbors** and **Hide** (and **Show hidden** in the graph
+  toolbar). A relationship's ends link to their nodes. Esc or a background tap closes it.
+- `fuse.getV1Schema()`, for the V1 query schema Fuse now publishes at `GET /fuse/query/v1/schema` (yang-db #197). The
+  live suite checks it against the vendored copy and validates every template against it.
+- **Graph and table together.** A **Table** toggle shows the visible nodes under the graph (type, name, id,
+  relationships, every property) with a filter per column: text, or numeric comparisons such as `> 2`. Clicking a
+  row selects and centres the node; selecting a node in the graph highlights and scrolls to its row.
 
 ### Changed
 - The builder's Cypher is now generated by `helpers/queryToCypher.js` and is what Fuse runs: relationship types keep
@@ -77,20 +92,17 @@ The UI now talks to a running YangDB (Fuse) server directly. Mock mode remains f
 - CI rewritten: server tests on Node 20 and 22, client tests and build, and the live Fuse job. Releases publish the
   deployment package with the CHANGELOG section as notes.
 - Versions aligned to 0.2.0 in both `package.json` files.
+- The vendored V1 schema is the version Fuse serves (adds `RelUntyped` and `WhereByConstraint`).
+- Edges are easier to click (wider hit area, same drawn width).
 
 ### Fixed
-- An empty result (a query with no matches) crashed the Research page.
-- Re-running a query while the graph layout was still animating crashed the page.
-- The query preview overflowed onto the results panel.
-- Root `yarn test` failed in CI because `jest` and `supertest` were not declared.
-- V1 "does not contain" produced `not like`, which is not a V1 operator; it is now refused (Fuse 0.9.1 runs no
-  negative text operator).
-
-### Known limitations (Fuse 0.9.1)
-- Cypher `CONTAINS` is not supported, and `STARTS WITH` / V1 `starts with` return no rows. Use V1, which web-ui
-  sends as `like`.
-- Two queries started at the same moment fail ("zip file closed"); web-ui sends them one at a time.
-- `getNeighbors` answers without the usual `{requestId, data}` envelope. web-ui handles both.
+- The GraphQL schema generated for Fuse's Dragons ontology was invalid (`HasProfessionRelationship.type` twice),
+  so the Schema page refused to show it.
+- Opening `/api` (the API page) directly went to the mock server instead of the app, in the dev proxy too.
+- `PORT` set for the dev server also moved the mock server (it now reads `MOCK_PORT`).
+- The query builder's "Run Query" button was partly covered by the panel's collapse button.
+- In Fuse mode, tapping a node added unrelated nodes from the mock server's `/api/update`.
+- The bottom of the results (graph legend, table) was cut off by the height of the status line above it.
 
 ## [0.1.0]
 
