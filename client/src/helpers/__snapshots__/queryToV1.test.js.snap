@@ -1,0 +1,452 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`every Dragons template #0: Find all persons by first name 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "p",
+      "eType": "Person",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "con": Object {
+        "op": "not empty",
+        "type": "Constraint",
+      },
+      "eNum": 2,
+      "pType": "firstName",
+      "type": "EProp",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;
+
+exports[`every Dragons template #1: Find dragons with specific color 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "d",
+      "eType": "Dragon",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "con": Object {
+        "expr": "BLACK",
+        "op": "eq",
+        "type": "Constraint",
+      },
+      "eNum": 2,
+      "pType": "color",
+      "type": "EProp",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;
+
+exports[`every Dragons template #2: Find entities with multiple attributes 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "p",
+      "eType": "Person",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "eNum": 2,
+      "groups": Array [],
+      "props": Array [
+        Object {
+          "con": Object {
+            "op": "not empty",
+            "type": "Constraint",
+          },
+          "eNum": 3,
+          "pType": "firstName",
+          "type": "EProp",
+        },
+        Object {
+          "con": Object {
+            "op": "not empty",
+            "type": "Constraint",
+          },
+          "eNum": 4,
+          "pType": "lastName",
+          "type": "EProp",
+        },
+      ],
+      "quantType": "all",
+      "type": "EPropGroup",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;
+
+exports[`every Dragons template #3: Find entities using OR condition 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "d",
+      "eType": "Dragon",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "eNum": 2,
+      "groups": Array [],
+      "props": Array [
+        Object {
+          "con": Object {
+            "expr": "RED",
+            "op": "eq",
+            "type": "Constraint",
+          },
+          "eNum": 3,
+          "pType": "color",
+          "type": "EProp",
+        },
+        Object {
+          "con": Object {
+            "expr": "BLUE",
+            "op": "eq",
+            "type": "Constraint",
+          },
+          "eNum": 4,
+          "pType": "color",
+          "type": "EProp",
+        },
+      ],
+      "quantType": "some",
+      "type": "EPropGroup",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;
+
+exports[`every Dragons template #4: Complex nested query example 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "p",
+      "eType": "Person",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "eNum": 2,
+      "groups": Array [
+        Object {
+          "eNum": 4,
+          "groups": Array [],
+          "props": Array [
+            Object {
+              "con": Object {
+                "expr": "MALE",
+                "op": "eq",
+                "type": "Constraint",
+              },
+              "eNum": 5,
+              "pType": "gender",
+              "type": "EProp",
+            },
+            Object {
+              "con": Object {
+                "expr": "FEMALE",
+                "op": "eq",
+                "type": "Constraint",
+              },
+              "eNum": 6,
+              "pType": "gender",
+              "type": "EProp",
+            },
+          ],
+          "quantType": "some",
+          "type": "EPropGroup",
+        },
+      ],
+      "props": Array [
+        Object {
+          "con": Object {
+            "op": "not empty",
+            "type": "Constraint",
+          },
+          "eNum": 3,
+          "pType": "firstName",
+          "type": "EProp",
+        },
+      ],
+      "quantType": "all",
+      "type": "EPropGroup",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;
+
+exports[`every Dragons template #5: Find dragons owned by persons (relationship) 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "p",
+      "eType": "Person",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "dir": "R",
+      "eNum": 2,
+      "next": 3,
+      "rType": "Own",
+      "type": "Rel",
+    },
+    Object {
+      "eNum": 3,
+      "eTag": "d",
+      "eType": "Dragon",
+      "type": "ETyped",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;
+
+exports[`every Dragons template #6: Find persons who are members of guilds (relationship) 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "p",
+      "eType": "Person",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "dir": "R",
+      "eNum": 2,
+      "next": 3,
+      "rType": "MemberOf",
+      "type": "Rel",
+    },
+    Object {
+      "eNum": 3,
+      "eTag": "g",
+      "eType": "Guild",
+      "type": "ETyped",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;
+
+exports[`every Dragons template #7: Find persons who know someone named Christiana (complex) 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "p",
+      "eType": "Person",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "dir": "R",
+      "eNum": 2,
+      "next": 3,
+      "rType": "Know",
+      "type": "Rel",
+    },
+    Object {
+      "eNum": 3,
+      "eTag": "p1",
+      "eType": "Person",
+      "next": 4,
+      "type": "ETyped",
+    },
+    Object {
+      "con": Object {
+        "expr": "Christiana",
+        "op": "eq",
+        "type": "Constraint",
+      },
+      "eNum": 4,
+      "pType": "firstName",
+      "type": "EProp",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;
+
+exports[`every Dragons template #8: Persons with a black dragon that fired on a dragon, and a horse from a funded kingdom (advanced) 1`] = `
+Object {
+  "elements": Array [
+    Object {
+      "eNum": 0,
+      "next": 1,
+      "type": "Start",
+    },
+    Object {
+      "eNum": 1,
+      "eTag": "p",
+      "eType": "Person",
+      "next": 2,
+      "type": "ETyped",
+    },
+    Object {
+      "eNum": 2,
+      "next": Array [
+        3,
+        4,
+      ],
+      "qType": "all",
+      "type": "Quant1",
+    },
+    Object {
+      "dir": "R",
+      "eNum": 3,
+      "next": 5,
+      "rType": "Own",
+      "type": "Rel",
+    },
+    Object {
+      "dir": "R",
+      "eNum": 4,
+      "next": 10,
+      "rType": "Own",
+      "type": "Rel",
+    },
+    Object {
+      "eNum": 5,
+      "eTag": "d",
+      "eType": "Dragon",
+      "next": 6,
+      "type": "ETyped",
+    },
+    Object {
+      "eNum": 6,
+      "next": Array [
+        7,
+        8,
+      ],
+      "qType": "all",
+      "type": "Quant1",
+    },
+    Object {
+      "con": Object {
+        "expr": "BLACK",
+        "op": "eq",
+        "type": "Constraint",
+      },
+      "eNum": 7,
+      "pType": "color",
+      "type": "EProp",
+    },
+    Object {
+      "dir": "R",
+      "eNum": 8,
+      "next": 9,
+      "rType": "Fire",
+      "type": "Rel",
+    },
+    Object {
+      "eNum": 9,
+      "eTag": "d1",
+      "eType": "Dragon",
+      "type": "ETyped",
+    },
+    Object {
+      "eNum": 10,
+      "eTag": "h",
+      "eType": "Horse",
+      "next": 11,
+      "type": "ETyped",
+    },
+    Object {
+      "dir": "R",
+      "eNum": 11,
+      "next": 12,
+      "rType": "OriginatedIn",
+      "type": "Rel",
+    },
+    Object {
+      "eNum": 12,
+      "eTag": "k",
+      "eType": "Kingdom",
+      "next": 13,
+      "type": "ETyped",
+    },
+    Object {
+      "con": Object {
+        "expr": 0,
+        "op": "gt",
+        "type": "Constraint",
+      },
+      "eNum": 13,
+      "pType": "funds",
+      "type": "EProp",
+    },
+  ],
+  "name": "web-ui",
+  "ont": "Dragons",
+}
+`;

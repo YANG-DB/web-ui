@@ -1,12 +1,47 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useRef, useMemo } from "react";
 import { Resizable } from "re-resizable";
 import { connect } from "react-redux";
 import { submitQuery, storeResults, cacheQuery } from "../reducers/research";
 import { VisualQueryBuilder, Results } from "../components";
 import apiService from "../services/api";
+import fuse, { fuseBaseUrl } from "../services/fuse";
+import queryToCypher from "../helpers/queryToCypher";
+import queryToV1 from "../helpers/queryToV1";
+import normalizeFuseResult, { appendFuseResult, resolveOntologyId } from "../helpers/normalizeFuseResult";
 import { generateMockGraphData } from "../helpers/mockGraphGenerators";
 import styles from "../App.module.css";
 import researchStyles from "./Research.module.css";
+
+// Page size for Fuse runs (graph view).
+const PAGE_SIZE = 100;
+
+function RunStatus({ run, elapsed, onLoadMore }) {
+  if (run.running) {
+    return (
+      <div className={researchStyles.runStatus} role="status">
+        <span className={researchStyles.spinner} aria-hidden="true" /> Running… {(elapsed / 1000).toFixed(1)}s
+      </div>
+    );
+  }
+  if (run.error) {
+    return (
+      <div className={researchStyles.runError} role="alert">
+        <strong>Query failed:</strong> {run.error}
+      </div>
+    );
+  }
+  if (run.count == null) return null;
+  return (
+    <div className={researchStyles.runStatus} role="status">
+      {run.count} result{run.count === 1 ? '' : 's'}{run.language ? ` (${run.language === 'v1' ? 'V1' : 'Cypher'})` : ''}
+      {run.hasMore && (
+        <button className={researchStyles.loadMore} onClick={onLoadMore} disabled={run.loadingMore}>
+          {run.loadingMore ? 'Loading…' : 'Load more'}
+        </button>
+      )}
+    </div>
+  );
+}
 
 function Research({
   submitQuery,
@@ -17,26 +52,106 @@ function Research({
 }) {
   const [ontologies, setOntologies] = useState([]);
   const [selectedOntology, setSelectedOntology] = useState('dragons');
-  const [useMockData, setUseMockData] = useState(false);
+  // Backends: "fuse" (YangDB), "mock" (server.js, falls back to generated data),
+  // "generated" (client-side sample data, no server needed).
+  const [backend, setBackend] = useState(null);
+  const [fuseUp, setFuseUp] = useState(null);
+  const [fuseOntologyIds, setFuseOntologyIds] = useState([]);
+  // The builder waits for the ontology list, so it never asks Fuse for an unresolved id.
+  const [ontologiesReady, setOntologiesReady] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const [language, setLanguage] = useState('cypher');
+  const [run, setRun] = useState({ running: false });
+  const [elapsed, setElapsed] = useState(0);
+  const lastQueryId = useRef(null);
   const [queryBuilderCollapsed, setQueryBuilderCollapsed] = useState(false);
   const [resultsCollapsed, setResultsCollapsed] = useState(false);
 
-  // Load available ontologies on mount
+  // Pick the backend once on mount: Fuse when it answers, otherwise the mock server,
+  // otherwise generated data.
   useEffect(() => {
-    apiService.getOntologies().then(data => {
-      setOntologies(data.ontologies);
-      setUseMockData(false); // Server is available
-    }).catch(error => {
-      console.error("Failed to load ontologies list:", error);
-      console.warn("Server unavailable - switching to mock data mode");
-      setUseMockData(true); // Use mock data when server is down
-      // Use default ontologies
-      setOntologies([
-        { id: 'dragons', name: 'Dragons' },
-        { id: 'linkedin', name: 'LinkedIn' },
-        { id: 'flights', name: 'Flights' }
-      ]);
+    let cancelled = false;
+    fuse.health().then(up => {
+      if (cancelled) return;
+      setFuseUp(up);
+      if (up) {
+        setBackend('fuse');
+        return;
+      }
+      apiService.getOntologies()
+        .then(() => !cancelled && setBackend('mock'))
+        .catch(() => !cancelled && setBackend('generated'));
+      setNotice(`Fuse is not reachable at ${fuseBaseUrl()}, so mock data is shown. Start Fuse and pick it above.`);
     });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Keep the connection dot current.
+  useEffect(() => {
+    const timer = setInterval(() => fuse.health().then(setFuseUp), 15000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Ontology list for the selected backend.
+  useEffect(() => {
+    if (!backend) return;
+    let cancelled = false;
+    setOntologiesReady(false);
+    const fallback = [
+      { id: 'dragons', name: 'Dragons' },
+      { id: 'linkedin', name: 'LinkedIn' },
+      { id: 'flights', name: 'Flights' }
+    ];
+    const pick = list => {
+      if (cancelled) return;
+      setOntologies(list);
+      setOntologiesReady(true);
+      setSelectedOntology(current =>
+        list.some(o => o.id === current) ? current : (list.find(o => o.id === 'dragons') || list[0] || { id: current }).id
+      );
+    };
+
+    if (backend === 'fuse') {
+      fuse.listOntologies().then(list => {
+        if (cancelled) return;
+        setFuseOntologyIds(list.map(o => o.ont));
+        setNotice(null);
+        pick(list.map(o => ({ id: o.ont.toLowerCase(), name: o.ont })));
+      }).catch(error => {
+        if (cancelled) return;
+        setNotice(`Could not load ontologies from Fuse: ${error.message}`);
+        pick([]);
+      });
+    } else if (backend === 'mock') {
+      apiService.getOntologies().then(data => pick(data.ontologies)).catch(() => pick(fallback));
+    } else {
+      pick(fallback);
+    }
+    return () => { cancelled = true; };
+  }, [backend]);
+
+  // Where the builder loads the selected ontology from.
+  const loadOntology = useCallback(type => {
+    if (backend === 'fuse') {
+      return fuse.getOntology(resolveOntologyId(fuseOntologyIds, type) || type);
+    }
+    return apiService.getOntology(type);
+  }, [backend, fuseOntologyIds]);
+
+  // Elapsed timer while a query runs.
+  useEffect(() => {
+    if (!run.running) return;
+    const started = Date.now();
+    setElapsed(0);
+    const timer = setInterval(() => setElapsed(Date.now() - started), 100);
+    return () => clearInterval(timer);
+  }, [run.running]);
+
+  const forgetQuery = useCallback(() => {
+    if (lastQueryId.current) {
+      fuse.deleteQuery(lastQueryId.current).catch(() => null);
+      lastQueryId.current = null;
+    }
   }, []);
 
   // Helper to detect which template was used based on query structure
@@ -70,20 +185,20 @@ function Research({
         if (hasGenderRule) return 4;
       }
 
+      // Template 8: Person Own Dragon plus more conditions (multi-relationship)
+      if (firstRule.field === 'Person' && firstRule.operator === 'Own' && query.rules.length > 1) return 8;
+
       // Template 5: Person Own Dragon
       if (firstRule.field === 'Person' && firstRule.operator === 'Own') return 5;
 
       // Template 6: Person MemberOf Guild
       if (firstRule.field === 'Person' && firstRule.operator === 'MemberOf') return 6;
 
-      // Template 7: Person Know Person with firstName George
+      // Template 7: Person Know Person with a firstName condition
       if (firstRule.field === 'Person' && firstRule.operator === 'Know' && query.rules.length >= 2) {
-        const hasGeorge = query.rules.some(r => r.field === 'Person.firstName' && r.value === 'George');
-        if (hasGeorge) return 7;
+        const hasName = query.rules.some(r => r.field === 'Person.firstName');
+        if (hasName) return 7;
       }
-
-      // Template 8: Multi-relationship complex query
-      if (firstRule.field === 'Person' && firstRule.operator === 'OriginatedIn') return 8;
 
     } else if (ontologyType === 'linkedin') {
       // Template 0: Person.name notNull
@@ -169,14 +284,43 @@ function Research({
     return 0; // Default to template 0
   }, []);
 
-  const onSubmit = useCallback(query => {
-    console.log("========== QUERY SUBMISSION START ==========");
-    console.log("Visual query submitted:", query);
-    console.log("useMockData:", useMockData);
-    console.log("selectedOntology:", selectedOntology);
+  const onSubmit = useCallback((query, meta = {}) => {
     submitQuery(query);
 
-    if (useMockData) {
+    if (backend === 'fuse') {
+      const ontology = resolveOntologyId(fuseOntologyIds, selectedOntology) || selectedOntology;
+      let request;
+      try {
+        request = language === 'v1'
+          ? fuse.runV1(queryToV1(query, meta.ontology, { ont: ontology }), { pageSize: PAGE_SIZE })
+          : fuse.runCypher(queryToCypher(query, meta.ontology), { ontology, pageSize: PAGE_SIZE });
+      } catch (error) {
+        // queryToV1 throws when V1 cannot express the query
+        setRun({ running: false, error: error.message });
+        return;
+      }
+      forgetQuery();
+      setRun({ running: true });
+      request.then(result => {
+        lastQueryId.current = result.queryId;
+        storeResults(normalizeFuseResult(result.page));
+        setRun({
+          running: false,
+          count: result.actualPageSize,
+          hasMore: result.hasMore,
+          queryId: result.queryId,
+          cursorId: result.cursorId,
+          language
+        });
+      }).catch(error => {
+        storeResults(normalizeFuseResult(null));
+        setRun({ running: false, error: error.message });
+      });
+      return;
+    }
+
+    setRun({ running: false });
+    if (backend === 'generated') {
       // Generate mock data based on query
       const templateIndex = detectTemplateIndex(query, selectedOntology);
       console.log("🎯 Detected template index:", templateIndex, "for ontology:", selectedOntology);
@@ -248,7 +392,43 @@ function Research({
       });
     }
     console.log("========== QUERY SUBMISSION END ==========");
-  }, [submitQuery, storeResults, useMockData, selectedOntology, detectTemplateIndex]);
+  }, [submitQuery, storeResults, backend, fuseOntologyIds, selectedOntology, language, forgetQuery, detectTemplateIndex]);
+
+  const loadMore = useCallback(() => {
+    const { queryId, cursorId } = run;
+    setRun(current => ({ ...current, loadingMore: true }));
+    fuse.nextPage(queryId, cursorId, PAGE_SIZE).then(next => {
+      storeResults(appendFuseResult(results, next.page));
+      setRun(current => ({
+        ...current,
+        loadingMore: false,
+        count: current.count + next.actualPageSize,
+        hasMore: next.hasMore
+      }));
+    }).catch(error => {
+      setRun(current => ({ ...current, loadingMore: false, error: error.message }));
+    });
+  }, [run, results, storeResults]);
+
+  // Double-tapping a graph node expands its neighbors. With Fuse this is getNeighbors;
+  // otherwise the graph falls back to the mock server's /api/update.
+  const expandNode = useMemo(() => {
+    if (backend !== 'fuse') return undefined;
+    const ontology = resolveOntologyId(fuseOntologyIds, selectedOntology) || selectedOntology;
+    return node =>
+      fuse.getNeighbors(ontology, node.eType, node.rawId).then(result => {
+        // getNeighbors stores a query like any run; it is not needed once merged in.
+        fuse.deleteQuery(result.queryId).catch(() => null);
+        return normalizeFuseResult(result.page);
+      });
+  }, [backend, fuseOntologyIds, selectedOntology]);
+
+  const changeBackend = useCallback(next => {
+    forgetQuery();
+    setRun({ running: false });
+    setNotice(null);
+    setBackend(next);
+  }, [forgetQuery]);
 
   return (
     <div className={styles.row}>
@@ -267,16 +447,40 @@ function Research({
             ))}
           </select>
 
-          <label style={{ marginLeft: '20px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={useMockData}
-              onChange={(e) => setUseMockData(e.target.checked)}
-              style={{ cursor: 'pointer' }}
-            />
-            <span>Use Mock Data</span>
-          </label>
+          <label htmlFor="research-backend-select" className={researchStyles.spaced}>Backend: </label>
+          <select
+            id="research-backend-select"
+            value={backend || ''}
+            onChange={(e) => changeBackend(e.target.value)}
+          >
+            {!backend && <option value="">Connecting…</option>}
+            <option value="fuse">Fuse</option>
+            <option value="mock">Mock server</option>
+            <option value="generated">Generated sample</option>
+          </select>
+          <span
+            className={researchStyles.statusDot}
+            data-status={fuseUp === null ? 'unknown' : fuseUp ? 'up' : 'down'}
+            title={fuseUp ? `Fuse is up (${fuseBaseUrl()})` : `Fuse is not reachable (${fuseBaseUrl()})`}
+            aria-label={fuseUp ? 'Fuse connected' : 'Fuse not connected'}
+            role="img"
+          />
+
+          {backend === 'fuse' && (
+            <>
+              <label htmlFor="research-language-select" className={researchStyles.spaced}>Language: </label>
+              <select
+                id="research-language-select"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+              >
+                <option value="cypher">Cypher</option>
+                <option value="v1">V1</option>
+              </select>
+            </>
+          )}
         </div>
+        {notice && <div className={researchStyles.notice} role="status">{notice}</div>}
 
         {!queryBuilderCollapsed && (
           <Resizable
@@ -337,6 +541,7 @@ function Research({
             style={{
               marginBottom: '10px',
               position: 'relative',
+              overflow: 'auto',
               flex: resultsCollapsed ? 1 : undefined
             }}
           >
@@ -347,7 +552,16 @@ function Research({
             >
               ▲
             </button>
-            <VisualQueryBuilder onSubmit={onSubmit} ontologyType={selectedOntology} />
+            {backend && ontologiesReady ? (
+              <VisualQueryBuilder
+                onSubmit={onSubmit}
+                ontologyType={selectedOntology}
+                loadOntology={loadOntology}
+                backendLabel={backend === 'fuse' ? 'Fuse server' : 'mock server'}
+              />
+            ) : (
+              <div className={researchStyles.runStatus}>Connecting to Fuse…</div>
+            )}
           </Resizable>
         )}
 
@@ -365,7 +579,9 @@ function Research({
         )}
 
         {!resultsCollapsed && (
-          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            {/* A column: the status line takes its height, the results the rest (a 100%-high
+                Results under the status line was clipped by the status line's height). */}
             <button
               onClick={() => setResultsCollapsed(true)}
               className={researchStyles.collapseButton}
@@ -373,7 +589,10 @@ function Research({
             >
               ▼
             </button>
-            <Results results={results} />
+            <RunStatus run={run} elapsed={elapsed} onLoadMore={loadMore} />
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <Results results={results} onExpandNode={expandNode} />
+            </div>
           </div>
         )}
 

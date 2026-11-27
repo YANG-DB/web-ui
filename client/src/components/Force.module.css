@@ -93,6 +93,15 @@
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: row;
+}
+
+/* The graph and its overlays; narrows when the details panel is open */
+.graphArea {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
   flex-direction: column;
 }
 
@@ -100,28 +109,6 @@
   width: 100%;
   height: 100%;
   background: radial-gradient(circle at center, #1a1a2e 0%, #16213e 100%);
-}
-
-.controls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(26, 26, 46, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 16px;
-  z-index: 10;
-  min-width: 240px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.controlGroup {
-  margin-bottom: 16px;
-}
-
-.controlGroup:last-child {
-  margin-bottom: 0;
 }
 
 .controlLabel {
@@ -189,26 +176,443 @@
   transform: scale(0.95);
 }
 
-.centerButton {
-  width: 100%;
-  padding: 10px 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
+/* Graph toolbar: layout, fit, settings */
+.toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(16, 19, 34, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.toolbarLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c9d1e8;
+  font-size: 12px;
+}
+
+.toolbarSelect,
+.toolbarButton {
+  background: #1f2440;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.centerButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+.toolbarButton:hover,
+.toolbarSelect:hover {
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
-.centerButton:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+.toolbarSelect:focus-visible,
+.toolbarButton:focus-visible,
+.legendChip:focus-visible {
+  outline: 2px solid #7fc8ff;
+  outline-offset: 2px;
+}
+
+.settings {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  background: rgba(16, 19, 34, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.settingsNote {
+  margin: 0;
+  color: #9aa4c2;
+  font-size: 12px;
+}
+
+.slider:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Legend: one chip per entity type */
+.legend {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.legendChip {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
+  background: rgba(16, 19, 34, 0.92);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.legendChip[data-hidden="true"] {
+  opacity: 0.45;
+}
+
+.legendChip[data-hidden="true"] .legendType {
+  text-decoration: line-through;
+}
+
+.legendSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.legendCount {
+  color: #9aa4c2;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  position: absolute;
+  top: 16px;
+  left: 14px;
+  z-index: 9;
+  color: #8a93b0;
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.graphError {
+  position: absolute;
+  top: 40px;
+  left: 12px;
+  z-index: 11;
+  max-width: 60%;
+  padding: 6px 10px;
+  background: rgba(239, 83, 80, 0.18);
+  border-left: 3px solid #ef5350;
+  color: #ffb4b2;
+  font-size: 12px;
+}
+
+/* Details panel for the selected node or edge */
+.details {
+  flex: none;
+  width: 320px;
+  max-width: 45%;
+  overflow-y: auto;
+  padding: 14px 16px 20px;
+  background: #12152a;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e6e9f5;
+  font-size: 13px;
+}
+
+.detailsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.detailsType {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #c9d1e8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.detailsClose {
+  background: transparent;
+  color: #c9d1e8;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 20px;
+  line-height: 1;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.detailsClose:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+/* .details h3: beats the app-wide ".section h3" (letter-spacing, inline-block, padding) */
+.details h3.detailsTitle {
+  display: block;
+  margin: 10px 0 12px;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: normal;
+  color: #ffffff;
+  word-break: break-word;
+}
+
+.detailsMeta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 0 0 14px;
+}
+
+.detailsMeta dt {
+  color: #9aa4c2;
+}
+
+.detailsMeta dd {
+  margin: 0;
+  word-break: break-word;
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #7fc8ff;
+  text-decoration: underline;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.detailsActions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.detailsPrimary,
+.detailsSecondary {
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.detailsPrimary {
+  background: #4e9bff;
+  color: #0b0e1a;
+  border: 1px solid #4e9bff;
+  font-weight: 600;
+}
+
+.detailsPrimary:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.detailsSecondary {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.detailsClose:focus-visible,
+.linkButton:focus-visible,
+.detailsPrimary:focus-visible,
+.detailsSecondary:focus-visible {
+  outline: 2px solid #7fc8ff;
+  outline-offset: 2px;
+}
+
+.detailsError {
+  margin: 6px 0;
+  padding: 6px 8px;
+  background: rgba(239, 83, 80, 0.15);
+  border-left: 3px solid #ef5350;
+  color: #ffb4b2;
+}
+
+.details h4.detailsSection {
+  margin: 16px 0 6px;
+  color: #9aa4c2;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.detailsEmpty {
+  margin: 0;
+  color: #9aa4c2;
+}
+
+.detailsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detailsTable th,
+.detailsTable td {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  vertical-align: top;
+  text-align: left;
+}
+
+.detailsTable th {
+  width: 40%;
+  padding-right: 10px;
+  color: #9aa4c2;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.detailsTable td {
+  word-break: break-word;
+}
+
+/* The graph canvas and its overlays (toolbar, legend, hint); shrinks when the table opens */
+.canvasWrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.canvasWrap .cytoscape {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+}
+
+/* Node table under the graph */
+.nodeTable {
+  flex: none;
+  height: 40%;
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  background: #12152a;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e6e9f5;
+  font-size: 12px;
+}
+
+.nodeTableBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  color: #9aa4c2;
+}
+
+.nodeTableScroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.nodeTableGrid {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+}
+
+.nodeTableGrid th,
+.nodeTableGrid td {
+  padding: 5px 10px;
+  text-align: left;
+  white-space: nowrap;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.nodeTableGrid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #1a1e38;
+  color: #c9d1e8;
+  font-weight: 600;
+}
+
+/* Two sticky header rows: the names row has a fixed height so the filter row sits right
+   under it with no gap for the body to show through. */
+.nodeTableGrid thead tr:first-child th {
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.nodeTableGrid thead tr.nodeTableFilters th {
+  top: 28px;
+  padding-top: 0;
+  padding-bottom: 6px;
+}
+
+.nodeTableFilters input {
+  width: 100%;
+  min-width: 70px;
+  box-sizing: border-box;
+  background: #0f1226;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
+.nodeTableFilters input:focus-visible {
+  outline: 2px solid #7fc8ff;
+  outline-offset: 0;
+}
+
+.nodeTableRow {
+  cursor: pointer;
+}
+
+.nodeTableRow:hover td {
+  background: rgba(127, 200, 255, 0.07);
+}
+
+.nodeTableRow[aria-selected="true"] td {
+  background: rgba(127, 200, 255, 0.2);
+}
+
+.nodeTableRow:focus-visible {
+  outline: 2px solid #7fc8ff;
+  outline-offset: -2px;
+}
+
+.nodeTableType {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nodeTableEmpty {
+  color: #9aa4c2;
+  padding: 12px;
 }

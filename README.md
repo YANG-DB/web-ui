@@ -1,12 +1,43 @@
 # web-ui
 
-User interface for graph database interaction and ontology management
+[![CI](https://github.com/YANG-DB/web-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/YANG-DB/web-ui/actions/workflows/ci.yml)
+
+User interface for graph database interaction and ontology management, for
+[YangDB (Fuse)](https://github.com/YANG-DB/yang-db).
+
+**New here? Start with [Getting started](docs/tutorials/GETTING_STARTED.md)**: a step-by-step guide with
+screenshots, from installing Docker to your first graph queries. No experience needed.
 
 ## Quick Start
 
-Run `yarn` to install dependencies, followed by `yarn start`.
+**With Docker only** (nothing else to install): the graph, the Dragons sample data and web-ui in one command.
 
-The application will be available at `http://localhost:3000`
+```bash
+git clone https://github.com/YANG-DB/web-ui.git && cd web-ui
+docker compose up -d     # first run: downloads and builds, a few minutes
+# open http://localhost:3000
+docker compose down      # stop and remove everything
+```
+
+**From source** (to change the code; needs Node.js 20+ and Yarn):
+
+```bash
+yarn                                       # install (root and client)
+docker compose up -d fuse dragons-loader   # or scripts/fuse-up.sh: Fuse with the Dragons sample
+yarn start                                 # mock server on 5001, app on http://localhost:3000
+```
+
+On the **Research** page, the app uses Fuse when it answers (green dot next to **Backend**), and mock data otherwise.
+
+![Research page with results from Fuse](docs/images/research-fuse-results.png)
+
+### Compatibility
+
+| web-ui | YangDB Fuse | OpenSearch |
+|---|---|---|
+| [0.2.0](https://github.com/YANG-DB/web-ui/releases/tag/v0.2.0) | [0.9.1](https://github.com/YANG-DB/yang-db/releases/tag/v0.9.1) | 2.19.7 |
+
+`docker-compose.yml` and `scripts/fuse-up.sh` start that Fuse version. Set `FUSE_IMAGE` to try another one.
 
 ### Backends
 
@@ -20,14 +51,13 @@ The CRA dev server proxies two backends (see `client/src/setupProxy.js`):
 The Fuse client (`client/src/services/fuse.js`) calls `/fuse` by default. Set `REACT_APP_FUSE_URL`
 (for example `http://localhost:8888/fuse`) to call Fuse directly instead; CORS is open on Fuse.
 
-To run Fuse locally with the Dragons sample, from a [yang-db](https://github.com/YANG-DB/yang-db) checkout:
+To run Fuse locally with the Dragons sample, run `scripts/fuse-up.sh` (Docker: OpenSearch 2.19.7 and
+`ghcr.io/yang-db/yang.db:0.9.1`, then loads the data); `scripts/fuse-down.sh` removes them. From a
+[yang-db](https://github.com/YANG-DB/yang-db) checkout, its `docker/docker-compose-os.yml` works too; load the data with
+`curl -X POST http://localhost:8888/fuse/dragons/tutorial/load`.
 
-```bash
-cd docker
-YANGDB_IMAGE=ghcr.io/yang-db/yang.db YANGDB_TAG=0.9.1 docker compose -f docker-compose-os.yml up -d opensearch fuse
-curl http://localhost:8888/fuse/health                    # "Alive And Well..."
-curl -X POST http://localhost:8888/fuse/dragons/tutorial/load   # loads the Dragons ontology and data
-```
+On the Research page, **Backend** picks Fuse, the mock server or generated sample data, and **Language** picks how
+queries go to Fuse: Cypher, or V1 (Fuse's native JSON query language, which also supports text matching).
 
 ## Features Overview
 
@@ -93,12 +123,18 @@ View query results in multiple interactive formats with rich visualization optio
 
 **View Modes**:
 - **Graph View**: Interactive network visualization using Cytoscape.js
+  - Colour per entity type, with the type inside the node and its name below it
+  - Legend with a count per type; click a type to hide or show it
   - Node size based on connectivity
-  - Color gradient showing relationship density
-  - Click to expand/collapse nodes
-  - Adjustable edge length and node repulsion
-  - Center view button for easy navigation
+  - Edge labels on hover, on the selected node's edges, or when zoomed in
+  - Tap a node or edge for a details panel: type, id, all properties, Expand neighbors, Hide
+  - Optional table of the visible nodes under the graph, with a filter per column (text or `> 2`) and selection
+    synced both ways
+  - Double-tap a node to expand its neighbors (from Fuse, or the mock server)
+  - Layouts: Force, Breadth-first, Concentric, Grid, plus Fit; edge length and repulsion in the ⚙ popover
   - Full-screen mode for detailed exploration
+
+![Readable graph: names, types, legend](docs/images/research-graph-readable.png)
 - **Table View**: Tabular display grouped by entity type
   - Columns for all entity properties
   - Sortable and filterable data
@@ -273,6 +309,8 @@ A professional networking ontology for social and business data.
 ## Documentation
 
 ### User Guides
+- [Getting started](docs/tutorials/GETTING_STARTED.md) - Step by step with screenshots, for beginners
+- [Dragons tutorial](docs/tutorials/DRAGONS.md) - Run Fuse, load the Dragons sample, query it in Cypher and V1
 - [Visual Query Builder Guide](docs/VISUAL_QUERY_BUILDER.md) - Complete query building documentation
 - [Schema Viewer Guide](docs/SCHEMA_VIEWER.md) - Schema management and ontology structure
 - [Results Visualization Guide](docs/RESULTS_VISUALIZATION.md) - Using graph, table, list, and JSON views
@@ -316,10 +354,20 @@ web-ui/
 
 ### Available Scripts
 
-- `yarn start` - Start development server
+Root:
+- `yarn start` - Start the mock server and the development app
+- `yarn test` - Mock server tests (with a 70% coverage gate)
+- `scripts/fuse-up.sh` / `scripts/fuse-down.sh` - Start / remove Fuse and OpenSearch in Docker
+
+In `client/`:
+- `yarn test` - Unit tests (watch mode; `--watchAll=false` for one run)
+- `yarn test:fuse` - Live checks against Fuse (`FUSE_URL`, default `http://localhost:8888`)
 - `yarn build` - Build for production
-- `yarn test` - Run test suite
 - `yarn lint` - Lint code
+
+CI (`.github/workflows/ci.yml`) runs all three test suites on every pull request; the Fuse suite runs against a fresh
+Fuse started by `scripts/fuse-up.sh`. Releases: see [docs/RELEASING.md](docs/RELEASING.md) and
+[CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -339,6 +387,12 @@ When adding new features:
 All screenshots are available in `/docs/images`:
 
 ### Research Page
+- `research-fuse-results.png` - Results from Fuse: backend selector, connection dot, language, result count
+- `research-fuse-v1.png` - V1 query preview and its result
+- `research-fuse-error.png` - A Fuse error shown in the results panel
+- `research-graph-readable.png` - Graph with type colours, names, type badges, edge labels and the legend
+- `research-details-panel.png` - Details panel for a selected node
+- `research-graph-table.png` - Graph and table together, with the selection synced
 - `research-visual-query-builder.png` - Query builder interface with ontology selector and controls
 - `research-template-queries.png` - Pre-built query templates modal
 - `research-results.png` - Complete research interface with query builder and results visualization

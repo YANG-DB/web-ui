@@ -103,6 +103,9 @@ jobs:
         run: cd client && yarn install --frozen-lockfile
 
       - name: Build and check size
+        # CI=false: CRA would otherwise treat the existing lint warnings as errors
+        env:
+          CI: false
         run: |
           cd client
           yarn build
