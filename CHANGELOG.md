@@ -18,12 +18,17 @@ from `vX.Y.Z` tags (see [docs/RELEASING.md](docs/RELEASING.md)).
 - `fuse.getV1Schema()`, for the V1 query schema Fuse now publishes at `GET /fuse/query/v1/schema` (yang-db #197). The
   live suite checks it against the vendored copy and validates every template against it.
 
+- **Graph and table together.** A **Table** toggle shows the visible nodes under the graph (type, name, id,
+  relationships, every property) with a filter per column: text, or numeric comparisons such as `> 2`. Clicking a
+  row selects and centres the node; selecting a node in the graph highlights and scrolls to its row.
+
 ### Changed
 - The vendored V1 schema is the version Fuse serves (adds `RelUntyped` and `WhereByConstraint`).
 - Edges are easier to click (wider hit area, same drawn width).
 
 ### Fixed
 - In Fuse mode, tapping a node added unrelated nodes from the mock server's `/api/update`.
+- The bottom of the results (graph legend, table) was cut off by the height of the status line above it.
 
 ## [0.2.0] - 2026-11-26
 

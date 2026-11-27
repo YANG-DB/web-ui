@@ -108,6 +108,8 @@ View query results in multiple interactive formats with rich visualization optio
   - Node size based on connectivity
   - Edge labels on hover, on the selected node's edges, or when zoomed in
   - Tap a node or edge for a details panel: type, id, all properties, Expand neighbors, Hide
+  - Optional table of the visible nodes under the graph, with a filter per column (text or `> 2`) and selection
+    synced both ways
   - Double-tap a node to expand its neighbors (from Fuse, or the mock server)
   - Layouts: Force, Breadth-first, Concentric, Grid, plus Fit; edge length and repulsion in the ⚙ popover
   - Full-screen mode for detailed exploration
@@ -369,6 +371,7 @@ All screenshots are available in `/docs/images`:
 - `research-fuse-error.png` - A Fuse error shown in the results panel
 - `research-graph-readable.png` - Graph with type colours, names, type badges, edge labels and the legend
 - `research-details-panel.png` - Details panel for a selected node
+- `research-graph-table.png` - Graph and table together, with the selection synced
 - `research-visual-query-builder.png` - Query builder interface with ontology selector and controls
 - `research-template-queries.png` - Pre-built query templates modal
 - `research-results.png` - Complete research interface with query builder and results visualization

@@ -114,6 +114,13 @@ JSON buttons above the graph show the same result in other forms.
   details panel's **Expand neighbors** button does the same.
 
 ![Details of a person](../images/research-details-panel.png)
+
+![Graph and table: Dragon_17 selected in the graph, highlighted in the table](../images/research-graph-table.png)
+- **Table** (in the graph toolbar) lists the visible nodes under the graph: type, name, id, relationship count and
+  every property. Each column has a filter: text matches anywhere, ignoring case (`schin`), and numbers can be
+  compared (`> 2` in Relationships, `> 50` in power). Clicking a row selects and centres that node and opens its
+  details; tapping a node in the graph highlights its row. Hidden types and hidden nodes leave the table too, and
+  expanded neighbors join it.
 - **Layout** switches between Force, Breadth-first, Concentric and Grid. **Fit** brings everything back into view,
   and **⚙** holds the Force layout's edge length and repulsion.
 
