@@ -9,7 +9,7 @@ It takes about **20 minutes**, most of it waiting for downloads the first time.
 **Contents**
 
 1. [What you are building](#1-what-you-are-building)
-2. [Install the two tools you need](#2-install-the-two-tools-you-need)
+2. [Install the tools you need](#2-install-the-tools-you-need)
 3. [Download web-ui](#3-download-web-ui)
 4. [Start everything with one command](#4-start-everything-with-one-command)
 5. [Open web-ui](#5-open-web-ui)
@@ -29,7 +29,8 @@ It takes about **20 minutes**, most of it waiting for downloads the first time.
 
 ## 1. What you are building
 
-Four programs run on your computer, each in its own Docker *container*:
+Four programs run on your computer, each in its own Docker *container* (a fifth, a small mock server for demos, runs
+alongside them). Docker Compose starts them all with one command:
 
 ```mermaid
 flowchart LR
@@ -52,6 +53,7 @@ flowchart LR
 | **YangDB / Fuse** | The graph database. *Fuse* is the name of its server. |
 | **OpenSearch** | The storage engine Fuse keeps its data in. You never use it directly. |
 | **Docker** | A tool that runs programs in ready-made boxes (*containers*), so you don't have to install them one by one. |
+| **Docker Compose** | A separate tool that works with Docker. It reads a list of containers from a file (`docker-compose.yml`) and starts, stops or removes them all together. Docker on its own runs one container at a time. |
 | **Terminal** | The window where you type commands. On a Mac: **Terminal**. On Windows: **PowerShell**. |
 
 **The Dragons world** is a small made-up world that comes with YangDB:
@@ -78,9 +80,57 @@ flowchart LR
 
 ---
 
-## 2. Install the two tools you need
+## 2. Install the tools you need
 
-### Docker Desktop
+You need three tools: **Docker**, **Docker Compose** and **Git**.
+
+Docker and Docker Compose are two different tools. **Docker** runs containers. **Docker Compose** starts a whole
+group of containers described in one file: web-ui's `docker-compose.yml` lists the five that make up this setup.
+Every `docker compose ...` command in this guide is Docker Compose.
+
+### Docker and Docker Compose
+
+| Your computer | Install |
+|---|---|
+| Mac | **Colima**, with Docker and Docker Compose from Homebrew |
+| Windows | **Docker Desktop** |
+| Linux | **Docker Engine** and the **Compose plugin** |
+
+**Mac: Colima.** A Mac can't run Docker containers directly: they need Linux. Colima runs Docker inside a small
+Linux virtual machine, and `docker` and `docker compose` on your Mac talk to it. You install three things with
+[Homebrew](https://brew.sh): Colima, the `docker` command, and Docker Compose.
+
+1. If you don't have Homebrew, install it: open Terminal and paste the command shown on **https://brew.sh**. Check
+   with `brew --version`.
+2. Install Colima, Docker and Docker Compose:
+   ```bash
+   brew install colima docker docker-compose
+   ```
+3. Tell Docker where Homebrew put Docker Compose, so that `docker compose` (with a space) works. If you have never
+   used Docker on this Mac, this creates the settings file for you:
+   ```bash
+   mkdir -p ~/.docker
+   [ -e ~/.docker/config.json ] || printf '{\n  "cliPluginsExtraDirs": ["%s/lib/docker/cli-plugins"]\n}\n' "$(brew --prefix)" > ~/.docker/config.json
+   ```
+   If `~/.docker/config.json` already existed, the second line leaves it alone: open it in a text editor (`open -e
+   ~/.docker/config.json`) and add this line just after the first `{` (on an Intel Mac, use `/usr/local` instead of
+   `/opt/homebrew`):
+   ```
+   "cliPluginsExtraDirs": ["/opt/homebrew/lib/docker/cli-plugins"],
+   ```
+4. Start Colima with enough memory (OpenSearch needs the room):
+   ```bash
+   colima start --cpu 4 --memory 6
+   ```
+   The first start downloads the virtual machine and takes a few minutes. It ends with *done*. If your Mac has 8 GB
+   of memory or less, use `--memory 4`.
+5. Check it: `colima status` includes *colima is running*, and `docker context show` says `colima`.
+
+Colima doesn't start by itself after you restart your Mac. Type `colima start` again (it remembers the memory you
+gave it), or have it start at login with `brew services start colima`.
+
+**Windows: Docker Desktop.** It contains both Docker and Docker Compose, so there is nothing extra to install.
+(Already using Docker Desktop on a Mac? It works too: skip the Colima steps and check its memory as in step 3.)
 
 1. Download it from **https://www.docker.com/products/docker-desktop/** and install it like any other app.
    - **Windows:** the installer may ask to enable *WSL 2*. Say yes and restart if asked.
@@ -88,12 +138,26 @@ flowchart LR
 3. Give Docker enough memory: in Docker Desktop open **Settings → Resources** and set **Memory** to at least
    **4 GB**. Click **Apply & restart**. (OpenSearch needs the room.)
 
+**Linux: install Docker Engine, then the Compose plugin.** Docker Engine alone does not include Compose.
+
+1. Install Docker Engine for your distribution: **https://docs.docker.com/engine/install/**.
+2. Install Docker Compose as a plugin. On Ubuntu or Debian (with Docker's package repository, set up in step 1):
+   ```bash
+   sudo apt-get update
+   sudo apt-get install docker-compose-plugin
+   ```
+   On Fedora, RHEL or CentOS: `sudo dnf install docker-compose-plugin`. Other systems:
+   **https://docs.docker.com/compose/install/linux/**.
+3. To run `docker` without `sudo`, follow **https://docs.docker.com/engine/install/linux-postinstall/** (then log
+   out and back in).
+
 ### Git
 
-- **Mac:** open Terminal and type `git --version`. If it isn't installed, macOS offers to install it; accept.
+- **Mac:** open Terminal and type `git --version`. If it isn't installed, macOS offers to install it; accept. (Or
+  `brew install git`.)
 - **Windows:** download from **https://git-scm.com/download/win** and install with the default options.
 
-### Check that both work
+### Check that all three work
 
 Open a terminal (Mac: press `Cmd+Space`, type **Terminal**, press Enter. Windows: press the Windows key, type
 **PowerShell**, press Enter) and type each line, pressing Enter after each:
@@ -113,6 +177,19 @@ git version 2.50.1
 ```
 
 If one says *command not found*, that tool isn't installed yet: go back to its step.
+
+**If `docker compose version` fails** (for example *'compose' is not a docker command*), Docker is installed but
+Docker Compose isn't, or you have the older stand-alone program, spelled with a hyphen. Try:
+
+```bash
+docker-compose --version
+```
+
+- It says **version 2** or later (for example `Docker Compose version v2.40.0`): that works. Type `docker-compose`
+  (with a hyphen) wherever this guide says `docker compose`, for example `docker-compose up -d`.
+- It says **version 1** (for example `docker-compose version 1.29.2`) or *command not found*: install Docker Compose
+  version 2 as described [above](#docker-and-docker-compose). Version 1 is no longer supported and can't read
+  web-ui's `docker-compose.yml`.
 
 ---
 
@@ -386,7 +463,11 @@ All of these are typed in the `web-ui` folder:
 | Remove everything | `docker compose down` | **deleted** |
 | Start fresh after removing | `docker compose up -d` | the loader fills the Dragons world in again |
 
-If Docker Desktop is closed, the containers stop too. Open Docker Desktop, then `docker compose start`.
+**With Colima (Mac):** `colima stop` stops Docker itself and frees all its memory (the data is kept). Later, `colima
+start`, then `docker compose start`.
+
+**With Docker Desktop:** if Docker Desktop is closed, the containers stop too. Open Docker Desktop, then `docker
+compose start`.
 
 ---
 
@@ -394,10 +475,14 @@ If Docker Desktop is closed, the containers stop too. Open Docker Desktop, then 
 
 | What you see | What to do |
 |---|---|
-| `docker: command not found` | Docker Desktop isn't installed, or isn't running. Install it ([section 2](#2-install-the-two-tools-you-need)) and open it. |
-| `Cannot connect to the Docker daemon` | Docker Desktop isn't running. Open it and wait for the green status. |
+| `docker: command not found` | Docker isn't installed (Mac: `brew install colima docker docker-compose`), or Docker Desktop isn't running. Install it ([section 2](#2-install-the-tools-you-need)) and open it. |
+| `'compose' is not a docker command`, or `unknown shorthand flag: 'd' in -d` | Docker Compose isn't installed. See [Check that all three work](#check-that-all-three-work). |
+| `docker-compose: command not found` | You typed the hyphen spelling, which is only for the older stand-alone program. Type `docker compose` (with a space) instead. |
+| `Cannot connect to the Docker daemon` | Docker isn't running. Docker Desktop: open it and wait for the green status. Colima: type `colima start`. |
+| Colima: `docker compose version` says *'compose' is not a docker command*, but `docker-compose --version` works | Docker can't find the Compose plugin. Do step 3 of [Colima](#docker-and-docker-compose) (`cliPluginsExtraDirs`). |
+| Colima: containers stop with **Exited (137)**, or OpenSearch keeps restarting | The Colima virtual machine has too little memory. `colima stop`, then `colima start --memory 6`. |
 | `port is already allocated` | Another program uses that port. Use other ports, as in [section 4](#4-start-everything-with-one-command). |
-| `docker compose up` waits a long time at *opensearch Waiting* and then fails | Docker has too little memory. Set it to 4 GB or more ([section 2](#2-install-the-two-tools-you-need)), then `docker compose down` and `docker compose up -d`. |
+| `docker compose up` waits a long time at *opensearch Waiting* and then fails | Docker has too little memory. Give it 4 GB or more (Colima: `colima stop`, then `colima start --memory 6`; Docker Desktop: [section 2](#2-install-the-tools-you-need)), then `docker compose down` and `docker compose up -d`. |
 | `dragons-loader` says **Exited (1)** | The data didn't load. Type `docker compose up -d dragons-loader` to run it again, then `docker compose logs dragons-loader`. |
 | http://localhost:3000 doesn't open | Wait a minute after `up` finishes, then reload. Check `docker compose ps`: `ui` should be *Up*. |
 | The dot next to Backend is **red** and you see a yellow notice about mock data | web-ui can't reach Fuse. Check `docker compose ps`: `fuse` should be *healthy*. Then pick **Fuse** in **Backend** again, or reload the page. |
