@@ -1,5 +1,9 @@
 # Tutorial: the Dragons graph, from Docker to answers
 
+> **New to all this?** [Getting started](GETTING_STARTED.md) covers the same ground step by step, with screenshots,
+> using a single `docker compose up`. This page is the developer's version: running from source, HTTP calls and the
+> automated checks.
+
 This walks through one complete use case: start a YangDB (Fuse) graph server, load the Dragons sample world into it,
 and question it from web-ui, first with templates and then with your own queries, in Cypher and in V1. It ends with
 the same queries over plain HTTP and the automated checks that keep all of this working.
@@ -25,6 +29,8 @@ yarn            # installs the mock server and, through postinstall, the client
 ```bash
 scripts/fuse-up.sh
 ```
+
+(Or `docker compose up -d fuse dragons-loader`, which does the same with the repository's compose file.)
 
 The script:
 
@@ -114,6 +120,13 @@ JSON buttons above the graph show the same result in other forms.
   details panel's **Expand neighbors** button does the same.
 
 ![Details of a person](../images/research-details-panel.png)
+
+![Graph and table: Dragon_17 selected in the graph, highlighted in the table](../images/research-graph-table.png)
+- **Table** (in the graph toolbar) lists the visible nodes under the graph: type, name, id, relationship count and
+  every property. Each column has a filter: text matches anywhere, ignoring case (`schin`), and numbers can be
+  compared (`> 2` in Relationships, `> 50` in power). Clicking a row selects and centres that node and opens its
+  details; tapping a node in the graph highlights its row. Hidden types and hidden nodes leave the table too, and
+  expanded neighbors join it.
 - **Layout** switches between Force, Breadth-first, Concentric and Grid. **Fit** brings everything back into view,
   and **⚙** holds the Force layout's edge length and repulsion.
 

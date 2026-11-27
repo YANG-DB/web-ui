@@ -490,3 +490,129 @@
 .detailsTable td {
   word-break: break-word;
 }
+
+/* The graph canvas and its overlays (toolbar, legend, hint); shrinks when the table opens */
+.canvasWrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.canvasWrap .cytoscape {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+}
+
+/* Node table under the graph */
+.nodeTable {
+  flex: none;
+  height: 40%;
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  background: #12152a;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e6e9f5;
+  font-size: 12px;
+}
+
+.nodeTableBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  color: #9aa4c2;
+}
+
+.nodeTableScroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.nodeTableGrid {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+}
+
+.nodeTableGrid th,
+.nodeTableGrid td {
+  padding: 5px 10px;
+  text-align: left;
+  white-space: nowrap;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.nodeTableGrid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #1a1e38;
+  color: #c9d1e8;
+  font-weight: 600;
+}
+
+/* Two sticky header rows: the names row has a fixed height so the filter row sits right
+   under it with no gap for the body to show through. */
+.nodeTableGrid thead tr:first-child th {
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.nodeTableGrid thead tr.nodeTableFilters th {
+  top: 28px;
+  padding-top: 0;
+  padding-bottom: 6px;
+}
+
+.nodeTableFilters input {
+  width: 100%;
+  min-width: 70px;
+  box-sizing: border-box;
+  background: #0f1226;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
+.nodeTableFilters input:focus-visible {
+  outline: 2px solid #7fc8ff;
+  outline-offset: 0;
+}
+
+.nodeTableRow {
+  cursor: pointer;
+}
+
+.nodeTableRow:hover td {
+  background: rgba(127, 200, 255, 0.07);
+}
+
+.nodeTableRow[aria-selected="true"] td {
+  background: rgba(127, 200, 255, 0.2);
+}
+
+.nodeTableRow:focus-visible {
+  outline: 2px solid #7fc8ff;
+  outline-offset: -2px;
+}
+
+.nodeTableType {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nodeTableEmpty {
+  color: #9aa4c2;
+  padding: 12px;
+}

@@ -15,6 +15,10 @@ This directory contains the CI/CD workflows for the web-ui project.
   `yarn test:fuse` in `client/`: every Fuse call the UI makes, every Dragons template in Cypher and V1, and the
   queries of the Dragons tutorial. Fuse logs are printed on failure.
 
+- **compose**: `docker compose up -d --build` (OpenSearch, Fuse, the Dragons loader, the mock server and the UI
+  image), waits for the loader, checks the UI serves its pages and forwards `/fuse` and `/api`, then runs
+  `yarn test:fuse` through the UI container's nginx (`FUSE_URL=http://localhost:3000`).
+
 ### 2. Release (`deploy.yml`)
 
 **Trigger:** `vX.Y.Z` tags, pushes to `master`, manual dispatch

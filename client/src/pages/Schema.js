@@ -3,6 +3,8 @@ import cn from "classnames";
 import { GraphQLEditor } from "graphql-editor";
 import { Modal } from "../components";
 import apiService from "../services/api";
+import fuse, { fuseBaseUrl } from "../services/fuse";
+import { resolveOntologyId } from "../helpers/normalizeFuseResult";
 import convertOntologyToGraphQL from "../helpers/ontologyToGraphQL";
 import styles from "./Schema.module.css";
 import globalStyles from "../App.module.css";
@@ -135,58 +137,78 @@ export default function Schema() {
   const [isLoading, setIsLoading] = useState(true);
   const [ontologies, setOntologies] = useState([]);
   const [selectedOntology, setSelectedOntology] = useState('dragons');
+  // Where the ontologies come from: "fuse" when Fuse answers, otherwise the mock server.
+  const [source, setSource] = useState(null);
+  const [fuseIds, setFuseIds] = useState([]);
+  const [loadError, setLoadError] = useState(null);
 
-  // Load available ontologies on mount
+  // Load the ontology list: from Fuse when it is up, otherwise from the mock server.
   useEffect(() => {
-    apiService.getOntologies().then(data => {
-      setOntologies(data.ontologies);
+    let cancelled = false;
+    const fallback = [
+      { id: 'dragons', name: 'Dragons' },
+      { id: 'linkedin', name: 'LinkedIn' },
+      { id: 'flights', name: 'Flights' }
+    ];
+    const pick = list => {
+      setOntologies(list);
+      setSelectedOntology(current =>
+        list.some(o => o.id === current) ? current : (list.find(o => o.id === 'dragons') || list[0] || { id: current }).id
+      );
+    };
+    fuse.health().then(up => {
+      if (cancelled) return null;
+      if (up) {
+        return fuse.listOntologies().then(list => {
+          if (cancelled) return;
+          // fuseIds before source: these updates are not batched here, and the ontology effect
+          // must not run with a source of "fuse" and no ids to resolve against.
+          setFuseIds(list.map(o => o.ont));
+          setSource('fuse');
+          pick(list.map(o => ({ id: o.ont.toLowerCase(), name: o.ont })));
+        });
+      }
+      return apiService.getOntologies().then(data => {
+        if (cancelled) return;
+        setSource('mock');
+        pick(data.ontologies);
+      });
     }).catch(error => {
-      console.error("Failed to load ontologies list:", error);
-      // Set fallback ontologies
-      setOntologies([
-        { id: 'dragons', name: 'Dragons' },
-        { id: 'linkedin', name: 'LinkedIn' },
-        { id: 'flights', name: 'Flights' }
-      ]);
-      alert("⚠️ Server Error: Cannot connect to backend server.\n\nPlease ensure the server is running:\n  cd /Users/liorperry/projects/web-ui\n  node server.js\n\nError: " + error.message);
+      if (cancelled) return;
+      setSource('mock');
+      pick(fallback);
+      setLoadError(`Neither Fuse nor the mock server answered: ${error.message}`);
     });
+    return () => { cancelled = true; };
   }, []);
 
-  // Load ontology when selection changes
+  // Load the selected ontology and show it as a GraphQL schema.
   useEffect(() => {
-    if (!selectedOntology) return;
+    if (!selectedOntology || !source) return;
 
+    let stale = false;
     setIsLoading(true);
-    // Load ontology from API and convert to GraphQL schema
-    apiService.getOntology(selectedOntology).then(ontologyData => {
-      console.log("=== RAW ONTOLOGY RESPONSE ===");
-      console.log(JSON.stringify(ontologyData, null, 2));
-      console.log("=== END RAW ONTOLOGY ===");
-
-      // apiService.getOntology already extracts data[0], so wrap it back
-      const wrappedData = { data: [ontologyData] };
-      const graphqlSchema = convertOntologyToGraphQL(wrappedData);
-      console.log("=== CONVERTED GRAPHQL SCHEMA ===");
-      console.log("Schema length:", graphqlSchema.length, "characters");
-      console.log("Schema preview (first 500 chars):");
-      console.log(graphqlSchema.substring(0, 500));
-      console.log("\n--- FULL SCHEMA ---\n");
-      console.log(graphqlSchema);
-      console.log("\n=== END GRAPHQL SCHEMA ===");
-
-      // Set the schema - GraphQLEditor requires both 'code' and 'libraries'
-      // 'libraries' is for shared/reusable schema, 'code' is the main schema
+    const load = source === 'fuse'
+      ? fuse.getOntology(resolveOntologyId(fuseIds, selectedOntology) || selectedOntology)
+      : apiService.getOntology(selectedOntology);
+    load.then(ontologyData => {
+      if (stale) return;
+      // Both return the ontology object itself; the converter expects {data: [ontology]}
+      const graphqlSchema = convertOntologyToGraphQL({ data: [ontologyData] });
+      // GraphQLEditor requires both 'code' and 'libraries' ('libraries' is for shared schema)
       setCurrentSchema({ code: graphqlSchema, libraries: '' });
+      setLoadError(null);
       setIsLoading(false);
     }).catch(error => {
-      console.error("Failed to load ontology:", error);
+      if (stale) return;
       setCurrentSchema({
-        code: `# ⚠️ Error Loading Ontology\n\n# Cannot connect to backend server.\n# Please ensure the server is running:\n#   cd /Users/liorperry/projects/web-ui\n#   node server.js\n\n# Error: ${error.message}`,
+        code: `# Could not load the ${selectedOntology} ontology from the ${source === 'fuse' ? 'Fuse server' : 'mock server'}.\n# ${error.message}\n#\n# For Fuse, see the Backends section of the README; for the mock server, run "yarn server".`,
         libraries: ''
       });
       setIsLoading(false);
     });
-  }, [selectedOntology]);
+    return () => { stale = true; };
+  }, [selectedOntology, source, fuseIds]);
 
   const closeModal = useCallback(() => {
     setDialogKey(null);
@@ -213,7 +235,6 @@ export default function Schema() {
     setCurrentSchema(schema);
   }, []);
 
-  console.log("=== CURRENT SCHEMA STATE ===", currentSchema);
   return (
     <div className={globalStyles.page}>
       <Modal
@@ -236,6 +257,10 @@ export default function Schema() {
             ))}
           </select>
         </div>
+        <span className={styles.source} data-source={source || 'unknown'} title={source === 'fuse' ? fuseBaseUrl() : undefined}>
+          {source === 'fuse' ? 'From Fuse' : source === 'mock' ? 'From the mock server' : 'Connecting…'}
+        </span>
+        {loadError && <span className={styles.sourceError} role="alert">{loadError}</span>}
         <div className={styles.actions}>
           {Object.keys(actions).map(action => (
             <button

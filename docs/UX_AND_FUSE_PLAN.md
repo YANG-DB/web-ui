@@ -189,6 +189,12 @@ Record anything you hit here with the request, the response and the expected beh
 - Errors inside a 200 (above) make clients check `data.error`, `cursorResourceInfos[].error` and
   `pageResourceInfos[].error` on every success. Expected: a non-2xx status.
 - No authentication. Fine for local use, a blocker before any shared deployment.
+- **A query before the data exists poisons later queries.** On a fresh Fuse 0.9.1, one
+  `MATCH (d:Dragon) RETURN d` sent before `POST /fuse/dragons/tutorial/load` (it fails: `no such index [dragon]`)
+  makes later multi-pattern queries over Dragon return 0 rows after the load (e.g. `MATCH (p:Person)-[r0:Own]->(d:Dragon),
+  (d:Dragon)-[r1:Fire]->(d1:Dragon) WHERE d.color = 'BLACK' RETURN *`: 0, and 483 after restarting Fuse). Expected:
+  index and plan caches refresh when indices appear. Worked around: the compose loader checks OpenSearch
+  (`/dragon/_count`), never Fuse, before loading.
 - **#197 is not on yang-db `main`** (2026-11-26). It was stacked on #196 and merged into `spec/v1-json-schema` 10
   seconds after that branch merged into `main`, so `main` lacks `GET /fuse/query/v1/schema`, the schema's
   `RelUntyped`/`WhereByConstraint` additions and `docs/spec/v1/rules.md`. Fix: a PR from `spec/v1-json-schema` to
@@ -236,8 +242,14 @@ References to study before designing (stars as of 2026-11-26):
   type, ends as links that select the node, direction, properties, Hide. Focus moves to the panel; Esc and a
   background tap close it. The graph narrows instead of being covered. Edges got a wider hit area
   (`overlay-padding`) because 1px edges were hard to click.
-- [ ] **Graph and table together.** An optional table under the graph lists visible nodes, with selection synced
+- [x] **Graph and table together.** An optional table under the graph lists visible nodes, with selection synced
   both ways and a filter per column.
+  *Done:* `components/NodeTable.js`, `helpers/nodeTable.js`, behind a **Table** toggle in the graph toolbar. Columns:
+  Type, Name, ID, Relationships, then every property name of the visible nodes. Filters: case-insensitive text, or
+  `>`, `<`, `>=`, `<=`, `=` on numbers. Rows follow the legend, Hide and expansions. Row click or Enter selects and
+  centres the node (and opens its details); a graph selection highlights the row and scrolls only the table to it
+  (`scrollIntoView` also scrolled the page). Renders at most 500 rows, with a note to filter. Also fixed: the
+  results area was clipped at the bottom by the status line's height.
 
 ### B3. Page layout
 
@@ -298,4 +310,10 @@ References to study before designing (stars as of 2026-11-26):
 
 - 2026-11-26: B2 details panel done on `feat/b2-details-panel` (stacked on #50), with the V1 schema re-sync.
 
-**Next step:** B2's second item, the graph and table together (selection synced both ways, a filter per column).
+- 2026-11-26: B2 graph and table together done on `feat/b2-graph-table` (stacked on #51). B2 is complete.
+
+- 2026-11-26: `docker-compose.yml` (graph, data and UI in one command; CI job `compose`) and the beginner guide
+  `docs/tutorials/GETTING_STARTED.md` on `docs/beginner-tutorial` (stacked on #52). The Schema page now reads from
+  Fuse.
+
+**Next step:** B3, results get the space: collapse the builder to a one-line summary of the query after a run.

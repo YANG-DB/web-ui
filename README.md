@@ -5,14 +5,26 @@
 User interface for graph database interaction and ontology management, for
 [YangDB (Fuse)](https://github.com/YANG-DB/yang-db).
 
-**New here? Follow the [Dragons tutorial](docs/tutorials/DRAGONS.md)**: from Docker to graph answers in about 15 minutes.
+**New here? Start with [Getting started](docs/tutorials/GETTING_STARTED.md)**: a step-by-step guide with
+screenshots, from installing Docker to your first graph queries. No experience needed.
 
 ## Quick Start
 
+**With Docker only** (nothing else to install): the graph, the Dragons sample data and web-ui in one command.
+
 ```bash
-yarn                  # install (root and client)
-scripts/fuse-up.sh    # optional: start Fuse in Docker with the Dragons sample
-yarn start            # mock server on 5001, app on http://localhost:3000
+git clone https://github.com/YANG-DB/web-ui.git && cd web-ui
+docker compose up -d     # first run: downloads and builds, a few minutes
+# open http://localhost:3000
+docker compose down      # stop and remove everything
+```
+
+**From source** (to change the code; needs Node.js 20+ and Yarn):
+
+```bash
+yarn                                       # install (root and client)
+docker compose up -d fuse dragons-loader   # or scripts/fuse-up.sh: Fuse with the Dragons sample
+yarn start                                 # mock server on 5001, app on http://localhost:3000
 ```
 
 On the **Research** page, the app uses Fuse when it answers (green dot next to **Backend**), and mock data otherwise.
@@ -108,6 +120,8 @@ View query results in multiple interactive formats with rich visualization optio
   - Node size based on connectivity
   - Edge labels on hover, on the selected node's edges, or when zoomed in
   - Tap a node or edge for a details panel: type, id, all properties, Expand neighbors, Hide
+  - Optional table of the visible nodes under the graph, with a filter per column (text or `> 2`) and selection
+    synced both ways
   - Double-tap a node to expand its neighbors (from Fuse, or the mock server)
   - Layouts: Force, Breadth-first, Concentric, Grid, plus Fit; edge length and repulsion in the ⚙ popover
   - Full-screen mode for detailed exploration
@@ -287,6 +301,7 @@ A professional networking ontology for social and business data.
 ## Documentation
 
 ### User Guides
+- [Getting started](docs/tutorials/GETTING_STARTED.md) - Step by step with screenshots, for beginners
 - [Dragons tutorial](docs/tutorials/DRAGONS.md) - Run Fuse, load the Dragons sample, query it in Cypher and V1
 - [Visual Query Builder Guide](docs/VISUAL_QUERY_BUILDER.md) - Complete query building documentation
 - [Schema Viewer Guide](docs/SCHEMA_VIEWER.md) - Schema management and ontology structure
@@ -369,6 +384,7 @@ All screenshots are available in `/docs/images`:
 - `research-fuse-error.png` - A Fuse error shown in the results panel
 - `research-graph-readable.png` - Graph with type colours, names, type badges, edge labels and the legend
 - `research-details-panel.png` - Details panel for a selected node
+- `research-graph-table.png` - Graph and table together, with the selection synced
 - `research-visual-query-builder.png` - Query builder interface with ontology selector and controls
 - `research-template-queries.png` - Pre-built query templates modal
 - `research-results.png` - Complete research interface with query builder and results visualization

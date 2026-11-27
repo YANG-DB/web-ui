@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import cytoscape from "cytoscape";
 import extractResults from "../helpers/extractResults";
 import { buildTypeColors, displayName, typeBadge, nodeSize, countByType } from "../helpers/graphStyle";
 import apiService from "../services/api";
 import GraphLegend from "./GraphLegend";
 import DetailsPanel from "./DetailsPanel";
+import NodeTable from "./NodeTable";
 import styles from "./Force.module.css";
 
 const LINK_DISTANCE = 200;
@@ -209,6 +210,9 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
   // Bumped when the graph changes in ways React does not see (expand, collapse), so the
   // details panel re-reads it.
   const [graphVersion, setGraphVersion] = useState(0);
+  const [showTable, setShowTable] = useState(false);
+  // Changes with every new result, so the table starts with no filters.
+  const [graphKey, setGraphKey] = useState(0);
   const expandRef = useRef(null);
 
   const cyRef = useRef(null);
@@ -280,6 +284,7 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
     setSelectedId(null);
     setExpandingId(null);
     setHiddenCount(0);
+    setGraphKey(k => k + 1);
     refreshLegend(cy);
 
     // Nodes start without positions ('preset' above), so a force layout spreads them first.
@@ -394,7 +399,27 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
   const panelOpen = selectedId !== null;
   useEffect(() => {
     if (cyRef.current) cyRef.current.resize();
-  }, [panelOpen]);
+  }, [panelOpen, showTable]);
+
+  // The table's rows: the nodes not hidden by the legend or by Hide. Read from state rather
+  // than from Cytoscape's visibility, which updates after this render.
+  const tableNodes = useMemo(() => {
+    const cy = cyRef.current;
+    if (!showTable || !cy) return [];
+    return cy
+      .nodes()
+      .filter(n => !hiddenTypes.has(n.data("eType")) && !n.hasClass("element-hidden"))
+      .map(n => ({
+        id: n.id(),
+        type: n.data("eType"),
+        name: n.data("label"),
+        rawId: n.data("rawId"),
+        degree: n.connectedEdges().filter(e => !e.hasClass("element-hidden")).length,
+        properties: n.data("properties")
+      }));
+    // graphVersion, hiddenCount and graphKey stand for graph changes React does not see.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showTable, hiddenTypes, hiddenCount, graphVersion, graphKey]);
 
   const details = describe(cyRef.current, selectedId, expandedRef.current);
   // graphVersion is read so a re-render after expand/collapse refreshes the panel.
@@ -479,6 +504,7 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
   return (
     <div className={styles.forceContainer}>
       <div className={styles.graphArea}>
+      <div className={styles.canvasWrap}>
       <div className={styles.toolbar}>
         <label className={styles.toolbarLabel}>
           Layout
@@ -490,6 +516,15 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
         </label>
         <button type="button" onClick={fit} className={styles.toolbarButton} title="Fit the graph to the view">
           Fit
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowTable(t => !t)}
+          className={styles.toolbarButton}
+          aria-pressed={showTable}
+          title="Show the visible nodes as a table under the graph"
+        >
+          Table
         </button>
         {hiddenCount > 0 && (
           <button type="button" onClick={showHidden} className={styles.toolbarButton} title="Show the elements you hid">
@@ -542,6 +577,16 @@ export default function Force({ results, hoveredIndex, onExpandNode = defaultExp
       )}
       <div className={styles.hint}>Tap a node or edge for details · double-tap to expand · scroll to zoom</div>
       <div ref={containerRef} className={styles.cytoscape}></div>
+      </div>
+      {showTable && (
+        <NodeTable
+          key={graphKey}
+          nodes={tableNodes}
+          selectedId={selectedId}
+          onSelect={selectNode}
+          colors={colorsRef.current}
+        />
+      )}
       </div>
       <DetailsPanel
         details={details}

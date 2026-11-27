@@ -6,6 +6,13 @@ from `vX.Y.Z` tags (see [docs/RELEASING.md](docs/RELEASING.md)).
 ## [Unreleased]
 
 ### Added
+- **Everything in Docker.** `docker compose up -d` starts OpenSearch, Fuse, a one-time Dragons loader, the mock
+  server and web-ui (built into an nginx image that forwards `/fuse` and `/api`) on http://localhost:3000. Host ports
+  are configurable (`UI_PORT`, `FUSE_PORT`, `OS_PORT`). CI runs the live Fuse suite through it.
+- **[Getting started](docs/tutorials/GETTING_STARTED.md)**: a beginner's guide with annotated screenshots, from
+  installing Docker to building queries.
+- The Schema page reads the ontology from Fuse when Fuse is up (labelled "From Fuse"), otherwise from the mock
+  server.
 - **Readable result graph.** Nodes are coloured by entity type, with the type written inside the node and its name
   (name, title, or first and last name) below it. A legend shows each type's count and hides or shows a type on
   click. Connectivity is shown by node size only.
@@ -18,12 +25,22 @@ from `vX.Y.Z` tags (see [docs/RELEASING.md](docs/RELEASING.md)).
 - `fuse.getV1Schema()`, for the V1 query schema Fuse now publishes at `GET /fuse/query/v1/schema` (yang-db #197). The
   live suite checks it against the vendored copy and validates every template against it.
 
+- **Graph and table together.** A **Table** toggle shows the visible nodes under the graph (type, name, id,
+  relationships, every property) with a filter per column: text, or numeric comparisons such as `> 2`. Clicking a
+  row selects and centres the node; selecting a node in the graph highlights and scrolls to its row.
+
 ### Changed
 - The vendored V1 schema is the version Fuse serves (adds `RelUntyped` and `WhereByConstraint`).
 - Edges are easier to click (wider hit area, same drawn width).
 
 ### Fixed
+- The GraphQL schema generated for Fuse's Dragons ontology was invalid (`HasProfessionRelationship.type` twice),
+  so the Schema page refused to show it.
+- Opening `/api` (the API page) directly went to the mock server instead of the app, in the dev proxy too.
+- `PORT` set for the dev server also moved the mock server (it now reads `MOCK_PORT`).
+- The query builder's "Run Query" button was partly covered by the panel's collapse button.
 - In Fuse mode, tapping a node added unrelated nodes from the mock server's `/api/update`.
+- The bottom of the results (graph legend, table) was cut off by the height of the status line above it.
 
 ## [0.2.0] - 2026-11-26
 

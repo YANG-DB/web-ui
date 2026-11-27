@@ -1,0 +1,11 @@
+# Keep the Docker build context small: dependencies are installed inside the images.
+**/node_modules
+client/build
+coverage
+client/coverage
+.git
+.github
+docs
+**/._*
+**/.DS_Store
+*.log
