@@ -189,6 +189,12 @@ Record anything you hit here with the request, the response and the expected beh
 - Errors inside a 200 (above) make clients check `data.error`, `cursorResourceInfos[].error` and
   `pageResourceInfos[].error` on every success. Expected: a non-2xx status.
 - No authentication. Fine for local use, a blocker before any shared deployment.
+- **A query before the data exists poisons later queries.** On a fresh Fuse 0.9.1, one
+  `MATCH (d:Dragon) RETURN d` sent before `POST /fuse/dragons/tutorial/load` (it fails: `no such index [dragon]`)
+  makes later multi-pattern queries over Dragon return 0 rows after the load (e.g. `MATCH (p:Person)-[r0:Own]->(d:Dragon),
+  (d:Dragon)-[r1:Fire]->(d1:Dragon) WHERE d.color = 'BLACK' RETURN *`: 0, and 483 after restarting Fuse). Expected:
+  index and plan caches refresh when indices appear. Worked around: the compose loader checks OpenSearch
+  (`/dragon/_count`), never Fuse, before loading.
 - **#197 is not on yang-db `main`** (2026-11-26). It was stacked on #196 and merged into `spec/v1-json-schema` 10
   seconds after that branch merged into `main`, so `main` lacks `GET /fuse/query/v1/schema`, the schema's
   `RelUntyped`/`WhereByConstraint` additions and `docs/spec/v1/rules.md`. Fix: a PR from `spec/v1-json-schema` to
@@ -305,5 +311,9 @@ References to study before designing (stars as of 2026-11-26):
 - 2026-11-26: B2 details panel done on `feat/b2-details-panel` (stacked on #50), with the V1 schema re-sync.
 
 - 2026-11-26: B2 graph and table together done on `feat/b2-graph-table` (stacked on #51). B2 is complete.
+
+- 2026-11-26: `docker-compose.yml` (graph, data and UI in one command; CI job `compose`) and the beginner guide
+  `docs/tutorials/GETTING_STARTED.md` on `docs/beginner-tutorial` (stacked on #52). The Schema page now reads from
+  Fuse.
 
 **Next step:** B3, results get the space: collapse the builder to a one-line summary of the query after a run.
