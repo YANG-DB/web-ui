@@ -85,3 +85,24 @@
   display: block;
   margin-bottom: 5px;
 }
+
+/* Which backend the ontology comes from */
+.source {
+  margin-left: 16px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.source[data-source="fuse"] {
+  border-color: #3ecf8e;
+  color: #b9f5da;
+}
+
+.sourceError {
+  margin-left: 12px;
+  color: #ffb4b2;
+  font-size: 12px;
+}
