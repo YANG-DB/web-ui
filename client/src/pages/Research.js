@@ -579,7 +579,9 @@ function Research({
         )}
 
         {!resultsCollapsed && (
-          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            {/* A column: the status line takes its height, the results the rest (a 100%-high
+                Results under the status line was clipped by the status line's height). */}
             <button
               onClick={() => setResultsCollapsed(true)}
               className={researchStyles.collapseButton}
@@ -588,7 +590,9 @@ function Research({
               ▼
             </button>
             <RunStatus run={run} elapsed={elapsed} onLoadMore={loadMore} />
-            <Results results={results} onExpandNode={expandNode} />
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <Results results={results} onExpandNode={expandNode} />
+            </div>
           </div>
         )}
 
